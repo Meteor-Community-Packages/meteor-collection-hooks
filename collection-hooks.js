@@ -50,7 +50,7 @@
 
 		if (delegate.call(this, "before", "insert", userId, doc, callback) !== false) {
 			result = directInsert.call(this, doc, callback);
-			delegate.call(this, "after", "insert", userId, doc, callback);
+			delegate.call(this, "after", "insert", userId, result && this._collection.findOne({_id: result}) || doc, callback);
 		}
 
 		return result;
