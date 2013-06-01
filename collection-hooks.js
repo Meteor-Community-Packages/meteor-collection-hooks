@@ -102,7 +102,7 @@
 					delegate.call(self, "after", "insert", userId, id && this.findOne({_id: id}) || doc);
 				}
 			};
-			_validatedRemove.call(self, userId, doc);
+			_validatedInsert.call(self, userId, doc);
 			self._collection.insert = _insert;
 		};
 
@@ -118,7 +118,7 @@
 					delegate.call(self, "after", "update", userId, selector, mutator, options, previous);
 				}
 			};
-			_validatedRemove.call(self, userId, selector, mutator, options);
+			_validatedUpdate.call(self, userId, selector, mutator, options);
 			self._collection.update = _update;
 		};
 
