@@ -74,6 +74,42 @@ Tinytest.addAsync("after update", function (test, next) {
 	});
 });
 
+Tinytest.addAsync("after update with options omitted and callback specified", function (test, next) {
+	var Collection = new Meteor.Collection(null);
+
+	var pass_count = 0;
+	var pass = function () {
+		if (++pass_count === 2) next();
+	};
+
+	test.equal(Collection.find({a: 1}).count(), 0);
+
+	Collection.insert({a: 1}, function (err, id) {
+		test.equal(Collection.find({a: 1}).count(), 1);
+
+		Collection.after("update", function (userId, selector, modifier, options, previous) {
+			test.equal(Collection.find({a: 1, b: 2}).count(), 1);
+
+			test.length(previous, 1);
+			if (previous.length === 1) {
+				test.equal(previous[0].a, 1);
+				test.isUndefined(previous[0].b);
+			}
+
+			pass();
+		});
+
+		// Third parameter would normally be "options", but we are omitting it
+		// and putting the callback in its place. This requires special
+		// behavior on the part of collection-hooks to mimic the behavior
+		// by Meteor's own update.
+		Collection.update(id, {$set: {b: 2}}, function (err) {
+			test.equal(err, null);
+			pass();
+		});
+	});
+});
+
 Tinytest.addAsync("before remove", function (test, next) {
 	var Collection = new Meteor.Collection(null);
 

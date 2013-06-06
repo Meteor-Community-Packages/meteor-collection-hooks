@@ -1,6 +1,7 @@
 (function () {
 
-	var directInsert, directUpdate, directRemove, _validatedInsert, _validatedUpdate, _validatedRemove;
+	var directInsert, directUpdate, directRemove;
+	var _validatedInsert, _validatedUpdate, _validatedRemove;
 
 	function delegate() {
 		var i, len, c;
@@ -57,28 +58,33 @@
 	};
 
 	Meteor.Collection.prototype.update = function (selector, modifier, options, callback) {
-    var result,
-      previous,
-      updateArgumentsRaw = [selector, modifier, options, callback].reverse(),
-      updateArguments = [],
-      userId = getUserId.call(this);
+		var result, previous, i, len, stopFiltering;
+		var updateArgumentsRaw = Array.prototype.slice.call(arguments).reverse();
+		var updateArguments = [];
+		var userId = getUserId.call(this);
 
 		if (delegate.call(this, "before", "update", userId, selector, modifier, options, callback) !== false) {
 			previous = this._collection.find(selector, {reactive: false}).fetch();
 
-      // Build an array of the parameters in preparation for Function.apply. We can't use call here because of the way Meteor.Collection.update resolves if the last parameter is a callback or not. If we use call, and the caller didn't pass options, callbacks won't work. We need to trim any undefined arguments off the end of the arguments array that we pass.
-      var stopFiltering = false;
-      for (var ua in updateArgumentsRaw) {
-        // Skip undefined values until we hit a non-undefined value. Then accept everything.
-        if (stopFiltering || updateArgumentsRaw[ua] !== undefined) {
-          updateArguments.push(updateArgumentsRaw[ua]);
-          stopFiltering = true;
-        }
-      }
+			// Build an array of the parameters in preparation for Function.apply.
+			// We can't use call here because of the way Meteor.Collection.update
+			// resolves if the last parameter is a callback or not. If we use call,
+			// and the caller didn't pass options, callbacks won't work. We need
+			// to trim any undefined arguments off the end of the arguments array
+			// that we pass.
+			stopFiltering = false;
+			for (i = 0, len = updateArgumentsRaw.length; i < len; i++) {
+				// Skip undefined values until we hit a non-undefined value.
+				// Then accept everything.
+				if (stopFiltering || updateArgumentsRaw[i] !== undefined) {
+					updateArguments.push(updateArgumentsRaw[i]);
+					stopFiltering = true;
+				}
+			}
 
-      updateArguments = updateArguments.reverse();
+			updateArguments = updateArguments.reverse();
 
-      result = directUpdate.apply(this, updateArguments);
+			result = directUpdate.apply(this, updateArguments);
 			delegate.call(this, "after", "update", userId, selector, modifier, options, previous, callback);
 		}
 
