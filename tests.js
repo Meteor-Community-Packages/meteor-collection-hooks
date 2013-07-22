@@ -1,3 +1,77 @@
+Tinytest.addAsync("before find", function (test, next) {
+	var Collection = new Meteor.Collection(null);
+
+	test.equal(Collection.find({a: 1}).count(), 0);
+
+	Collection.before("find", function(userId, selector) {
+		selector.b = 1;
+	});
+
+	Collection.insert({a: 1}, function(err, id) {
+		test.equal(Collection.find({a: 1}).count(), 0);
+
+		Collection.insert({a: 1, b: 1}, function (err, id) {
+			test.equal(Collection.find({a: 1}).count(), 1);
+			next();
+		});
+	});
+});
+
+Tinytest.addAsync("after find", function (test, next) {
+	var Collection = new Meteor.Collection(null);
+
+	test.equal(Collection.find({a: 1}).count(), 0);
+
+	Collection.after("find", function(userId, selector, options, result) {
+		result.forEach( function(record) {
+			Collection.update(record._id, {
+				$set: { b: 1 }
+			});
+		});
+	});
+
+	Collection.insert({a: 1}, function(err, id) {
+		test.equal(Collection.find({a: 1}).count(), 1);
+		// Now the field has been added automatically
+		test.equal(Collection.find({a: 1, b: 1}).count(), 1);
+		next();
+	});
+});
+
+Tinytest.addAsync("before findOne", function (test, next) {
+	var Collection = new Meteor.Collection(null);
+
+	test.equal(Collection.find({a: 1}).count(), 0);
+
+	Collection.before("findOne", function(userId, selector) {
+		selector.b = 1;
+	});
+
+	Collection.insert({a: 1}, function(err, id) {
+		test.isUndefined(Collection.findOne({a: 1}));
+
+		Collection.insert({a: 2, b: 1}, function (err, id) {
+			test.equal(Collection.findOne({a: 2}).b, 1);
+			next();
+		});
+	});
+});
+
+Tinytest.addAsync("after findOne", function (test, next) {
+	var Collection = new Meteor.Collection(null);
+
+	test.equal(Collection.find({a: 1}).count(), 0);
+
+	Collection.after("findOne", function(userId, selector, options, result) {
+		result.b = 1;
+	});
+
+	Collection.insert({a: 1}, function(err, id) {
+		test.equal(Collection.findOne({a: 1}).b, 1);
+		next();
+	});
+});
+
 Tinytest.addAsync("before insert", function (test, next) {
 	var Collection = new Meteor.Collection(null);
 
