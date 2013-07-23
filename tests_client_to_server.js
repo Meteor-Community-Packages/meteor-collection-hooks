@@ -1,5 +1,9 @@
 // TODO: can't get this to work... don't have a simple mechanism to test
 // something that relies on both server and client tests talking to each other
+
+// For future implementation - see as example
+// https://github.com/meteor/meteor/blob/master/packages/mongo-livedata/allow_tests.js
+
 return;
 
 var CollectionFactory = (function () {
