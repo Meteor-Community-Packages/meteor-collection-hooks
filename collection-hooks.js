@@ -1,6 +1,6 @@
 (function () {
 
-	var directInsert, directUpdate, directRemove;
+	var directFind, directFindOne, directInsert, directUpdate, directRemove;
 	var _validatedInsert, _validatedUpdate, _validatedRemove;
 
 	function delegate() {
@@ -38,6 +38,8 @@
 		}
 	}
 
+	directFind = Meteor.Collection.prototype.find;
+	directFindOne = Meteor.Collection.prototype.findOne;
 	directInsert = Meteor.Collection.prototype.insert;
 	directUpdate = Meteor.Collection.prototype.update;
 	directRemove = Meteor.Collection.prototype.remove;
@@ -45,6 +47,35 @@
 	// These are invoked when the method is called directly on the collection
 	// from either the server or client. These are adapted to match the
 	// function signature of the triggered version (adding userId)
+
+	// "after" hooks for find are strange and only here for completeness.
+	// Most of their functionality can be done by "transform".
+
+	Meteor.Collection.prototype.find = function (selector, options) {
+		var result, userId = getUserId.call(this);
+
+		selector = selector || {};
+
+		if (delegate.call(this, "before", "find", userId, selector, options) !== false) {
+			result = directFind.call(this, selector, options);
+			delegate.call(this, "after", "find", userId, selector, options, result);
+		}
+
+		return result;
+	};
+
+	Meteor.Collection.prototype.findOne = function (selector, options) {
+		var result, userId = getUserId.call(this);
+
+		selector = selector || {};
+
+		if (delegate.call(this, "before", "findOne", userId, selector, options) !== false) {
+			result = directFindOne.call(this, selector, options);
+			delegate.call(this, "after", "findOne", userId, selector, options, result);
+		}
+
+		return result;
+	};
 
 	Meteor.Collection.prototype.insert = function (doc, callback) {
 		var result, userId = getUserId.call(this);
@@ -62,6 +93,8 @@
 		var updateArgumentsRaw = Array.prototype.slice.call(arguments).reverse();
 		var updateArguments = [];
 		var userId = getUserId.call(this);
+
+		selector = selector || {};
 
 		if (delegate.call(this, "before", "update", userId, selector, modifier, options, callback) !== false) {
 			previous = this._collection.find(selector, {reactive: false}).fetch();
@@ -94,6 +127,8 @@
 	Meteor.Collection.prototype.remove = function (selector, callback) {
 		var result, previous, userId = getUserId.call(this);
 
+		selector = selector || {};
+
 		if (delegate.call(this, "before", "remove", userId, selector, callback) !== false) {
 			previous = this._collection.find(selector, {reactive: false}).fetch();
 			result = directRemove.call(this, selector, callback);
@@ -115,7 +150,7 @@
 		// maintain validator integrity (allow/deny).
 
 		Meteor.Collection.prototype._validatedInsert = function (userId, doc) {
-			var result, id;
+			var id;
 			var self = this;
 
 			var _insert = self._collection.insert;
@@ -130,7 +165,7 @@
 		};
 
 		Meteor.Collection.prototype._validatedUpdate = function (userId, selector, mutator, options) {
-			var result, previous;
+			var previous;
 			var self = this;
 
 			var _update = self._collection.update;
@@ -146,7 +181,7 @@
 		};
 
 		Meteor.Collection.prototype._validatedRemove = function (userId, selector) {
-			var result, previous;
+			var previous;
 			var self = this;
 
 			var _remove = self._collection.remove;
