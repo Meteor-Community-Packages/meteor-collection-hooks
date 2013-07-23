@@ -17,6 +17,25 @@ Tinytest.addAsync("before find", function (test, next) {
 	});
 });
 
+Tinytest.addAsync("before find with edit to empty selector", function (test, next) {
+    var Collection = new Meteor.Collection(null);
+
+    test.equal(Collection.find({a: 1}).count(), 0);
+
+    Collection.before("find", function(userId, selector) {
+        selector.b = 1;
+    });
+
+    Collection.insert({a: 1}, function(err, id) {
+        test.equal(Collection.find().count(), 0);
+
+        Collection.insert({a: 1, b: 1}, function (err, id) {
+            test.equal(Collection.find().count(), 1);
+            next();
+        });
+    });
+});
+
 Tinytest.addAsync("after find", function (test, next) {
 	var Collection = new Meteor.Collection(null);
 

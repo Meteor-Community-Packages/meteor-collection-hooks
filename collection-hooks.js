@@ -54,6 +54,8 @@
 	Meteor.Collection.prototype.find = function (selector, options) {
 		var result, userId = getUserId.call(this);
 
+		selector = selector || {};
+
 		if (delegate.call(this, "before", "find", userId, selector, options) !== false) {
 			result = directFind.call(this, selector, options);
 			delegate.call(this, "after", "find", userId, selector, options, result);
@@ -64,6 +66,8 @@
 
 	Meteor.Collection.prototype.findOne = function (selector, options) {
 		var result, userId = getUserId.call(this);
+
+		selector = selector || {};
 
 		if (delegate.call(this, "before", "findOne", userId, selector, options) !== false) {
 			result = directFindOne.call(this, selector, options);
@@ -89,6 +93,8 @@
 		var updateArgumentsRaw = Array.prototype.slice.call(arguments).reverse();
 		var updateArguments = [];
 		var userId = getUserId.call(this);
+
+		selector = selector || {};
 
 		if (delegate.call(this, "before", "update", userId, selector, modifier, options, callback) !== false) {
 			previous = this._collection.find(selector, {reactive: false}).fetch();
@@ -120,6 +126,8 @@
 
 	Meteor.Collection.prototype.remove = function (selector, callback) {
 		var result, previous, userId = getUserId.call(this);
+
+		selector = selector || {};
 
 		if (delegate.call(this, "before", "remove", userId, selector, callback) !== false) {
 			previous = this._collection.find(selector, {reactive: false}).fetch();
