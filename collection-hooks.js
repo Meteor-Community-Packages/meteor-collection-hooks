@@ -22,19 +22,23 @@
 	}
 
 	function getUserId() {
-		var currentInvocation;
+		if (Meteor.isClient) {
+			var userId = null;
+			Deps.nonreactive(function () {
+				userId = Meteor.userId();
+			});
+			return userId;
+		}
 
-		try {
-			currentInvocation = Meteor._CurrentInvocation.get();
-		} catch (e) {}
+		if (Meteor.isServer) {
+			var userId = null;
+			try { // Will work inside methods
+				userId = Meteor.userId();
+			} catch (e) {}
 
-		if (currentInvocation) {
-			return currentInvocation.userId;
-		} else {
-			// this.userId will likely not be defined because no one usually
-			// invokes collection.insert with a `.call(this)`... But if they
-			// do, userId will be available to the end-callback.
-			return this.userId || null;
+			// TODO: get the userId if being run from a publish
+
+			return userId;
 		}
 	}
 
@@ -51,9 +55,10 @@
 	// "after" hooks for find are strange and only here for completeness.
 	// Most of their functionality can be done by "transform".
 
-	Meteor.Collection.prototype.find = function (selector, options) {
-		var result, userId = getUserId.call(this);
+	Meteor.Collection.prototype.find = function (selector, options, userId) {
+		var result;
 
+		userId = userId || getUserId.call(this);
 		selector = selector || {};
 
 		if (delegate.call(this, "before", "find", userId, selector, options) !== false) {
@@ -64,9 +69,10 @@
 		return result;
 	};
 
-	Meteor.Collection.prototype.findOne = function (selector, options) {
-		var result, userId = getUserId.call(this);
+	Meteor.Collection.prototype.findOne = function (selector, options, userId) {
+		var result;
 
+		userId = userId || getUserId.call(this);
 		selector = selector || {};
 
 		if (delegate.call(this, "before", "findOne", userId, selector, options) !== false) {
@@ -139,6 +145,13 @@
 	};
 
 	if (Meteor.isServer) {
+		// Allow direct operations on the server
+		Meteor.Collection.prototype.noHookFind = directFind;
+		Meteor.Collection.prototype.noHookFindOne = directFindOne;
+		Meteor.Collection.prototype.noHookInsert = directInsert;
+		Meteor.Collection.prototype.noHookUpdate = directUpdate;
+		Meteor.Collection.prototype.noHookRemove = directRemove;
+
 		_validatedInsert = Meteor.Collection.prototype._validatedInsert;
 		_validatedUpdate = Meteor.Collection.prototype._validatedUpdate;
 		_validatedRemove = Meteor.Collection.prototype._validatedRemove;
