@@ -1,6 +1,6 @@
 # Meteor Collection Hooks
 
-Extends Meteor.Collection with before/after hooks for insert/update/remove methods.
+Extends Meteor.Collection with before/after hooks for insert/update/remove/find/findOne methods.
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
@@ -36,3 +36,9 @@ test.after("update", function (userId, selector, modifier, options, previous) {
 	doSomething();
 });
 ```
+
+#### Contributors
+
+- Mathieu Bouchard (@matb33)
+- Kevin Kaland (@wizonesolutions)
+- Andrew Mao (@mizzao)

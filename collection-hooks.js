@@ -9,9 +9,9 @@
 		var type = args.shift();
 		var verb = args.shift();
 
-		if (this._x_matb33_hooks && this._x_matb33_hooks[type] && this._x_matb33_hooks[type][verb]) {
-			for (i = 0, len = this._x_matb33_hooks[type][verb].length; i < len; i++) {
-				c = this._x_matb33_hooks[type][verb][i];
+		if (this.__collection_hooks && this.__collection_hooks[type] && this.__collection_hooks[type][verb]) {
+			for (i = 0, len = this.__collection_hooks[type][verb].length; i < len; i++) {
+				c = this.__collection_hooks[type][verb][i];
 				if (typeof c === "function") {
 					if (c.apply(this, args) === false) {
 						return false;
@@ -48,9 +48,16 @@
 	directUpdate = Meteor.Collection.prototype.update;
 	directRemove = Meteor.Collection.prototype.remove;
 
+	// Allow direct operations
+	Meteor.Collection.prototype.noHookFind = directFind;
+	Meteor.Collection.prototype.noHookFindOne = directFindOne;
+	Meteor.Collection.prototype.noHookInsert = directInsert;
+	Meteor.Collection.prototype.noHookUpdate = directUpdate;
+	Meteor.Collection.prototype.noHookRemove = directRemove;
+
 	// These are invoked when the method is called directly on the collection
 	// from either the server or client. These are adapted to match the
-	// function signature of the triggered version (adding userId)
+	// function signature of the validated version (userId added)
 
 	// "after" hooks for find are strange and only here for completeness.
 	// Most of their functionality can be done by "transform".
@@ -145,43 +152,35 @@
 	};
 
 	if (Meteor.isServer) {
-		// Allow direct operations on the server
-		Meteor.Collection.prototype.noHookFind = directFind;
-		Meteor.Collection.prototype.noHookFindOne = directFindOne;
-		Meteor.Collection.prototype.noHookInsert = directInsert;
-		Meteor.Collection.prototype.noHookUpdate = directUpdate;
-		Meteor.Collection.prototype.noHookRemove = directRemove;
-
 		_validatedInsert = Meteor.Collection.prototype._validatedInsert;
 		_validatedUpdate = Meteor.Collection.prototype._validatedUpdate;
 		_validatedRemove = Meteor.Collection.prototype._validatedRemove;
 
 		// These are triggered on the server, but only when a client initiates
 		// the method call. They act similarly to observes, but simply hi-jack
-		// _validatedInsert. Additionally, they hi-jack the collection
+		// _validatedXXX. Additionally, they hi-jack the collection
 		// instance's _collection.insert/update/remove temporarily in order to
 		// maintain validator integrity (allow/deny).
 
 		Meteor.Collection.prototype._validatedInsert = function (userId, doc) {
-			var id;
-			var self = this;
-
+			var id, self = this;
 			var _insert = self._collection.insert;
+
 			self._collection.insert = function (doc) {
 				if (delegate.call(self, "before", "insert", userId, doc) !== false) {
 					id = _insert.call(this, doc);
 					delegate.call(self, "after", "insert", userId, id && this.findOne({_id: id}) || doc);
 				}
 			};
+
 			_validatedInsert.call(self, userId, doc);
 			self._collection.insert = _insert;
 		};
 
 		Meteor.Collection.prototype._validatedUpdate = function (userId, selector, mutator, options) {
-			var previous;
-			var self = this;
-
+			var previous, self = this;
 			var _update = self._collection.update;
+
 			self._collection.update = function (selector, mutator, options) {
 				if (delegate.call(self, "before", "update", userId, selector, mutator, options) !== false) {
 					previous = this.find(selector).fetch();
@@ -189,15 +188,15 @@
 					delegate.call(self, "after", "update", userId, selector, mutator, options, previous);
 				}
 			};
+
 			_validatedUpdate.call(self, userId, selector, mutator, options);
 			self._collection.update = _update;
 		};
 
 		Meteor.Collection.prototype._validatedRemove = function (userId, selector) {
-			var previous;
-			var self = this;
-
+			var previous, self = this;
 			var _remove = self._collection.remove;
+
 			self._collection.remove = function (selector) {
 				if (delegate.call(self, "before", "remove", userId, selector, previous) !== false) {
 					previous = this.find(selector).fetch();
@@ -205,24 +204,25 @@
 					delegate.call(self, "after", "remove", userId, selector, previous);
 				}
 			};
+
 			_validatedRemove.call(self, userId, selector);
 			self._collection.remove = _remove;
 		};
 	}
 
 	Meteor.Collection.prototype.clearHooks = function (verb, type) {
-		if (!this._x_matb33_hooks) this._x_matb33_hooks = {};
-		if (!this._x_matb33_hooks[type]) this._x_matb33_hooks[type] = {};
-		this._x_matb33_hooks[type][verb] = [];
+		if (!this.__collection_hooks) this.__collection_hooks = {};
+		if (!this.__collection_hooks[type]) this.__collection_hooks[type] = {};
+		this.__collection_hooks[type][verb] = [];
 	};
 
 	_.each(["before", "after"], function (type) {
 		Meteor.Collection.prototype[type] = function (verb, callback) {
-			if (!this._x_matb33_hooks) this._x_matb33_hooks = {};
-			if (!this._x_matb33_hooks[type]) this._x_matb33_hooks[type] = {};
-			if (!this._x_matb33_hooks[type][verb]) this._x_matb33_hooks[type][verb] = [];
+			if (!this.__collection_hooks) this.__collection_hooks = {};
+			if (!this.__collection_hooks[type]) this.__collection_hooks[type] = {};
+			if (!this.__collection_hooks[type][verb]) this.__collection_hooks[type][verb] = [];
 
-			this._x_matb33_hooks[type][verb].push(callback);
+			this.__collection_hooks[type][verb].push(callback);
 		};
 	});
 
