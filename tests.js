@@ -3,11 +3,12 @@ Tinytest.addAsync("before find", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.before("find", function(userId, selector) {
+	Collection.before("find", function (userId, selector) {
+		console.log("userId", userId);
 		selector.b = 1;
 	});
 
-	Collection.insert({a: 1}, function(err, id) {
+	Collection.insert({a: 1}, function (err, id) {
 		test.equal(Collection.find({a: 1}).count(), 0);
 
 		Collection.insert({a: 1, b: 1}, function (err, id) {
@@ -22,11 +23,11 @@ Tinytest.addAsync("before find with edit to empty selector", function (test, nex
 
     test.equal(Collection.find({a: 1}).count(), 0);
 
-    Collection.before("find", function(userId, selector) {
+    Collection.before("find", function (userId, selector) {
         selector.b = 1;
     });
 
-    Collection.insert({a: 1}, function(err, id) {
+    Collection.insert({a: 1}, function (err, id) {
         test.equal(Collection.find().count(), 0);
 
         Collection.insert({a: 1, b: 1}, function (err, id) {
@@ -41,15 +42,15 @@ Tinytest.addAsync("after find", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.after("find", function(userId, selector, options, result) {
-		result.forEach( function(record) {
+	Collection.after("find", function (userId, selector, options, result) {
+		result.forEach(function (record) {
 			Collection.update(record._id, {
 				$set: { b: 1 }
 			});
 		});
 	});
 
-	Collection.insert({a: 1}, function(err, id) {
+	Collection.insert({a: 1}, function (err, id) {
 		test.equal(Collection.find({a: 1}).count(), 1);
 		// Now the field has been added automatically
 		test.equal(Collection.find({a: 1, b: 1}).count(), 1);
@@ -62,11 +63,11 @@ Tinytest.addAsync("before findOne", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.before("findOne", function(userId, selector) {
+	Collection.before("findOne", function (userId, selector) {
 		selector.b = 1;
 	});
 
-	Collection.insert({a: 1}, function(err, id) {
+	Collection.insert({a: 1}, function (err, id) {
 		test.isUndefined(Collection.findOne({a: 1}));
 
 		Collection.insert({a: 2, b: 1}, function (err, id) {
@@ -81,11 +82,11 @@ Tinytest.addAsync("after findOne", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.after("findOne", function(userId, selector, options, result) {
+	Collection.after("findOne", function (userId, selector, options, result) {
 		result.b = 1;
 	});
 
-	Collection.insert({a: 1}, function(err, id) {
+	Collection.insert({a: 1}, function (err, id) {
 		test.equal(Collection.findOne({a: 1}).b, 1);
 		next();
 	});
@@ -249,6 +250,8 @@ Tinytest.addAsync("after remove", function (test, next) {
 		Collection.remove(id);
 	});
 });
+
+
 
 /*
 //write these later

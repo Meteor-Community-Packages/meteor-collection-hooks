@@ -49,11 +49,11 @@
 	directRemove = Meteor.Collection.prototype.remove;
 
 	// Allow direct operations
-	Meteor.Collection.prototype.noHookFind = directFind;
-	Meteor.Collection.prototype.noHookFindOne = directFindOne;
-	Meteor.Collection.prototype.noHookInsert = directInsert;
-	Meteor.Collection.prototype.noHookUpdate = directUpdate;
-	Meteor.Collection.prototype.noHookRemove = directRemove;
+	Meteor.Collection.prototype.directFind = directFind;
+	Meteor.Collection.prototype.directFindOne = directFindOne;
+	Meteor.Collection.prototype.directInsert = directInsert;
+	Meteor.Collection.prototype.directUpdate = directUpdate;
+	Meteor.Collection.prototype.directRemove = directRemove;
 
 	// These are invoked when the method is called directly on the collection
 	// from either the server or client. These are adapted to match the
