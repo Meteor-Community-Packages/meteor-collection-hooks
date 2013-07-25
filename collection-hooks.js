@@ -1,6 +1,6 @@
 (function (g) {
 
-	var directFind, directFindOne, directInsert, directUpdate, directRemove, directPublish;
+	var directFind, directFindOne, directInsert, directUpdate, directRemove;
 
 	function delegate() {
 		var i, len, c;
@@ -34,8 +34,6 @@
 			try { // Will work inside methods
 				userId = Meteor.userId();
 			} catch (e) {}
-
-			// TODO: get the userId if being run from a publish
 
 			return userId;
 		}
