@@ -19,7 +19,8 @@ Package.on_test(function (api) {
 	// hook) are not yet written. If you can figure out how, please tell
 	// me or help me write these tests. I can't figure out how to run a
 	// Tinytest that relies on both server and client talking to each other.
-	api.add_files(["tests.js"], both);
-
-	api.add_files(["client_server_userId_tests.coffee"], both);
+	api.add_files("tests.js", both);
+	api.add_files("tests_publish.js", both);
+	api.add_files("tests_userid_in_find_hooks_within_publish.js", both);
+	//api.add_files(["client_server_userId_tests.coffee"], both);
 });

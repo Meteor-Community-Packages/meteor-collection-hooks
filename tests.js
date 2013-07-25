@@ -3,8 +3,7 @@ Tinytest.addAsync("before find", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.before("find", function (userId, selector) {
-		console.log("userId", userId);
+	Collection.before("find", function (selector, options) {
 		selector.b = 1;
 	});
 
@@ -23,7 +22,7 @@ Tinytest.addAsync("before find with edit to empty selector", function (test, nex
 
     test.equal(Collection.find({a: 1}).count(), 0);
 
-    Collection.before("find", function (userId, selector) {
+    Collection.before("find", function (selector, options) {
         selector.b = 1;
     });
 
@@ -42,7 +41,7 @@ Tinytest.addAsync("after find", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.after("find", function (userId, selector, options, result) {
+	Collection.after("find", function (selector, options, result) {
 		result.forEach(function (record) {
 			Collection.update(record._id, {
 				$set: { b: 1 }
@@ -63,7 +62,7 @@ Tinytest.addAsync("before findOne", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.before("findOne", function (userId, selector) {
+	Collection.before("findOne", function (selector, options) {
 		selector.b = 1;
 	});
 
@@ -82,7 +81,7 @@ Tinytest.addAsync("after findOne", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.after("findOne", function (userId, selector, options, result) {
+	Collection.after("findOne", function (selector, options, result) {
 		result.b = 1;
 	});
 
