@@ -1,6 +1,10 @@
 (function (g) {
 
-	var directFind, directFindOne, directInsert, directUpdate, directRemove;
+	var directFind = Meteor.Collection.prototype.find;
+	var directFindOne = Meteor.Collection.prototype.findOne;
+	var directInsert = Meteor.Collection.prototype.insert;
+	var directUpdate = Meteor.Collection.prototype.update;
+	var directRemove = Meteor.Collection.prototype.remove;
 
 	function delegate() {
 		var i, len, c;
@@ -39,18 +43,9 @@
 		}
 	}
 
-	directFind = Meteor.Collection.prototype.find;
-	directFindOne = Meteor.Collection.prototype.findOne;
-	directInsert = Meteor.Collection.prototype.insert;
-	directUpdate = Meteor.Collection.prototype.update;
-	directRemove = Meteor.Collection.prototype.remove;
-
 	// Allow direct operations
 	Meteor.Collection.prototype.directFind = directFind;
 	Meteor.Collection.prototype.directFindOne = directFindOne;
-	Meteor.Collection.prototype.directInsert = directInsert;
-	Meteor.Collection.prototype.directUpdate = directUpdate;
-	Meteor.Collection.prototype.directRemove = directRemove;
 
 	// These are invoked when the method is called directly on the collection
 	// from either the server or client. These are adapted to match the
@@ -156,6 +151,12 @@
 			var _validatedRemove = Meteor.Collection.prototype._validatedRemove;
 
 			var directPublish = Meteor.publish;
+
+			// Allow direct operations on server only. If they are allowed in
+			// this form on the client, the validated versions will still run
+			Meteor.Collection.prototype.directInsert = directInsert;
+			Meteor.Collection.prototype.directUpdate = directUpdate;
+			Meteor.Collection.prototype.directRemove = directRemove;
 
 			// These are triggered on the server, but only when a client initiates
 			// the method call. They act similarly to observes, but simply hi-jack
