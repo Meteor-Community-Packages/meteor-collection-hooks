@@ -38,11 +38,11 @@ if (Meteor.isServer) {
 			return CollectionAfterFindOne.find();	// still need to return a cursor
 		});
 
-		Tinytest.addAsync("this.userId available to before find hook when within publish context", function (test, next) {
+		Tinytest.addAsync("userId available to before find hook when within publish context", function (test, next) {
 			// Setup the hook
 			CollectionBeforeFind.clearHooks("before", "find");
-			CollectionBeforeFind.before("find", function (selector, options) {
-				test.equal(!!this.userId, true);
+			CollectionBeforeFind.before("find", function (userId, selector, options) {
+				test.equal(!!userId, true);
 				next();
 			});
 
@@ -50,28 +50,28 @@ if (Meteor.isServer) {
 			CollectionBeforeFind.update({a: 1}, {$set: {b: 1}});
 		});
 
-		Tinytest.addAsync("this.userId available to after find hook when within publish context", function (test, next) {
+		Tinytest.addAsync("userId available to after find hook when within publish context", function (test, next) {
 			CollectionAfterFind.clearHooks("after", "find");
-			CollectionAfterFind.after("find", function (selector, options, result) {
-				test.equal(!!this.userId, true);
+			CollectionAfterFind.after("find", function (userId, selector, options, result) {
+				test.equal(!!userId, true);
 				next();
 			});
 			CollectionAfterFind.update({a: 1}, {$set: {b: 1}});
 		});
 
-		Tinytest.addAsync("this.userId available to before findOne hook when within publish context", function (test, next) {
+		Tinytest.addAsync("userId available to before findOne hook when within publish context", function (test, next) {
 			CollectionBeforeFindOne.clearHooks("before", "findOne");
-			CollectionBeforeFindOne.before("findOne", function (selector, options) {
-				test.equal(!!this.userId, true);
+			CollectionBeforeFindOne.before("findOne", function (userId, selector, options) {
+				test.equal(!!userId, true);
 				next();
 			});
 			CollectionBeforeFindOne.update({a: 1}, {$set: {b: 1}});
 		});
 
-		Tinytest.addAsync("this.userId available to after findOne hook when within publish context", function (test, next) {
+		Tinytest.addAsync("userId available to after findOne hook when within publish context", function (test, next) {
 			CollectionAfterFindOne.clearHooks("after", "findOne");
-			CollectionAfterFindOne.after("findOne", function (selector, options, result) {
-				test.equal(!!this.userId, true);
+			CollectionAfterFindOne.after("findOne", function (userId, selector, options, result) {
+				test.equal(!!userId, true);
 				next();
 			});
 			CollectionAfterFindOne.update({a: 1}, {$set: {b: 1}});

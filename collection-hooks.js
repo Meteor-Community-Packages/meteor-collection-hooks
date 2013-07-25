@@ -25,22 +25,26 @@
 	}
 
 	function getUserId() {
+		var userId = null;
+
 		if (Meteor.isClient) {
-			var userId = null;
 			Deps.nonreactive(function () {
 				userId = Meteor.userId();
 			});
-			return userId;
 		}
 
 		if (Meteor.isServer) {
-			var userId = null;
-			try { // Will work inside methods
+			try {
+				// Will work inside methods
 				userId = Meteor.userId();
 			} catch (e) {}
 
-			return userId;
+			if (!userId) {
+				userId = Meteor.__collection_hooks_publish_userId;
+			}
 		}
+
+		return userId;
 	}
 
 	// Allow direct operations
@@ -55,28 +59,26 @@
 	// Most of their functionality can be done by "transform".
 
 	Meteor.Collection.prototype.find = function (selector, options) {
-		var result;
+		var result, userId = getUserId.call(this);
 
 		selector = selector || {};
-		if (Meteor.__collection_hooks_publish_userId) this.userId = Meteor.__collection_hooks_publish_userId;
 
-		if (delegate.call(this, "before", "find", selector, options) !== false) {
+		if (delegate.call(this, "before", "find", userId, selector, options) !== false) {
 			result = directFind.call(this, selector, options);
-			delegate.call(this, "after", "find", selector, options, result);
+			delegate.call(this, "after", "find", userId, selector, options, result);
 		}
 
 		return result;
 	};
 
 	Meteor.Collection.prototype.findOne = function (selector, options) {
-		var result;
+		var result, userId = getUserId.call(this);
 
 		selector = selector || {};
-		if (Meteor.__collection_hooks_publish_userId) this.userId = Meteor.__collection_hooks_publish_userId;
 
-		if (delegate.call(this, "before", "findOne", selector, options) !== false) {
+		if (delegate.call(this, "before", "findOne", userId, selector, options) !== false) {
 			result = directFindOne.call(this, selector, options);
-			delegate.call(this, "after", "findOne", selector, options, result);
+			delegate.call(this, "after", "findOne", userId, selector, options, result);
 		}
 
 		return result;

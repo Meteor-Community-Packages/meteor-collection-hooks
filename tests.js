@@ -1,9 +1,13 @@
+//==============================================================================
+// find / findOne
+//==============================================================================
+
 Tinytest.addAsync("before find", function (test, next) {
 	var Collection = new Meteor.Collection(null);
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.before("find", function (selector, options) {
+	Collection.before("find", function (userId, selector, options) {
 		selector.b = 1;
 	});
 
@@ -22,7 +26,7 @@ Tinytest.addAsync("before find with edit to empty selector", function (test, nex
 
     test.equal(Collection.find({a: 1}).count(), 0);
 
-    Collection.before("find", function (selector, options) {
+    Collection.before("find", function (userId, selector, options) {
         selector.b = 1;
     });
 
@@ -41,7 +45,7 @@ Tinytest.addAsync("after find", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.after("find", function (selector, options, result) {
+	Collection.after("find", function (userId, selector, options, result) {
 		result.forEach(function (record) {
 			Collection.update(record._id, {
 				$set: { b: 1 }
@@ -62,7 +66,7 @@ Tinytest.addAsync("before findOne", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.before("findOne", function (selector, options) {
+	Collection.before("findOne", function (userId, selector, options) {
 		selector.b = 1;
 	});
 
@@ -81,7 +85,7 @@ Tinytest.addAsync("after findOne", function (test, next) {
 
 	test.equal(Collection.find({a: 1}).count(), 0);
 
-	Collection.after("findOne", function (selector, options, result) {
+	Collection.after("findOne", function (userId, selector, options, result) {
 		result.b = 1;
 	});
 
@@ -90,6 +94,10 @@ Tinytest.addAsync("after findOne", function (test, next) {
 		next();
 	});
 });
+
+//==============================================================================
+// insert
+//==============================================================================
 
 Tinytest.addAsync("before insert", function (test, next) {
 	var Collection = new Meteor.Collection(null);
@@ -122,6 +130,10 @@ Tinytest.addAsync("after insert", function (test, next) {
 		test.equal(Collection.find({a: 1}).count(), 1);
 	});
 });
+
+//==============================================================================
+// update
+//==============================================================================
 
 Tinytest.add("before update", function (test) {
 	var Collection = new Meteor.Collection(null);
@@ -202,6 +214,10 @@ Tinytest.addAsync("after update with options omitted and callback specified", fu
 		});
 	});
 });
+
+//==============================================================================
+// remove
+//==============================================================================
 
 Tinytest.addAsync("before remove", function (test, next) {
 	var Collection = new Meteor.Collection(null);
