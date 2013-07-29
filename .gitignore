@@ -1,3 +1,4 @@
 packages
 *~
 smart.lock
+.build*
