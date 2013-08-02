@@ -35,6 +35,10 @@ test.after("update", function (userId, selector, modifier, options, previous) {
 	// It contains an array of the affected documents before update/remove was applied
 	doSomething();
 });
+
+test.before("find", function (userId, selector, options) {
+	// Note that userId will be available even when find is invoked within a Meteor.publish
+});
 ```
 
 #### Contributors
