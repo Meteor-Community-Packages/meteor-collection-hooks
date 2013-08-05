@@ -1,5 +1,3 @@
-// TODO: write test to verify allow/deny is functioning properly with hooks
-
 var collection1 = new Meteor.Collection("test_insert_collection1");
 
 if (Meteor.isServer) {

@@ -28,7 +28,7 @@ test.before({
 		// Fired just before the doc is removed.
 		// Gives you an opportunity to affect your system while the document is
 		// still in existence -- useful for maintaining system integrity, such
-		// as triggered deletes
+		// as cascading deletes
 	},
 	fetch: ...,
 	transform: ...
@@ -64,6 +64,7 @@ test.after({
 - Allow calling insert/update/remove directly (don't fire hooks)
 - Verify that fetch and fetchAllFields actually get used
 - Verify that transform actually gets used
+- Write tests to verify allow/deny are functioning properly with hooks
 
 ### Contributors
 

@@ -24,7 +24,7 @@ Tinytest.addAsync("local collection document should have extra property added be
 	});
 });
 
-Tinytest.addAsync("local collection should fire after insert hook", function (test, next) {
+Tinytest.addAsync("local collection should fire after-insert hook", function (test, next) {
 	var collection = new Meteor.Collection(null);
 
 	collection.after({
