@@ -10,15 +10,16 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
   }
 
   options = options || {};
-
   tuple = getDocsAndFields.call(self, opts, selector, mutator, options);
 
+  // copy originals for convenience in after-hook
   if (opts.hooks.after) {
     prev.mutator = EJSON.clone(mutator);
     prev.docs = {};
     tuple.docs.forEach(function (doc) {
       prev.docs[doc._id] = EJSON.clone(doc);
     });
+    tuple.docs.rewind();
   }
 
   // before

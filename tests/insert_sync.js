@@ -15,11 +15,9 @@ if (Meteor.isServer) {
 			}
 		});
 
-		InsecureLogin.ready(function () {
-			collection1.insert({start_value: true}, function () {
-				test.equal(collection1.find({start_value: true, before_insert_value: true}).count(), 1);
-				next();
-			});
+		collection1.insert({start_value: true}, function () {
+			test.equal(collection1.find({start_value: true, before_insert_value: true}).count(), 1);
+			next();
 		});
 	});
 }
@@ -40,7 +38,7 @@ if (Meteor.isServer) {
 		}
 	});
 
-	Meteor.publish("test_publish_collection2", function () {
+	Meteor.publish("test_insert_publish_collection2", function () {
 		return collection2.find();
 	});
 
@@ -52,7 +50,7 @@ if (Meteor.isServer) {
 }
 
 if (Meteor.isClient) {
-	Meteor.subscribe("test_publish_collection2");
+	Meteor.subscribe("test_insert_publish_collection2");
 
 	Tinytest.addAsync("collection2 document should have client-added and server-added extra properties added to it before it is inserted", function (test, next) {
 		collection2.before({

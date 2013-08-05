@@ -2,8 +2,19 @@
 
 Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) {
   var self = this;
-  var result;
+  var result, prev = [];
   var docs = getDocs.call(self, opts, selector);
+
+  // copy originals for convenience in after-hook
+  if (opts.hooks.after) {
+    prev = [];
+    _.each(opts.hooks.after, function (hook) {
+      docs.forEach(function (doc) {
+        prev.push(EJSON.clone(transformDoc(hook, doc)));
+      });
+      docs.rewind();
+    });
+  }
 
   // before
   _.each(opts.hooks.before, function (hook) {
@@ -14,15 +25,16 @@ Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) 
 
   function after() {
     _.each(opts.hooks.after, function (hook) {
-      docs.forEach(function (doc) {
-        hook(opts.userId, transformDoc(hook, doc));
+      prev.forEach(function (doc) {
+        hook(opts.userId, doc);
       });
     });
   }
 
   if (opts.fromPublicApi) {
     // Called from public API (Meteor.Collection.prototype.XXX)
-    return opts._super.call(self, selector, function () {
+    return opts._super.call(self, selector, function (err) {
+      if (err) throw err;
       after();
       callback && callback.apply(self, arguments);
     });
