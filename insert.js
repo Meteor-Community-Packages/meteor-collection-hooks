@@ -1,12 +1,3 @@
-// docToValidate pulled verbatim from:
-// ~/.meteor/packages/mongo-livedata/collection.js:575-580
-var docToValidate = function (validator, doc) {
-  var ret = doc;
-  if (validator.transform)
-    ret = validator.transform(EJSON.clone(doc));
-  return ret;
-};
-
 Meteor.Collection.prototype._hookedInsert = function (opts, doc, callback) {
   var self = this;
   var result;
@@ -34,4 +25,13 @@ Meteor.Collection.prototype._hookedInsert = function (opts, doc, callback) {
     after();
     return result;
   }
+};
+
+// docToValidate pulled verbatim from:
+// ~/.meteor/packages/mongo-livedata/collection.js:575-580
+var docToValidate = function (validator, doc) {
+  var ret = doc;
+  if (validator.transform)
+    ret = validator.transform(EJSON.clone(doc));
+  return ret;
 };
