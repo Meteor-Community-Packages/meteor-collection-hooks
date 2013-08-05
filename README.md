@@ -1,12 +1,12 @@
 # Meteor Collection Hooks
 
-Extends Meteor.Collection with before/after hooks for insert/update/remove/find/findOne methods.
+Extends Meteor.Collection with before/after hooks for insert/update/remove.
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
 ### Example usage:
 
-```
+```javascript
 var test = new Meteor.Collection("test");
 
 test.before({
@@ -59,7 +59,13 @@ test.after({
 });
 ```
 
-#### Contributors
+### TODO
+
+- Allow calling insert/update/remove directly (don't fire hooks)
+- Verify that fetch and fetchAllFields actually get used
+- Verify that transform actually gets used
+
+### Contributors
 
 - Mathieu Bouchard (@matb33)
 - Kevin Kaland (@wizonesolutions)

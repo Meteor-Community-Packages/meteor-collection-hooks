@@ -10,9 +10,7 @@ Package.on_use(function (api, where) {
     "init.js",
     "insert.js",
     "update.js",
-    "remove.js",
-    "find.js",
-    "findone.js"
+    "remove.js"
   ], both);
 });
 
@@ -31,10 +29,4 @@ Package.on_test(function (api) {
 
   api.add_files(["tests/remove_local.js"], both);
   api.add_files(["tests/remove_sync.js"], both);
-
-  api.add_files(["tests/find.js"], both);
-  api.add_files(["tests/find_in_publish.js"], both);
-
-  api.add_files(["tests/findone.js"], both);
-  api.add_files(["tests/findone_in_publish.js"], both);
 });

@@ -1,5 +1,3 @@
-// TODO: do fetch and fetchAllFields actually get passed down properly to take effect??
-
 Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) {
   var self = this;
   var result, prev = [];
