@@ -1,7 +1,9 @@
+// TODO: write test to verify allow/deny is functioning properly with hooks
+
 var collection1 = new Meteor.Collection("test_insert_collection1");
 
 if (Meteor.isServer) {
-	Tinytest.addAsync("collection1 should have extra property added to it before it is inserted", function (test, next) {
+	Tinytest.addAsync("collection1 document should have extra property added to it before it is inserted", function (test, next) {
 		collection1.remove({});
 
 		collection1.before({
@@ -52,7 +54,7 @@ if (Meteor.isServer) {
 if (Meteor.isClient) {
 	Meteor.subscribe("test_publish_collection2");
 
-	Tinytest.addAsync("collection2 should have client-added and server-added extra properties added to it before it is inserted", function (test, next) {
+	Tinytest.addAsync("collection2 document should have client-added and server-added extra properties added to it before it is inserted", function (test, next) {
 		collection2.before({
 			insert: function (userId, doc) {
 				// Insert is initiated on the client, a userId must be present

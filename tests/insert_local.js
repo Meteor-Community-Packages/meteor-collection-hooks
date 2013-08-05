@@ -1,4 +1,4 @@
-Tinytest.addAsync("local collection should have extra property added before being inserted", function (test, next) {
+Tinytest.addAsync("local collection document should have extra property added before being inserted", function (test, next) {
 	var collection = new Meteor.Collection(null);
 
 	collection.before({
@@ -17,6 +17,7 @@ Tinytest.addAsync("local collection should have extra property added before bein
 
 	InsecureLogin.ready(function () {
 		collection.insert({start_value: true}, function (err, id) {
+			if (err) throw err;
 			test.equal(collection.find({start_value: true, before_insert_value: true}).count(), 1);
 			next();
 		});

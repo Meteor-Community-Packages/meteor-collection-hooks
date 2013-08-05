@@ -17,12 +17,6 @@ InsecureLogin = {
   }
 };
 
-Meteor.startup(function () {
-  if (!Meteor.users.find().count()) {
-    Meteor.users.insert({profile: {name: "Test"}});
-  }
-});
-
 if (Meteor.isClient) {
   Meteor.startup(function () {
     Accounts.callLoginMethod({
@@ -39,6 +33,12 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
+  Meteor.startup(function () {
+    if (!Meteor.users.find().count()) {
+      Meteor.users.insert({profile: {name: "Test"}});
+    }
+  });
+
   Accounts.registerLoginHandler(function (options) {
     if (!options.key) return;
 

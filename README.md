@@ -19,10 +19,11 @@ test.before({
 	update: function (userId, doc, fieldNames, modifier) {
 		// Fired before the doc is updated.
 		// Gives you an opportunity to modify doc as needed,
-		// or run additional functionality
-
-		// TODO: make sure this works!
-		doc.modifiedAt = Date.now();
+		// or run additional functionality.
+		// Note that we are changing the modifier, and not
+		// the doc. Setting the value on the doc introduces
+		// far too much complexity when multi:true is used.
+		modifier.$set.modifiedAt = Date.now();
 	},
 	remove: function (userId, doc) {
 		// Fired just before the doc is removed.
