@@ -1,23 +1,14 @@
 {
-  "meteor": {
-    "git": "https://github.com/meteor/meteor.git",
-    "branch": "master",
-    "commit": "2e78d0d110443ac6fb9471e6be1c136f15f03fd2"
-  },
+  "meteor": {},
   "dependencies": {
     "basePackages": {
       "collection-hooks": {
-        "path": ""
+        "path": "."
       }
     },
     "packages": {
       "collection-hooks": {
-        "path": ""
-      },
-      "accounts-testing": {
-        "git": "https://github.com/mizzao/meteor-accounts-testing.git",
-        "tag": "v0.0.1",
-        "commit": "1e03d56f6a1eec1c5288aaee1f2f6773b76b814a"
+        "path": "."
       }
     }
   }
