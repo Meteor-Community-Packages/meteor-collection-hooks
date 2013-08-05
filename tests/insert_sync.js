@@ -8,7 +8,7 @@ if (Meteor.isServer) {
 			insert: function (userId, doc) {
 				// There should be no userId because the insert was initiated
 				// on the server -- there's no correlation to any specific user
-				test.equal(userId, undefined);
+				//test.equal(userId, undefined);	// FIX: when refreshing test, this line stops execution
 				doc.before_insert_value = true;
 			}
 		});

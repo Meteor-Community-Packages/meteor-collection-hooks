@@ -1,7 +1,11 @@
+// TODO: do fetch and fetchAllFields actually get passed down properly to take effect??
+
 Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, options, callback) {
   var self = this;
-  var result, factoriedDoc;
-  var fields = getFields.call(self, opts, selector, mutator);
+  var result;
+  var tuple = getDocsAndFields.call(self, opts, selector, mutator);
+  var fields = tuple.fields;
+  var docs = tuple.docs;
 
   if (options instanceof Function) {
     callback = options;
@@ -10,14 +14,16 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
 
   // before
   _.each(opts.hooks.before, function (hook) {
-    if (!factoriedDoc) factoriedDoc = transformDoc(hook, doc);
-    hook(opts.userId, factoriedDoc, fields, mutator);
+    docs.forEach(function (doc) {
+      hook(opts.userId, transformDoc(hook, doc), fields, mutator);
+    });
   });
 
   function after() {
     _.each(opts.hooks.after, function (hook) {
-      if (!factoriedDoc) factoriedDoc = transformDoc(hook, doc);
-      hook(opts.userId, factoriedDoc, fields, mutator);
+      docs.forEach(function (doc) {
+        hook(opts.userId, transformDoc(hook, doc), fields, mutator);
+      });
     });
   }
 
@@ -43,39 +49,29 @@ var transformDoc = function (validator, doc) {
   return doc;
 };
 
-// This function contains a snippet of code pulled from:
+// This function contains a snippet of code pulled and modified from:
 // ~/.meteor/packages/mongo-livedata/collection.js:632-668
 // It's contained in this utility function to make updates easier for us in
 // case this code changes.
-var getFields = function (opts, selector, mutator) {
-  // Commented-out -- not sure if this is needed for hooks
-  //if (!LocalCollection._selectorIsIdPerhapsAsObject(selector))
-  //  throw new Error("validated update should be of a single ID");
+var getDocsAndFields = function (opts, selector, mutator) {
+  var self = this;
 
   // compute modified fields
   var fields = [];
   _.each(mutator, function (params, op) {
-    if (op.charAt(0) !== '$') {
-      throw new Meteor.Error(
-        403, "Access denied. In a restricted collection you can only update documents, not replace them. Use a Mongo update operator, such as '$set'.");
-    } else if (!_.has(ALLOWED_UPDATE_OPERATIONS, op)) {
-      throw new Meteor.Error(
-        403, "Access denied. Operator " + op + " not allowed in a restricted collection.");
-    } else {
-      _.each(_.keys(params), function (field) {
-        // treat dotted fields as if they are replacing their
-        // top-level part
-        if (field.indexOf('.') !== -1)
-          field = field.substring(0, field.indexOf('.'));
+    _.each(_.keys(params), function (field) {
+      // treat dotted fields as if they are replacing their
+      // top-level part
+      if (field.indexOf('.') !== -1)
+        field = field.substring(0, field.indexOf('.'));
 
-        // record the field we are trying to change
-        if (!_.contains(fields, field))
-          fields.push(field);
-      });
-    }
+      // record the field we are trying to change
+      if (!_.contains(fields, field))
+        fields.push(field);
+    });
   });
 
-  var findOptions = {transform: null};
+  var findOptions = {transform: null, reactive: false};
   if (!opts.hooks.fetchAllFields) {
     findOptions.fields = {};
     _.each(opts.hooks.fetch, function(fieldName) {
@@ -83,9 +79,7 @@ var getFields = function (opts, selector, mutator) {
     });
   }
 
-  var doc = self._collection.findOne(selector, findOptions);
-  if (!doc)  // none satisfied!
-    return;
+  var docs = self.find(selector, findOptions);
 
-  return fields;
+  return {docs: docs, fields: fields};
 };

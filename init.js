@@ -101,12 +101,14 @@ function addHook(verb, options) {
         options[name].transform = self._transform;
       if (options.transform)
         options[name].transform = Deps._makeNonreactive(options.transform);
+
       if (!_.has(self, "_hooks"))
         self._hooks = {};
       if (!_.has(self._hooks, name))
         self._hooks[name] = {};
       if (!_.has(self._hooks[name], verb))
         self._hooks[name][verb] = [];
+
       self._hooks[name][verb].push(options[name]);
     }
   });
