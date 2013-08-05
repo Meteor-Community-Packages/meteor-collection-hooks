@@ -36,6 +36,10 @@ Tinytest.addAsync("local collection should fire after insert hook", function (te
 			} else {
 				test.notEqual(userId, undefined);
 			}
+
+			// Out of convenience, we provide the inserted doc (includes _id)
+			test.notEqual(doc._id, undefined);
+
 			next();
 		}
 	});

@@ -24,14 +24,14 @@ if (Meteor.isServer) {
 
 var collection2 = new Meteor.Collection("test_insert_collection2");
 
-// full client-side access
-collection2.allow({
-	insert: function () { return true; },
-	update: function () { return true; },
-	remove: function () { return true; }
-});
-
 if (Meteor.isServer) {
+	// full client-side access
+	collection2.allow({
+		insert: function () { return true; },
+		update: function () { return true; },
+		remove: function () { return true; }
+	});
+
 	Meteor.methods({
 		test_insert_reset_collection2: function () {
 			collection2.remove({});
@@ -62,12 +62,17 @@ if (Meteor.isClient) {
 			}
 		});
 
+		collection2.after({
+			insert: function (userId, doc) {
+				test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1);
+				test.notEqual(doc._id, undefined);
+				next();
+			}
+		});
+
 		InsecureLogin.ready(function () {
 			Meteor.call("test_insert_reset_collection2", function (err, result) {
-				collection2.insert({start_value: true}, function (err, id) {
-					test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1);
-					next();
-				});
+				collection2.insert({start_value: true});
 			});
 		});
 	});

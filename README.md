@@ -9,22 +9,54 @@ Works across both client, server or a mix. Also works when a client initiates a 
 ```
 var test = new Meteor.Collection("test");
 
-test.before("insert", function (userId, doc) {
-	doc.created = Date.now();
-});
+test.before({
+	insert: function (userId, doc) {
+		// Fired before the doc is inserted.
+		// Gives you an opportunity to modify doc as needed,
+		// or run additional functionality
+		doc.createdAt = Date.now();
+	},
+	update: function (userId, doc, fieldNames, modifier) {
+		// Fired before the doc is updated.
+		// Gives you an opportunity to modify doc as needed,
+		// or run additional functionality
 
-test.after("insert", function (userId, doc) {
-	// In the case of after insert, doc will have been pre-fetched for you
-});
+		// TODO: make sure this works!
+		doc.modifiedAt = Date.now();
+	},
+	remove: function (userId, doc) {
+		// Fired just before the doc is removed.
+		// Gives you an opportunity to affect your system
+		// while the document is still in existence -- useful for
+		// maintaining system integrity, such as triggered deletes
+	},
+	fetch: ...,
+	transform: ...
+})
 
-test.after("update", function (userId, selector, modifier, options, previous) {
-	// Notice the "previous" parameter, which is also available in "remove" (only for the after type).
-	// It contains an array of the affected documents before update/remove was applied
-	doSomething();
-});
-
-test.before("find", function (userId, selector, options) {
-	// Note that userId will be available even when find is invoked within a Meteor.publish
+test.after({
+	insert: function (userId, doc) {
+		// Fired after the doc was inserted.
+		// "doc" has been pre-fetched for you -- it has the _id.
+		// Gives you an opportunity to run post-insert tasks,
+		// such as sending notifications of new document insertions.
+	},
+	update: function (userId, doc, fieldNames, modifier, previous) {
+		// Fired after the doc was updated.
+		// "previous" contains the doc before it was updated.
+		// Gives you an opportunity to run post-update tasks,
+		// potentially comparing the previous and new documents
+		// to take further action.
+	},
+	remove: function (userId, doc, previous) {
+		// Fired after the doc was removed.
+		// "previous" contains the doc before it was removed.
+		// Gives you an opportunity to run post-removal tasks that
+		// don't necessarily depend on the document being found in
+		// the database (external service clean-up for instance).
+	},
+	fetch: ...,
+	transform: ...
 });
 ```
 
