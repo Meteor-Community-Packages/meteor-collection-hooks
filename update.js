@@ -99,7 +99,9 @@ var getDocs = function (selector, options) {
   }
 
   // This was added because in our case, we are potentially iterating over
-  // multiple docs. If multi isn't enabled, force a limit (almost like findOne)
+  // multiple docs. If multi isn't enabled, force a limit (almost like findOne),
+  // as the default for update without multi enabled is to affect only the first
+  // matched document:
   if (!options.multi) {
     findOptions.limit = 1;
   }

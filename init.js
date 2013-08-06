@@ -38,7 +38,7 @@ if (Meteor.isServer) {
       _defineMutationMethods.apply(self, arguments);
 
       // Now that the mutation methods are setup, we can bind our interceptions
-      // on the final mutation invocations, and facilitate our hooks
+      // on the final mutation invocations, and facilitate our server-side hooks
       _.each(verbs, function (method) {
         var _super = self._collection[method];
 
@@ -100,6 +100,7 @@ function addHook(verb, options) {
       if (options.transform)
         options[name].transform = Deps._makeNonreactive(options.transform);
 
+      // Dynamically initialize new paths in self._validators
       if (!_.has(self._validators, name))
         self._validators[name] = {};
       if (!_.has(self._validators[name], verb))

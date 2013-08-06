@@ -56,7 +56,7 @@ var transformDoc = function (validator, doc) {
 var getDocs = function (opts, selector) {
   var self = this;
 
-  var findOptions = {transform: null, reactive: false};
+  var findOptions = {transform: null, reactive: false}; // added reactive:false
   if (!self._validators.fetchAllFields) {
     findOptions.fields = {};
     _.each(self._validators.fetch, function(fieldName) {
