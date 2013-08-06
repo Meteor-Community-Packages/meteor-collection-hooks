@@ -5,7 +5,7 @@ Package.describe({
 var both = ["client", "server"];
 
 Package.on_use(function (api, where) {
-    api.use(["underscore"], both);
+	api.use(["deps", "underscore"], both);
 	api.add_files(["collection-hooks.js"], both);
 });
 
