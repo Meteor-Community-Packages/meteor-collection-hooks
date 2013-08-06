@@ -30,8 +30,8 @@ test.before({
     // still in existence -- useful for maintaining system integrity, such
     // as cascading deletes
   },
-  fetch: ...,
-  transform: ...
+  fetch: ..., /* only works server-side */
+  transform: ... /* TBD -- untested */
 })
 
 test.after({
@@ -54,15 +54,14 @@ test.after({
     // necessarily depend on the document being found in the database
     // (external service clean-up for instance).
   },
-  fetch: ...,
-  transform: ...
+  fetch: ..., /* only works server-side */
+  transform: ... /* TBD -- untested */
 });
 ```
 
 ### TODO
 
 - Allow calling insert/update/remove directly (don't fire hooks)
-- Verify that fetch and fetchAllFields actually get used
 - Verify that transform actually gets used
 - Write tests to verify allow/deny are functioning properly with hooks
 

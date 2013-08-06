@@ -3,15 +3,13 @@ Meteor.Collection.prototype._hookedInsert = function (opts, doc, callback) {
   var id;
 
   // before
-  _.each(opts.hooks.before, function (hook) {
+  _.each(self._validators.insert.before, function (hook) {
     hook(opts.userId, docToValidate(hook, doc));
   });
 
   function after(id) {
-    _.each(opts.hooks.after, function (hook) {
-      // No need to run docToValidate (transform),
-      // findOne should do that internally
-      hook(opts.userId, self.findOne({_id: id}));
+    _.each(self._validators.insert.after, function (hook) {
+      hook(opts.userId, docToValidate(hook, self.findOne({_id: id})));
     });
   }
 

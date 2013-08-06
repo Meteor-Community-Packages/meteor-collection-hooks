@@ -6,18 +6,19 @@ Meteor.Collection.prototype.after = function (options) {
   addHook.call(this, 'after', options);
 };
 
+var verbs = ['insert', 'update', 'remove'];
+
 if (Meteor.isClient) {
   (function () {
-    _.each(['insert', 'update', 'remove'], function (method) {
+    _.each(verbs, function (method) {
       var _super = Meteor.Collection.prototype[method];
 
       Meteor.Collection.prototype[method] = function () {
         var self = this;
-        var hookedMethodName = "_hooked" + method.charAt(0).toUpperCase() + method.slice(1);
+        var hookedMethodName = '_hooked' + method.charAt(0).toUpperCase() + method.slice(1);
         var opts = {
           _super: _super,
           userId: getUserId.call(self),
-          hooks: self._hooks && self._hooks[method] || {},
           fromPublicApi: true
         };
 
@@ -38,17 +39,18 @@ if (Meteor.isServer) {
 
       // Now that the mutation methods are setup, we can bind our interceptions
       // on the final mutation invocations, and facilitate our hooks
-      _.each(['insert', 'update', 'remove'], function (method) {
+      _.each(verbs, function (method) {
         var _super = self._collection[method];
 
         self._collection[method] = function () {
-          var hookedMethodName = "_hooked" + method.charAt(0).toUpperCase() + method.slice(1);
+          var hookedMethodName = '_hooked' + method.charAt(0).toUpperCase() + method.slice(1);
           var opts = {
             _super: _super,
             userId: getUserId.call(self),
-            hooks: self._hooks && self._hooks[method] || {},
             fromPublicApi: false
           };
+
+          self._collection._validators = self._validators;
 
           return self[hookedMethodName].apply(self._collection, [opts].concat(_.toArray(arguments)));
         }
@@ -58,7 +60,7 @@ if (Meteor.isServer) {
 }
 
 function getUserId() {
-  var userId = null;
+  var userId;
 
   if (Meteor.isClient) {
     Deps.nonreactive(function () {
@@ -79,7 +81,7 @@ function getUserId() {
 // addHook is nearly identical to addValidator, pulled from
 // ~/.meteor/packages/mongo-livedata/collection.js:426-459
 function addHook(verb, options) {
-  var VALID_KEYS = ['insert', 'update', 'remove', 'fetch', 'transform'];
+  var VALID_KEYS = verbs.concat(['fetch', 'transform']);
   _.each(_.keys(options), function (key) {
     if (!_.contains(VALID_KEYS, key))
       throw new Error(verb + ": Invalid key: " + key);
@@ -88,7 +90,7 @@ function addHook(verb, options) {
   var self = this;
   self._restricted = true;
 
-  _.each(['insert', 'update', 'remove'], function (name) {
+  _.each(verbs, function (name) {
     if (options[name]) {
       if (!(options[name] instanceof Function)) {
         throw new Error(verb + ": Value for `" + name + "` must be a function");
@@ -98,20 +100,18 @@ function addHook(verb, options) {
       if (options.transform)
         options[name].transform = Deps._makeNonreactive(options.transform);
 
-      if (!_.has(self, "_hooks"))
-        self._hooks = {};
-      if (!_.has(self._hooks, name))
-        self._hooks[name] = {};
-      if (!_.has(self._hooks[name], verb))
-        self._hooks[name][verb] = [];
+      if (!_.has(self._validators, name))
+        self._validators[name] = {};
+      if (!_.has(self._validators[name], verb))
+        self._validators[name][verb] = [];
 
-      self._hooks[name][verb].push(options[name]);
+      self._validators[name][verb].push(options[name]);
     }
   });
 
   if (options.update || options.remove || options.fetch) {
     if (options.fetch && !(options.fetch instanceof Array)) {
-      throw new Error(allowOrDeny + ": Value for `fetch` must be an array");
+      throw new Error(verb + ": Value for `fetch` must be an array");
     }
     self._updateFetch(options.fetch);
   }

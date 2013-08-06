@@ -29,4 +29,8 @@ Package.on_test(function (api) {
 
   api.add_files(["tests/remove_local.js"], both);
   api.add_files(["tests/remove_sync.js"], both);
+
+  // fetch can only work server-side because find's "fields" option is limited
+  // to only working on the server
+  api.add_files(["tests/fetch.js"], "server");
 });

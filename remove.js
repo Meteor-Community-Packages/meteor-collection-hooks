@@ -1,29 +1,28 @@
 Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) {
   var self = this;
   var result, prev = [];
-  var docs = getDocs.call(self, opts, selector);
+  var docs = getDocs.call(self, opts, selector).fetch();
 
   // copy originals for convenience in after-hook
-  if (opts.hooks.after) {
+  if (self._validators.remove.after) {
     prev = [];
-    _.each(opts.hooks.after, function (hook) {
-      docs.forEach(function (doc) {
+    _.each(self._validators.remove.after, function (hook) {
+      _.each(docs, function (doc) {
         prev.push(EJSON.clone(transformDoc(hook, doc)));
       });
-      docs.rewind();
     });
   }
 
   // before
-  _.each(opts.hooks.before, function (hook) {
-    docs.forEach(function (doc) {
+  _.each(self._validators.remove.before, function (hook) {
+    _.each(docs, function (doc) {
       hook(opts.userId, transformDoc(hook, doc));
     });
   });
 
   function after() {
-    _.each(opts.hooks.after, function (hook) {
-      prev.forEach(function (doc) {
+    _.each(self._validators.remove.after, function (hook) {
+      _.each(prev, function (doc) {
         hook(opts.userId, doc);
       });
     });
@@ -58,14 +57,14 @@ var getDocs = function (opts, selector) {
   var self = this;
 
   var findOptions = {transform: null, reactive: false};
-  if (!opts.hooks.fetchAllFields) {
+  if (!self._validators.fetchAllFields) {
     findOptions.fields = {};
-    _.each(opts.hooks.fetch, function(fieldName) {
+    _.each(self._validators.fetch, function(fieldName) {
       findOptions.fields[fieldName] = 1;
     });
   }
 
-  var docs = self.find(selector, findOptions);
-
-  return docs;
+  // Unlike validators, we iterate over multiple docs, so use
+  // find instead of findOne:
+  return self.find(selector, findOptions);
 };
