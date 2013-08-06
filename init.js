@@ -21,7 +21,7 @@ if (Meteor.isClient) {
           fromPublicApi: true
         };
 
-        self[hookedMethodName].apply(self, [opts].concat(_.toArray(arguments)));
+        return self[hookedMethodName].apply(self, [opts].concat(_.toArray(arguments)));
       };
     });
   })();
@@ -71,10 +71,6 @@ function getUserId() {
       // Will work inside methods
       userId = Meteor.userId();
     } catch (e) {}
-
-    if (!userId) {
-      userId = Meteor.__collection_hooks_publish_userId;
-    }
   }
 
   return userId;
