@@ -61,8 +61,8 @@ test.after({
 
 ### TODO
 
-- Allow calling insert/update/remove directly (don't fire hooks)
 - Verify that transform actually gets used
+- Write tests to verify that `this._super` and `this.context` in hook callbacks are functioning as intended
 - Write tests to verify allow/deny are functioning properly with hooks
 
 ### Contributors
