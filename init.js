@@ -12,7 +12,6 @@ if (Meteor.isClient) {
   (function () {
     _.each(verbs, function (method) {
       var _super = Meteor.Collection.prototype[method];
-
       Meteor.Collection.prototype[method] = function () {
         var self = this;
         var hookedMethodName = '_hooked' + method.charAt(0).toUpperCase() + method.slice(1);

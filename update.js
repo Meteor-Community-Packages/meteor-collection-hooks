@@ -1,5 +1,6 @@
 Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, options, callback) {
   var self = this;
+  var context = {_super: opts._super, context: self};
   var result, docs, fields, prev = {};
 
   if (options instanceof Function) {
@@ -24,7 +25,7 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
   // before
   _.each(self._validators.update.before, function (hook) {
     _.each(docs, function (doc) {
-      hook(opts.userId, transformDoc(hook, doc), fields, mutator);
+      hook.call(context, opts.userId, transformDoc(hook, doc), fields, mutator);
     });
   });
 
@@ -34,7 +35,7 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
 
     _.each(self._validators.update.after, function (hook) {
       _.each(docs, function (doc) {
-        hook(opts.userId, transformDoc(hook, doc), fields, prev.mutator, prev.docs[doc._id]);
+        hook.call(context, opts.userId, transformDoc(hook, doc), fields, prev.mutator, prev.docs[doc._id]);
       });
     });
   }

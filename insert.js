@@ -1,15 +1,16 @@
 Meteor.Collection.prototype._hookedInsert = function (opts, doc, callback) {
   var self = this;
+  var context = {_super: opts._super, context: self};
   var id;
 
   // before
   _.each(self._validators.insert.before, function (hook) {
-    hook(opts.userId, docToValidate(hook, doc));
+    hook.call(context, opts.userId, docToValidate(hook, doc));
   });
 
   function after(id) {
     _.each(self._validators.insert.after, function (hook) {
-      hook(opts.userId, docToValidate(hook, self.findOne({_id: id})));
+      hook.call(context, opts.userId, docToValidate(hook, self.findOne({_id: id})));
     });
   }
 

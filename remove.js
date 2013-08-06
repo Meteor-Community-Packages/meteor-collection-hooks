@@ -1,5 +1,6 @@
 Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) {
   var self = this;
+  var context = {_super: opts._super, context: self};
   var result, prev = [];
   var docs = getDocs.call(self, opts, selector).fetch();
 
@@ -16,14 +17,14 @@ Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) 
   // before
   _.each(self._validators.remove.before, function (hook) {
     _.each(docs, function (doc) {
-      hook(opts.userId, transformDoc(hook, doc));
+      hook.call(context, opts.userId, transformDoc(hook, doc));
     });
   });
 
   function after() {
     _.each(self._validators.remove.after, function (hook) {
       _.each(prev, function (doc) {
-        hook(opts.userId, doc);
+        hook.call(context, opts.userId, doc);
       });
     });
   }
