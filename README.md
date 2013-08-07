@@ -61,6 +61,7 @@ test.after({
 
 ### TODO
 
+- Break out all code related to "extending" validators into its own package
 - Write tests to verify that `this._super` and `this.context` in hook callbacks are functioning as intended
 
 ### Contributors

@@ -43,7 +43,6 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
   if (opts.fromPublicApi) {
     // Called from public API (Meteor.Collection.prototype.XXX)
     return opts._super.call(self, selector, mutator, options, function (err, result) {
-      if (err) throw err;
       after(result);
       callback && callback.apply(self, arguments);
     });

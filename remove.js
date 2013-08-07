@@ -30,7 +30,6 @@ Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) 
   if (opts.fromPublicApi) {
     // Called from public API (Meteor.Collection.prototype.XXX)
     return opts._super.call(self, selector, function (err) {
-      if (err) throw err;
       after();
       callback && callback.apply(self, arguments);
     });

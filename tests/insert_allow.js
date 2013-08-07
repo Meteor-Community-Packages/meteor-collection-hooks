@@ -37,18 +37,12 @@ if (Meteor.isClient) {
 
     InsecureLogin.ready(function () {
       Meteor.call("test_insert_allow_reset_collection", function (err, result) {
-        // FIX: Perhaps a Meteor problem, but the callback on the insert
-        // below never gets fired. Instead, we get an exception that halts
-        // further processing. Until we can figure this out, give Meteor
-        // time to rollback the change to the client using setTimeout.
-        Meteor._suppress_log(1);
-        collection.insert({start_value: true, allowed: false}, function (err) { /* EXCEPTION THROWN INSTEAD! */ });
-        Meteor.setTimeout(function () {
-          collection.insert({start_value: true, allowed: true}, function () {
+        collection.insert({start_value: true, allowed: false}, function (err1, id1) {
+          collection.insert({start_value: true, allowed: true}, function (err2, id2) {
             test.equal(collection.find({start_value: true, client_value: true, server_value: true}).count(), 1);
             next();
           });
-        }, 250);
+        });
       });
     });
   });

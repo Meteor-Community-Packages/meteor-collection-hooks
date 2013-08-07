@@ -17,7 +17,6 @@ Meteor.Collection.prototype._hookedInsert = function (opts, doc, callback) {
   if (opts.fromPublicApi) {
     // Called from public API (Meteor.Collection.prototype.XXX)
     return opts._super.call(self, doc, function (err, id) {
-      if (err) throw err;
       after(id);
       callback && callback.apply(self, arguments);
     });

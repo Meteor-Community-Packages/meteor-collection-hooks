@@ -38,23 +38,17 @@ if (Meteor.isClient) {
     InsecureLogin.ready(function () {
       Meteor.call("test_update_allow_reset_collection", function (err, result) {
         function start(id1, id2) {
-          collection.update({_id: id1}, {$set: {update_value: true, allowed: true}}, function (err) {
-            // FIX: Perhaps a Meteor problem, but the callback on the update
-            // below never gets fired. Instead, we get an exception that halts
-            // further processing. Until we can figure this out, give Meteor
-            // time to rollback the change to the client using setTimeout.
-            Meteor._suppress_log(1);
-            collection.update({_id: id2}, {$set: {update_value: true, allowed: false}}, function (err) { /* EXCEPTION THROWN INSTEAD! */ });
-            Meteor.setTimeout(function () {
+          collection.update({_id: id1}, {$set: {update_value: true, allowed: true}}, function (err1) {
+            collection.update({_id: id2}, {$set: {update_value: true, allowed: false}}, function (err2) {
               test.equal(collection.find({start_value: true, update_value: true, client_value: true, server_value: true}).count(), 1);
               next();
-            }, 250);
+            });
           });
         }
 
         // Insert two documents
-        collection.insert({start_value: true}, function (err, id1) {
-          collection.insert({start_value: true}, function (err, id2) {
+        collection.insert({start_value: true}, function (err1, id1) {
+          collection.insert({start_value: true}, function (err2, id2) {
             start(id1, id2);
           });
         });
