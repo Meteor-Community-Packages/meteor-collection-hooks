@@ -16,25 +16,25 @@ Tinytest.addAsync("general - multiple hooks should all fire the appropriate numb
   collection.before({
     insert: function () { counts.before.insert++; },
     update: function () { counts.before.update++; },
-    remove: function () { counts.before.remove++; },
+    remove: function () { counts.before.remove++; }
   });
 
   collection.before({
     insert: function () { counts.before.insert++; },
     update: function () { counts.before.update++; },
-    remove: function () { counts.before.remove++; },
+    remove: function () { counts.before.remove++; }
   });
 
   collection.after({
     insert: function () { counts.after.insert++; },
     update: function () { counts.after.update++; },
-    remove: function () { counts.after.remove++; },
+    remove: function () { counts.after.remove++; }
   });
 
   collection.after({
     insert: function () { counts.after.insert++; },
     update: function () { counts.after.update++; },
-    remove: function () { counts.after.remove++; },
+    remove: function () { counts.after.remove++; }
   });
 
   InsecureLogin.ready(function () {

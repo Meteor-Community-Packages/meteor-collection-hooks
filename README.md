@@ -31,7 +31,7 @@ test.before({
     // as cascading deletes
   },
   fetch: ..., /* only works server-side */
-  transform: ... /* TBD -- untested */
+  transform: ...
 })
 
 test.after({
@@ -55,15 +55,13 @@ test.after({
     // (external service clean-up for instance).
   },
   fetch: ..., /* only works server-side */
-  transform: ... /* TBD -- untested */
+  transform: ...
 });
 ```
 
 ### TODO
 
-- Verify that transform actually gets used
 - Write tests to verify that `this._super` and `this.context` in hook callbacks are functioning as intended
-- Write tests to verify allow/deny are functioning properly with hooks
 
 ### Contributors
 
