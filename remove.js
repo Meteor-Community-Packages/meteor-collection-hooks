@@ -7,10 +7,8 @@ Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) 
   // copy originals for convenience in after-hook
   if (self._validators.remove.after) {
     prev = [];
-    _.each(self._validators.remove.after, function (hook) {
-      _.each(docs, function (doc) {
-        prev.push(EJSON.clone(transformDoc(hook, doc)));
-      });
+    _.each(docs, function (doc) {
+      prev.push(EJSON.clone(doc));
     });
   }
 
@@ -24,7 +22,7 @@ Meteor.Collection.prototype._hookedRemove = function (opts, selector, callback) 
   function after() {
     _.each(self._validators.remove.after, function (hook) {
       _.each(prev, function (doc) {
-        hook.call(context, opts.userId, doc);
+        hook.call(context, opts.userId, transformDoc(hook, doc));
       });
     });
   }

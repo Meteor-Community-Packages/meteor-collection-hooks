@@ -1,13 +1,15 @@
 var collection1 = new Meteor.Collection("test_update_collection1");
 
 if (Meteor.isServer) {
-  Tinytest.addAsync("collection1 document should have extra property added to it before it is updated", function (test, next) {
+  Tinytest.addAsync("update - collection1 document should have extra property added to it before it is updated", function (test, next) {
+    var tmp = {};
+
     function start() {
       collection1.before({
         update: function (userId, doc, fieldNames, modifier) {
           // There should be no userId because the update was initiated
           // on the server -- there's no correlation to any specific user
-          //test.equal(userId, undefined);  // FIX: when refreshing test, this line stops execution
+          tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
           modifier.$set.before_update_value = true;
         }
       });
@@ -15,6 +17,7 @@ if (Meteor.isServer) {
       collection1.update({start_value: true}, {$set: {update_value: true}}, {multi: true}, function (err) {
         if (err) throw err;
         test.equal(collection1.find({start_value: true, update_value: true, before_update_value: true}).count(), 2);
+        test.equal(tmp.userId, undefined);
         next();
       });
     }
@@ -60,7 +63,7 @@ if (Meteor.isServer) {
 if (Meteor.isClient) {
   Meteor.subscribe("test_update_publish_collection2");
 
-  Tinytest.addAsync("collection2 document should have client-added and server-added extra properties added to it before it is updated", function (test, next) {
+  Tinytest.addAsync("update - collection2 document should have client-added and server-added extra properties added to it before it is updated", function (test, next) {
     var c = 0, n = function () { if (++c === 2) { next(); } };
 
     function start(err, id) {

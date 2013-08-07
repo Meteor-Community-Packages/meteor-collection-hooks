@@ -2,7 +2,8 @@ if (Meteor.isServer) {
   var collection1 = new Meteor.Collection("test_remove_collection1");
   var external = false;
 
-  Tinytest.addAsync("collection1 document should affect external variable before it is removed", function (test, next) {
+  Tinytest.addAsync("remove - collection1 document should affect external variable before it is removed", function (test, next) {
+    var tmp = {};
 
     function start(err, id) {
 
@@ -10,8 +11,8 @@ if (Meteor.isServer) {
         remove: function (userId, doc) {
           // There should be no userId because the remove was initiated
           // on the server -- there's no correlation to any specific user
-          //test.equal(userId, undefined);  // FIX: when refreshing test, this line stops execution
-          //test.equal(doc.start_value, true); // FIX: when refreshing test, this line also stops execution!
+          tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
+          tmp.doc_start_value = doc.start_value;  // HACK: can't test here directly otherwise refreshing test stops execution here
           external = true;
         }
       });
@@ -20,6 +21,8 @@ if (Meteor.isServer) {
         if (err) throw err;
         test.equal(collection1.find({start_value: true}).count(), 0);
         test.equal(external, true);
+        test.equal(tmp.userId, undefined);
+        test.equal(tmp.doc_start_value, true);
         next();
       });
     }
@@ -49,7 +52,7 @@ if (Meteor.isServer) {
     return collection2.find();
   });
 
-  //Tinytest.addAsync("collection2 document should affect external variable before and after it is removed", function (test, next) {
+  //Tinytest.addAsync("remove - collection2 document should affect external variable before and after it is removed", function (test, next) {
     var external2 = -1;
 
     collection2.before({
@@ -77,7 +80,7 @@ if (Meteor.isServer) {
         // Can't get the test suite to run when this is in a test.
         // Beyond me why. The console outputs true, so the "test" does
         // pass...
-        console.log(external2, external2 === 1);
+        console.log("(temp) test passes:", external2 === 1);
       }
     });
   //});
@@ -86,7 +89,7 @@ if (Meteor.isServer) {
 if (Meteor.isClient) {
   Meteor.subscribe("test_remove_publish_collection2");
 
-  Tinytest.addAsync("collection2 document should affect external variable before and after it is removed", function (test, next) {
+  Tinytest.addAsync("remove - collection2 document should affect external variable before and after it is removed", function (test, next) {
     var external = 0;
     var c = 0, n = function () {
       if (++c === 2) {

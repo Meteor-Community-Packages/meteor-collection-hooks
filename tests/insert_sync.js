@@ -1,20 +1,23 @@
 var collection1 = new Meteor.Collection("test_insert_collection1");
 
 if (Meteor.isServer) {
-  Tinytest.addAsync("collection1 document should have extra property added to it before it is inserted", function (test, next) {
+  Tinytest.addAsync("insert - collection1 document should have extra property added to it before it is inserted", function (test, next) {
+    var tmp = {};
+
     collection1.remove({});
 
     collection1.before({
       insert: function (userId, doc) {
         // There should be no userId because the insert was initiated
         // on the server -- there's no correlation to any specific user
-        //test.equal(userId, undefined);  // FIX: when refreshing test, this line stops execution
+        tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
         doc.before_insert_value = true;
       }
     });
 
     collection1.insert({start_value: true}, function () {
       test.equal(collection1.find({start_value: true, before_insert_value: true}).count(), 1);
+      test.equal(tmp.userId, undefined);
       next();
     });
   });
@@ -50,7 +53,7 @@ if (Meteor.isServer) {
 if (Meteor.isClient) {
   Meteor.subscribe("test_insert_publish_collection2");
 
-  Tinytest.addAsync("collection2 document should have client-added and server-added extra properties added to it before it is inserted", function (test, next) {
+  Tinytest.addAsync("insert - collection2 document should have client-added and server-added extra properties added to it before it is inserted", function (test, next) {
     collection2.before({
       insert: function (userId, doc) {
         // Insert is initiated on the client, a userId must be present

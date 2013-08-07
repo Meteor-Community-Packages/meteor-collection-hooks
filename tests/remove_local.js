@@ -1,4 +1,4 @@
-Tinytest.addAsync("local collection document should affect external variable before being removed", function (test, next) {
+Tinytest.addAsync("remove - local collection document should affect external variable before being removed", function (test, next) {
   var collection = new Meteor.Collection(null);
 
   function start(err, id) {
@@ -32,7 +32,7 @@ Tinytest.addAsync("local collection document should affect external variable bef
   });
 });
 
-Tinytest.addAsync("local collection should fire after-remove hook and affect external variable", function (test, next) {
+Tinytest.addAsync("remove - local collection should fire after-remove hook and affect external variable", function (test, next) {
   var collection = new Meteor.Collection(null);
   var external = 0;
 

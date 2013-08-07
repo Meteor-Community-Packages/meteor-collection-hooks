@@ -1,4 +1,4 @@
-Tinytest.addAsync("local collection documents should have extra property added before being updated", function (test, next) {
+Tinytest.addAsync("update - local collection documents should have extra property added before being updated", function (test, next) {
   var collection = new Meteor.Collection(null);
 
   function start() {
@@ -38,7 +38,7 @@ Tinytest.addAsync("local collection documents should have extra property added b
 
 });
 
-Tinytest.addAsync("local collection should fire after-update hook", function (test, next) {
+Tinytest.addAsync("update - local collection should fire after-update hook", function (test, next) {
   var collection = new Meteor.Collection(null);
   var c = 0, n = function () { if (++c === 2) { next(); } };
 
@@ -77,7 +77,7 @@ Tinytest.addAsync("local collection should fire after-update hook", function (te
   });
 });
 
-Tinytest.addAsync("local collection should fire before-update hook without options in update and still fire end-callback", function (test, next) {
+Tinytest.addAsync("update - local collection should fire before-update hook without options in update and still fire end-callback", function (test, next) {
   var collection = new Meteor.Collection(null);
 
   function start() {
@@ -99,7 +99,7 @@ Tinytest.addAsync("local collection should fire before-update hook without optio
   });
 });
 
-Tinytest.addAsync("local collection should fire after-update hook without options in update and still fire end-callback", function (test, next) {
+Tinytest.addAsync("update - local collection should fire after-update hook without options in update and still fire end-callback", function (test, next) {
   var collection = new Meteor.Collection(null);
   var c = 0, n = function () { if (++c === 2) { next(); } };
 
