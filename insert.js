@@ -9,8 +9,9 @@ Meteor.Collection.prototype._hookedInsert = function (opts, doc, callback) {
   });
 
   function after(id) {
+    var doc = self.findOne({_id: id}, {transform: null});
     _.each(self._validators.insert.after, function (hook) {
-      hook.call(context, opts.userId, docToValidate(hook, self.findOne({_id: id})));
+      hook.call(context, opts.userId, docToValidate(hook, doc));
     });
   }
 
@@ -22,9 +23,9 @@ Meteor.Collection.prototype._hookedInsert = function (opts, doc, callback) {
     });
   } else {
     // Called from private API (_collection.XXX)
-    id = opts._super.call(self, doc);
-    after(id);
-    return id;
+    opts._super.call(self, doc);
+    after(doc._id);
+    return doc._id;
   }
 };
 

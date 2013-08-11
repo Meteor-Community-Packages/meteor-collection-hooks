@@ -11,6 +11,7 @@ var verbs = ['insert', 'update', 'remove'];
 if (Meteor.isClient) {
   _.each(verbs, function (method) {
     var _super = Meteor.Collection.prototype[method];
+
     Meteor.Collection.prototype[method] = function () {
       var self = this;
       var hookedMethodName = '_hooked' + method.charAt(0).toUpperCase() + method.slice(1);
@@ -28,11 +29,16 @@ if (Meteor.isClient) {
 if (Meteor.isServer) {
   (function () {
     var _defineMutationMethods = Meteor.Collection.prototype._defineMutationMethods;
-    Meteor.Collection.prototype._defineMutationMethods = function () {
+
+    Meteor.Collection.prototype._defineMutationMethods = function (skipSuper) {
       var self = this;
 
-      // Allow Meteor to set-up normal mutation methods
-      _defineMutationMethods.apply(self, arguments);
+      if (self.wrapped) return;
+
+      if (!skipSuper) {
+        // Allow Meteor to set-up normal mutation methods
+        _defineMutationMethods.apply(self, arguments);
+      }
 
       // Now that the mutation methods are setup, we can bind our interceptions
       // on the final mutation invocations, and facilitate our server-side hooks
@@ -52,7 +58,15 @@ if (Meteor.isServer) {
           return self[hookedMethodName].apply(self._collection, [opts].concat(_.toArray(arguments)));
         }
       });
+
+      self.wrapped = true;
     };
+
+    // accounts-base/accounts_common.js runs before us, and has already created
+    // Meteor.users. We need to run our wrapped _defineMutationMethods manually:
+    if (Meteor.users instanceof Meteor.Collection) {
+      Meteor.users._defineMutationMethods(true);
+    }
   })();
 }
 

@@ -25,6 +25,7 @@ Package.on_test(function (api) {
   api.add_files(["tests/insert_local.js"], both);
   api.add_files(["tests/insert_sync.js"], both);
   api.add_files(["tests/insert_allow.js"], both);
+  api.add_files(["tests/insert_user.js"], "server");
 
   api.add_files(["tests/update_local.js"], both);
   api.add_files(["tests/update_sync.js"], both);
