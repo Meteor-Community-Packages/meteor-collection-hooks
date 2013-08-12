@@ -14,7 +14,7 @@ if (Meteor.isClient) {
 
     Meteor.Collection.prototype[method] = function () {
       var self = this;
-      var hookedMethodName = '_hooked' + method.charAt(0).toUpperCase() + method.slice(1);
+      var hookedMethodName = '_hooked' + capitalize(method);
       var opts = {
         _super: _super,
         userId: getUserId.call(self),
@@ -36,7 +36,8 @@ if (Meteor.isServer) {
       if (self.wrapped) return;
 
       if (!skipSuper) {
-        // Allow Meteor to set-up normal mutation methods
+        // Allow Meteor to set-up normal mutation methods, unless explicitly
+        // skipped (in the case where _defineMutationMethods has run earlier)
         _defineMutationMethods.apply(self, arguments);
       }
 
@@ -46,16 +47,14 @@ if (Meteor.isServer) {
         var _super = self._collection[method];
 
         self._collection[method] = function () {
-          var hookedMethodName = '_hooked' + method.charAt(0).toUpperCase() + method.slice(1);
+          var hookedMethodName = '_hooked' + capitalize(method);
           var opts = {
             _super: _super,
             userId: getUserId.call(self),
             fromPublicApi: false
           };
 
-          self._collection._validators = self._validators;
-
-          return self[hookedMethodName].apply(self._collection, [opts].concat(_.toArray(arguments)));
+          return self[hookedMethodName].apply(self, [opts].concat(_.toArray(arguments)));
         }
       });
 
@@ -68,6 +67,10 @@ if (Meteor.isServer) {
       Meteor.users._defineMutationMethods(true);
     }
   })();
+}
+
+function capitalize(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function getUserId() {

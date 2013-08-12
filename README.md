@@ -14,6 +14,7 @@ test.before({
     // Fired before the doc is inserted.
     // Gives you an opportunity to modify doc as needed, or run additional
     // functionality
+    // doc._transform() obtains transformed version of doc, if defined.
     doc.createdAt = Date.now();
   },
   update: function (userId, doc, fieldNames, modifier) {
@@ -22,6 +23,7 @@ test.before({
     // functionality. Note that we are changing the modifier, and not the
     // doc. Setting the value on the doc introduces far too much complexity
     // when multi:true is used.
+    // doc._transform() obtains transformed version of doc, if defined.
     modifier.$set.modifiedAt = Date.now();
   },
   remove: function (userId, doc) {
@@ -29,23 +31,24 @@ test.before({
     // Gives you an opportunity to affect your system while the document is
     // still in existence -- useful for maintaining system integrity, such
     // as cascading deletes
+    // doc._transform() obtains transformed version of doc, if defined.
   },
-  fetch: ..., /* only works server-side */
-  transform: ...
+  fetch: ... /* only works server-side */
 })
 
 test.after({
   insert: function (userId, doc) {
     // Fired after the doc was inserted.
-    // "doc" has been pre-fetched for you -- it has the _id. Gives you an
-    // opportunity to run post-insert tasks, such as sending notifications
-    // of new document insertions.
+    // Gives you an opportunity to run post-insert tasks, such as sending
+    // notifications of new document insertions.
+    // doc._transform() obtains transformed version of doc, if defined.
   },
-  update: function (userId, doc, fieldNames, modifier, previous) {
+  update: function (userId, doc, fieldNames, modifier) {
     // Fired after the doc was updated.
-    // "previous" contains the doc before it was updated. Gives you an
-    // opportunity to run post-update tasks, potentially comparing the
-    // previous and new documents to take further action.
+    // Gives you an opportunity to run post-update tasks, potentially comparing
+    // the previous and new documents to take further action.
+    // doc._previous contains the doc before it was updated;
+    // doc._transform() obtains transformed version of doc, if defined.
   },
   remove: function (userId, doc) {
     // Fired after the doc was removed.
@@ -54,8 +57,7 @@ test.after({
     // necessarily depend on the document being found in the database
     // (external service clean-up for instance).
   },
-  fetch: ..., /* only works server-side */
-  transform: ...
+  fetch: ... /* only works server-side */
 });
 ```
 

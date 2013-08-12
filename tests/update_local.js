@@ -44,7 +44,7 @@ Tinytest.addAsync("update - local collection should fire after-update hook", fun
 
   function start() {
     collection.after({
-      update: function (userId, doc, fieldNames, modifier, previous) {
+      update: function (userId, doc, fieldNames, modifier) {
         // There should be a userId if we're running on the client.
         // Since this is a local collection, the server should NOT know
         // about any userId
@@ -58,7 +58,7 @@ Tinytest.addAsync("update - local collection should fire after-update hook", fun
         test.equal(fieldNames[0], "update_value");
 
         test.equal(doc.update_value, true);
-        test.equal(_.has(previous, "update_value"), false);
+        test.equal(_.has(doc._previous, "update_value"), false);
 
         n();
       }

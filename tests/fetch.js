@@ -12,7 +12,8 @@ Tinytest.addAsync("general - local collection documents should only have fetched
 
     collection.after({
       update: function (userId, doc, fieldNames, modifier) {
-        test.equal(same(_.keys(doc), ["_id"].concat(fields)), true);
+        var docKeys = _.without(_.keys(doc), "_id", "_transform", "_previous");
+        test.equal(same(docKeys, fields), true);
         next();
       },
       fetch: fields

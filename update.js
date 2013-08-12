@@ -1,5 +1,6 @@
 Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, options, callback) {
   var self = this;
+  var collection = opts.fromPublicApi ? self : self._collection;
   var context = {_super: opts._super, context: self};
   var result, docs, fields, prev = {};
 
@@ -10,8 +11,8 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
 
   options = options || {};
 
-  fields = getFields.call(self, mutator);
-  docs = getDocs.call(self, selector, options).fetch();
+  fields = getFields(mutator);
+  docs = getDocs.call(self, collection, selector, options).fetch();
 
   // copy originals for convenience in after-hook
   if (self._validators.update.after) {
@@ -25,17 +26,26 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
   // before
   _.each(self._validators.update.before, function (hook) {
     _.each(docs, function (doc) {
-      hook.call(context, opts.userId, transformDoc(hook, doc), fields, mutator);
+      // Attach _transform helper
+      doc._transform = function () { return self._transform && self._transform(doc) || doc; };
+
+      hook.call(context, opts.userId, doc, fields, mutator);
+
+      delete doc._transform;
     });
   });
 
   function after() {
-    var fields = getFields.call(self, mutator);
-    var docs = getDocs.call(self, selector, options).fetch();
+    var fields = getFields(mutator);
+    var docs = getDocs.call(self, collection, selector, options).fetch();
 
     _.each(self._validators.update.after, function (hook) {
       _.each(docs, function (doc) {
-        hook.call(context, opts.userId, transformDoc(hook, doc), fields, prev.mutator, prev.docs[doc._id]);
+        // Attach _transform and _previous helpers
+        doc._transform = function () { return self._transform && self._transform(doc) || doc; };
+        doc._previous = prev.docs[doc._id];
+
+        hook.call(context, opts.userId, doc, fields, prev.mutator);
       });
     });
   }
@@ -48,18 +58,10 @@ Meteor.Collection.prototype._hookedUpdate = function (opts, selector, mutator, o
     });
   } else {
     // Called from private API (_collection.XXX)
-    result = opts._super.call(self, selector, mutator, options);
+    result = opts._super.call(self._collection, selector, mutator, options);
     after(result);
     return result;
   }
-};
-
-// transformDoc pulled verbatim from:
-// ~/.meteor/packages/mongo-livedata/collection.js:618-622
-var transformDoc = function (validator, doc) {
-  if (validator.transform)
-    return validator.transform(doc);
-  return doc;
 };
 
 // This function contains a snippet of code pulled and modified from:
@@ -67,8 +69,6 @@ var transformDoc = function (validator, doc) {
 // It's contained in these utility functions to make updates easier for us in
 // case this code changes.
 var getFields = function (mutator) {
-  var self = this;
-
   // compute modified fields
   var fields = [];
   _.each(mutator, function (params, op) {
@@ -87,13 +87,13 @@ var getFields = function (mutator) {
   return fields;
 };
 
-var getDocs = function (selector, options) {
+var getDocs = function (collection, selector, options) {
   var self = this;
 
   var findOptions = {transform: null, reactive: false};
   if (!self._validators.fetchAllFields) {
     findOptions.fields = {};
-    _.each(self._validators.fetch, function(fieldName) {
+    _.each(self._validators.fetch, function (fieldName) {
       findOptions.fields[fieldName] = 1;
     });
   }
@@ -108,5 +108,5 @@ var getDocs = function (selector, options) {
 
   // Unlike validators, we iterate over multiple docs, so use
   // find instead of findOne:
-  return self.find(selector, findOptions);
+  return collection.find(selector, findOptions);
 };

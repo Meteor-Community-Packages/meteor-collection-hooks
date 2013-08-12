@@ -82,9 +82,9 @@ if (Meteor.isClient) {
       });
 
       collection2.after({
-        update: function (userId, doc, fieldNames, modifier, previous) {
+        update: function (userId, doc, fieldNames, modifier) {
           test.equal(doc.update_value, true);
-          test.equal(_.has(previous, "update_value"), false);
+          test.equal(_.has(doc._previous, "update_value"), false);
           n();
         }
       });
