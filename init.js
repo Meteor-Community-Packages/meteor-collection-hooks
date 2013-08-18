@@ -1,3 +1,83 @@
+var adviceTypes = ["before", "after"];
+var mutatorMethods = ["insert", "update", "remove"];
+
+function getUserId() {
+  var userId;
+
+  if (Meteor.isClient) {
+    Deps.nonreactive(function () {
+      userId = Meteor.userId && Meteor.userId();
+    });
+  }
+
+  if (Meteor.isServer) {
+    userId = Meteor.userId && Meteor.userId();
+  }
+
+  return userId;
+}
+
+function bindAdvices(constructor) {
+  _.each(mutatorMethods, function (method) {
+    _.each(adviceTypes, function (type) {
+      Meteor._ensure(Meteor.Collection.prototype, "_advice", type);
+      Meteor._ensure(Meteor.Collection.prototype, type);
+
+      Meteor.Collection.prototype._advice[type][method] = [];
+      Meteor.Collection.prototype[type][method] = function (advice) {
+        Meteor.Collection.prototype._advice[type][method].push(advice);
+      };
+    });
+
+    var _super = constructor.prototype[method];
+    constructor.prototype[method] = function () {
+      return this["_" + method + "Advice"].apply(this, [
+        getUserId.call(this),
+        _super,
+        Meteor.isClient
+      ].concat(_.toArray(arguments)));
+    };
+  });
+
+  constructor.prototype._insertAdvice = function (userId, _super, blocking, doc, callback) {
+    console.log("_insertAdvice", userId, blocking, doc, callback);
+
+    var self = this;
+    var adviceContext = {context: self, _super: _super};
+
+    // before
+    console.log("self._advice", self._advice)
+    _.each(self._advice.before.insert, function (advice) {
+      advice.call(adviceContext, userId, doc);
+    });
+
+    function after(id) {
+      doc._id = id; // TODO: double check that this is necessary
+
+      _.each(self._advice.after.insert, function (advice) {
+        advice.call(adviceContext, userId, doc);
+      });
+    }
+
+    _super.call(self, doc, function (err, id) {
+      after(id);
+      callback && callback.apply(this, arguments);
+    });
+
+    return doc._id;
+  };
+}
+
+if (Meteor.isServer) {
+  bindAdvices(MongoInternals.Connection);
+}
+
+if (Meteor.isClient) {
+  bindAdvices(Meteor.Collection);
+}
+
+/*
+
 Meteor.Collection.prototype.before = function (options) {
   addHook.call(this, 'before', options);
 };
@@ -131,3 +211,4 @@ function addHook(verb, options) {
     self._updateFetch(options.fetch);
   }
 }
+*/
