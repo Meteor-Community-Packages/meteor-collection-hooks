@@ -40,9 +40,9 @@ Package.on_test(function (api) {
   // sync = minimongo on client, mongo on server, with mutator methods to sync
   // allow = same as sync but with an allow rule test
   api.add_files(["tests/insert_local.js"], both);
-  api.add_files(["tests/insert_sync.js"], both);
-  api.add_files(["tests/insert_allow.js"], both);
-  api.add_files(["tests/insert_user.js"], "server");
+  //api.add_files(["tests/insert_sync.js"], both);
+  //api.add_files(["tests/insert_allow.js"], both);
+  //api.add_files(["tests/insert_user.js"], "server");
   /*
 
   api.add_files(["tests/update_local.js"], both);

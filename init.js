@@ -57,28 +57,36 @@ function makeArgs(method, _arguments) {
   return ret;
 }
 
-function bindAdvices(constructor) {
+function bindAdvices(constructors) {
   _.each(["insert", "update", "remove"], function (method) {
     _.each(["before", "after"], function (type) {
-      Meteor._ensure(constructor.prototype, "_advice", type);
       Meteor._ensure(Meteor.Collection.prototype, type);
 
-      constructor.prototype._advice[type][method] = [];
+      _.each(constructors, function (constructor) {
+        Meteor._ensure(constructor.prototype, "_advice", type);
+        constructor.prototype._advice[type][method] = [];
+      });
+
       Meteor.Collection.prototype[type][method] = function (advice) {
-        constructor.prototype._advice[type][method].push(advice);
+        _.each(constructors, function (constructor) {
+          constructor.prototype._advice[type][method].push(advice);
+        });
       };
     });
 
-    var _super = constructor.prototype[method];
-    constructor.prototype[method] = function () {
-      if (!this["_" + method + "Advice"]) {
-        // TEMP
-        return _super.apply(this, arguments);
-      }
-      return this["_" + method + "Advice"].call(this,
-        getUserId(), _super, makeArgs(method, arguments)
-      );
-    };
+    _.each(constructors, function (constructor) {
+      var _super = constructor.prototype[method];
+      constructor.prototype[method] = function () {
+        ///==TEMP==========
+        if (!this["_" + method + "Advice"]) {
+          return _super.apply(this, arguments);
+        }
+        ///================
+        return this["_" + method + "Advice"].call(this,
+          getUserId(), _super, makeArgs(method, arguments)
+        );
+      };
+    });
   });
 
   constructor.prototype._insertAdvice = function (userId, _super, args) {
@@ -86,6 +94,7 @@ function bindAdvices(constructor) {
     var adviceContext = {context: self, _super: _super};
 
     // before
+    console.log("self._advice", self._advice)
     _.each(self._advice.before.insert, function (advice) {
       advice.call(adviceContext, userId, args.doc);
     });
@@ -115,12 +124,11 @@ function bindAdvices(constructor) {
 }
 
 if (Meteor.isServer) {
-  bindAdvices(MongoInternals.Connection);
-  bindAdvices(LocalCollection);
+  bindAdvices([MongoInternals.Connection, LocalCollection]);
 }
 
 if (Meteor.isClient) {
-  bindAdvices(Meteor.Collection);
+  bindAdvices([Meteor.Collection]);
 }
 
 /*
