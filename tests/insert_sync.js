@@ -6,13 +6,11 @@ if (Meteor.isServer) {
 
     collection1.remove({});
 
-    collection1.before({
-      insert: function (userId, doc) {
-        // There should be no userId because the insert was initiated
-        // on the server -- there's no correlation to any specific user
-        tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
-        doc.before_insert_value = true;
-      }
+    collection1.before.insert(function (userId, doc) {
+      // There should be no userId because the insert was initiated
+      // on the server -- there's no correlation to any specific user
+      tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
+      doc.before_insert_value = true;
     });
 
     collection1.insert({start_value: true}, function () {
@@ -43,10 +41,8 @@ if (Meteor.isServer) {
     return collection2.find();
   });
 
-  collection2.before({
-    insert: function (userId, doc) {
-      doc.server_value = true;
-    }
+  collection2.before.insert(function (userId, doc) {
+    doc.server_value = true;
   });
 }
 
@@ -54,21 +50,17 @@ if (Meteor.isClient) {
   Meteor.subscribe("test_insert_publish_collection2");
 
   Tinytest.addAsync("insert - collection2 document should have client-added and server-added extra properties added to it before it is inserted", function (test, next) {
-    collection2.before({
-      insert: function (userId, doc) {
-        // Insert is initiated on the client, a userId must be present
-        test.notEqual(userId, undefined);
-        test.equal(collection2.find({start_value: true}).count(), 0);
-        doc.client_value = true;
-      }
+    collection2.before.insert(function (userId, doc) {
+      // Insert is initiated on the client, a userId must be present
+      test.notEqual(userId, undefined);
+      test.equal(collection2.find({start_value: true}).count(), 0);
+      doc.client_value = true;
     });
 
-    collection2.after({
-      insert: function (userId, doc) {
-        test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1);
-        test.notEqual(doc._id, undefined);
-        next();
-      }
+    collection2.after.insert(function (userId, doc) {
+      test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1);
+      test.notEqual(doc._id, undefined);
+      next();
     });
 
     InsecureLogin.ready(function () {

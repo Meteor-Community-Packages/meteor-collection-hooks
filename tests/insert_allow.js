@@ -18,10 +18,8 @@ if (Meteor.isServer) {
     return collection.find();
   });
 
-  collection.before({
-    insert: function (userId, doc) {
-      doc.server_value = true;
-    }
+  collection.before.insert(function (userId, doc) {
+    doc.server_value = true;
   });
 }
 
@@ -29,10 +27,8 @@ if (Meteor.isClient) {
   Meteor.subscribe("test_insert_allow_publish_collection");
 
   Tinytest.addAsync("insert - only one of two collection documents should be allowed to be inserted, and should carry the extra server and client properties", function (test, next) {
-    collection.before({
-      insert: function (userId, doc) {
-        doc.client_value = true;
-      }
+    collection.before.insert(function (userId, doc) {
+      doc.client_value = true;
     });
 
     InsecureLogin.ready(function () {

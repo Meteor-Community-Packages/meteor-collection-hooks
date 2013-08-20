@@ -21,7 +21,7 @@ Package.on_use(function (api, where) {
     "remove.js"*/
   ], both);
 
-  api.export("Meteor");
+  //api.export("Meteor");
 });
 
 Package.on_test(function (api) {
@@ -29,20 +29,21 @@ Package.on_test(function (api) {
     "collection-hooks",
     "underscore",
     "accounts-base",
+    "accounts-password",
     "tinytest",
     "test-helpers"
   ], both);
 
-  //api.add_files(["tests/insecure_login.js"], both);
+  api.add_files(["tests/insecure_login.js"], both);
 
   // local = minimongo (on server and client)
   // sync = minimongo on client, mongo on server, with mutator methods to sync
   // allow = same as sync but with an allow rule test
   api.add_files(["tests/insert_local.js"], both);
-  /*
   api.add_files(["tests/insert_sync.js"], both);
   api.add_files(["tests/insert_allow.js"], both);
   api.add_files(["tests/insert_user.js"], "server");
+  /*
 
   api.add_files(["tests/update_local.js"], both);
   api.add_files(["tests/update_sync.js"], both);

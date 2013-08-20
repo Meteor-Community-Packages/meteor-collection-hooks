@@ -20,7 +20,7 @@ InsecureLogin = {
 if (Meteor.isClient) {
   Meteor.startup(function () {
     Accounts.callLoginMethod({
-      methodArguments: [{key: "Test"}],
+      methodArguments: [{username: "test"}],
       userCallback: function (err) {
         if (err) throw err;
         console.info("Insecure login successful!");
@@ -34,15 +34,20 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
   Meteor.startup(function () {
-    if (!Meteor.users.find().count()) {
-      Meteor.users.insert({profile: {name: "Test"}});
+    if (!Meteor.users.find({"profile.name": "Test"}).count()) {
+      Accounts.createUser({
+        username: "test",
+        email: "test@test.com",
+        password: "password",
+        profile: {name: "Test"}
+      });
     }
   });
 
   Accounts.registerLoginHandler(function (options) {
-    if (!options.key) return;
+    if (!options.username) return;
 
-    var user = Meteor.users.findOne({"profile.name": options.key});
+    var user = Meteor.users.findOne({"username": options.username});
     if (!user) return;
 
     var stampedLoginToken = Accounts._generateStampedLoginToken();

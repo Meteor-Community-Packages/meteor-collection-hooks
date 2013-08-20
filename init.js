@@ -1,6 +1,3 @@
-var adviceTypes = ["before", "after"];
-var mutatorMethods = ["insert", "update", "remove"];
-
 function getUserId() {
   var userId;
 
@@ -11,65 +8,115 @@ function getUserId() {
   }
 
   if (Meteor.isServer) {
-    userId = Meteor.userId && Meteor.userId();
+    try {
+      // Will throw an error unless within method call.
+      // Attempt to recover gracefully by catching:
+      userId = Meteor.userId && Meteor.userId();
+    } catch (e) {}
   }
 
   return userId;
 }
 
+function makeArgs(method, _arguments) {
+  var args = _.toArray(_arguments);
+  var offset = 0;
+  var callback;
+
+  var ret = {
+    _async: false,
+    _get: function () { return args; }
+  };
+
+  // In some cases the first argument is the collection name:
+  if (typeof args[0] === "string") {
+    offset = 1;
+  }
+
+  if (method === "insert") {
+    ret.doc = args[0 + offset];
+    callback = args[1 + offset];
+
+    if (typeof callback === "function") {
+      ret._async = true;
+      ret._get = function (cb) {
+        return args.slice(0, offset).concat([ret.doc, function () {
+          if (typeof cb === "function") cb.apply(this, arguments);
+          callback.apply(this, arguments);
+        }]);
+      };
+    }
+  }
+
+  if (method === "update") {
+  }
+
+  if (method === "remove") {
+  }
+
+  return ret;
+}
+
 function bindAdvices(constructor) {
-  _.each(mutatorMethods, function (method) {
-    _.each(adviceTypes, function (type) {
-      Meteor._ensure(Meteor.Collection.prototype, "_advice", type);
+  _.each(["insert", "update", "remove"], function (method) {
+    _.each(["before", "after"], function (type) {
+      Meteor._ensure(constructor.prototype, "_advice", type);
       Meteor._ensure(Meteor.Collection.prototype, type);
 
-      Meteor.Collection.prototype._advice[type][method] = [];
+      constructor.prototype._advice[type][method] = [];
       Meteor.Collection.prototype[type][method] = function (advice) {
-        Meteor.Collection.prototype._advice[type][method].push(advice);
+        constructor.prototype._advice[type][method].push(advice);
       };
     });
 
     var _super = constructor.prototype[method];
     constructor.prototype[method] = function () {
-      return this["_" + method + "Advice"].apply(this, [
-        getUserId.call(this),
-        _super,
-        Meteor.isClient
-      ].concat(_.toArray(arguments)));
+      if (!this["_" + method + "Advice"]) {
+        // TEMP
+        return _super.apply(this, arguments);
+      }
+      return this["_" + method + "Advice"].call(this,
+        getUserId(), _super, makeArgs(method, arguments)
+      );
     };
   });
 
-  constructor.prototype._insertAdvice = function (userId, _super, blocking, doc, callback) {
-    console.log("_insertAdvice", userId, blocking, doc, callback);
-
+  constructor.prototype._insertAdvice = function (userId, _super, args) {
     var self = this;
     var adviceContext = {context: self, _super: _super};
 
     // before
-    console.log("self._advice", self._advice)
     _.each(self._advice.before.insert, function (advice) {
-      advice.call(adviceContext, userId, doc);
+      advice.call(adviceContext, userId, args.doc);
     });
 
-    function after(id) {
-      doc._id = id; // TODO: double check that this is necessary
-
+    function after(err, id) {
+      args.doc._id = id;
       _.each(self._advice.after.insert, function (advice) {
-        advice.call(adviceContext, userId, doc);
+        advice.call(adviceContext, userId, args.doc);
       });
     }
 
-    _super.call(self, doc, function (err, id) {
-      after(id);
-      callback && callback.apply(this, arguments);
-    });
+    if (args._async) {
+      _super.apply(self, args._get(function (err, id) {
+        after(err, id);
+      }));
+    } else {
+      ret = _super.apply(self, args._get());
+      after(null, ret);
+    }
 
-    return doc._id;
+    return ret;
   };
+
+  //constructor.prototype._updateAdvice = function (userId, _super, args) {};
+
+  //constructor.prototype._removeAdvice = function (userId, _super, args) {};
 }
 
 if (Meteor.isServer) {
   bindAdvices(MongoInternals.Connection);
+  bindAdvices(LocalCollection);
 }
 
 if (Meteor.isClient) {
