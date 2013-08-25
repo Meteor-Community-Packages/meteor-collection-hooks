@@ -2,7 +2,7 @@ Tinytest.addAsync("insert - local collection document should have extra property
   var collection = new Meteor.Collection(null);
   var tmp = {};
 
-  collection.before.insert(function (userId, doc) {
+  collection.before("insert", function (userId, doc) {
     tmp.typeof_userId = typeof userId;
     doc.before_insert_value = true;
   });
@@ -24,7 +24,7 @@ Tinytest.addAsync("insert - local collection document should have extra property
 Tinytest.addAsync("insert - local collection should fire after-insert hook", function (test, next) {
   var collection = new Meteor.Collection(null);
 
-  collection.after.insert(function (userId, doc) {
+  collection.after("insert", function (userId, doc) {
     if (Meteor.isServer) {
       test.equal(typeof userId, "undefined", "Local collection on server should NOT know about a userId");
     } else {

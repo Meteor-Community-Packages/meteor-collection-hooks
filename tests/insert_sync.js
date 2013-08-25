@@ -6,7 +6,7 @@ if (Meteor.isServer) {
 
     collection1.remove({});
 
-    collection1.before.insert(function (userId, doc) {
+    collection1.before("insert", function (userId, doc) {
       // There should be no userId because the insert was initiated
       // on the server -- there's no correlation to any specific user
       tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
@@ -41,7 +41,8 @@ if (Meteor.isServer) {
     return collection2.find();
   });
 
-  collection2.before.insert(function (userId, doc) {
+  collection2.before("insert", function (userId, doc) {
+    console.log("collection2 HOOK HAS BEEN CALLED!", userId, doc)
     doc.server_value = true;
   });
 }
@@ -50,23 +51,20 @@ if (Meteor.isClient) {
   Meteor.subscribe("test_insert_publish_collection2");
 
   Tinytest.addAsync("insert - collection2 document should have client-added and server-added extra properties added to it before it is inserted", function (test, next) {
-    collection2.before.insert(function (userId, doc) {
-      console.log("BEFORE INSERT")
-      // Insert is initiated on the client, a userId must be present
-      test.notEqual(userId, undefined);
-      test.equal(collection2.find({start_value: true}).count(), 0);
+    collection2.before("insert", function (userId, doc) {
+      test.notEqual(userId, undefined, "the userId should be present since we are on the client");
+      test.equal(collection2.find({start_value: true}).count(), 0, "collection2 should not have the test document in it");
       doc.client_value = true;
     });
 
-    collection2.after.insert(function (userId, doc) {
-      console.log("AFTER INSERT")
-      test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1);
-      test.notEqual(doc._id, undefined);
+    collection2.after("insert", function (userId, doc) {
+      console.log("AFTER INSERT", doc)
+      test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1, "collection2 should have the test document with client_value AND server_value in it");
+      test.notEqual(doc._id, undefined, "the test document should have an _id");
       next();
     });
 
     InsecureLogin.ready(function () {
-      console.log("CALLING test_insert_reset_collection2")
       Meteor.call("test_insert_reset_collection2", function (err, result) {
         collection2.insert({start_value: true});
       });

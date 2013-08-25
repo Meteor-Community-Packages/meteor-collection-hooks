@@ -1,6 +1,32 @@
-var pointcutLocations = ["before", "after"];
+var defaultPointcutLocations = ["before", "after"];
+var argParsers = {};
 
-function getUserId() {
+function makeArgs(method, _arguments) {
+  var args = _.toArray(_arguments);
+
+  var ret = {
+    _async: false,
+    _get: function () { return args; }
+  };
+
+  if (!argParsers[method]) {
+    throw "No argument parser defined for " + method + "";
+  }
+
+  return argParsers[method](args, ret);
+}
+
+function getAdviceName(method) {
+  return "_" + method + "Advice"; // _insertAdvice for example
+}
+
+//==============================================================================
+// Public API
+//==============================================================================
+
+CollectionHooks = {};
+
+CollectionHooks.getUserId = function () {
   var userId;
 
   if (Meteor.isClient) {
@@ -16,7 +42,7 @@ function getUserId() {
       userId = Meteor.userId && Meteor.userId();
     } catch (e) {}
 
-    /* TODO: probably re-implement this
+    /* TODO: re-implement this
     if (!userId) {
         userId = Meteor.__collection_hooks_publish_userId;
     }
@@ -24,50 +50,24 @@ function getUserId() {
   }
 
   return userId;
-}
+};
 
-function makeArgs(method, _arguments) {
-  var args = _.toArray(_arguments);
+CollectionHooks.addPointcuts = function (constructor, pointcutLocations) {
+  pointcutLocations = pointcutLocations || defaultPointcutLocations;
 
-  var ret = {
-    _async: false,
-    _get: function () { return args; }
-  };
-
-  if (!CollectionHooks._arg_parsers[method]) {
-    throw "No argument parser defined for " + method + "";
-  }
-
-  return CollectionHooks._arg_parsers[method](ret);
-}
-
-function getAdviceName(method) {
-  return "_" + method + "Advice"; // _insertAdvice for example
-}
-
-CollectionHooks.addPointcuts = function (method) {
   _.each(pointcutLocations, function (loc) {
-    Meteor._ensure(Meteor.Collection.prototype, loc);
 
-    if (Meteor.Collection.prototype[loc][method]) {
-      throw "Can't add method '" + method + "' to location '" + loc + "', already defined.";
-    }
+    // Add methods at the pointcut locations to allow the user to push
+    // advice (hooks) into instance._advice[loc][method] array
+    constructor.prototype[loc] = function (method, advice) {
+      // Make sure instance._advice[loc][method] is initialized properly
+      Meteor._ensure(this, "_advice", loc);
+      if (!this._advice[loc][method]) this._advice[loc][method] = [];
 
-    // Ensure pointcut location on Meteor.Collection's prototype is initialized
-    // so that we can do MyCollection.before/after.xxx
-    Meteor._ensure(Meteor.Collection.prototype, loc);
-
-    // Make sure MyCollection._aspects[loc] is initialized
-    Meteor._ensure(Meteor.Collection.prototype, "_aspects", loc);
-
-    // Initialize MyCollection._aspects[loc][method] empty array
-    Meteor.Collection.prototype._aspects[loc][method] = [];
-
-    // Add method hook onto insert/before (loc) to push advice into
-    // the MyCollection._aspects[loc][method] array
-    Meteor.Collection.prototype[loc][method] = function (advice) {
-      Meteor.Collection.prototype._aspects[loc][method].push(advice);
+      // Push advice
+      this._advice[loc][method].push(advice);
     };
+
   });
 };
 
@@ -86,22 +86,24 @@ CollectionHooks.wrapMethod = function (method) {
       return _super.apply(this, arguments);
     }
 
-    // Call the advice
+    // Call the advice, passing in a userId (if applicable) and the super,
+    // implying that the advice is responsible for calling the super to get the
+    // original behavior. We also send the arguments parsed as per the arg
+    // parsing rules defined by each implementation
     return Meteor.Collection.prototype[adviceName].call(this,
-      getUserId(), _super, makeArgs(method, arguments)
+      CollectionHooks.getUserId(), _super, makeArgs(method, arguments)
     );
   };
 };
 
-Meteor._ensure(CollectionHooks, "_arg_parsers");
-
-CollectionHooks.argParser = function (method, parser) {
-  if (CollectionHooks._arg_parsers[method]) {
+CollectionHooks.defineArgParser = function (method, parser) {
+  if (argParsers[method]) {
     throw "Argument parser for " + method + " already defined";
   }
-
-  CollectionHooks._arg_parsers[method] = parser;
+  argParsers[method] = parser;
 };
+
+CollectionHooks.addPointcuts(Meteor.Collection);
 
 /*
 var directFind = Meteor.Collection.prototype.find;
