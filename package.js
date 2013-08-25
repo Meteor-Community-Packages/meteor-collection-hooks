@@ -5,23 +5,54 @@ Package.describe({
 var both = ["client", "server"];
 
 Package.on_use(function (api, where) {
-	api.use(["deps", "underscore"], both);
+	api.use([
+	  "meteor",
+	  "underscore",
+	  "ejson",
+	  "mongo-livedata",
+	  "minimongo",
+	  "deps"
+	], both);
+
 	api.add_files(["collection-hooks.js"], both);
+
+	api.export("CollectionHooks");
 });
 
 Package.on_test(function (api) {
-	api.use(["collection-hooks", "accounts-base", "tinytest"], both);
-	api.add_files("tests.js", both);
+	api.use([
+	  "collection-hooks",
+	  "underscore",
+	  "accounts-base",
+	  "accounts-password",
+	  "tinytest",
+	  "test-helpers"
+	], both);
 
-	// Commented-out -- requires "accounts-testing" which makes
-	// Meteor.insecureUserLogin available globally. Meteorite will install
-	// it in "packages/", and thus be available to the normal app, not just
-	// testing.
-	//api.use(["accounts-testing"], both);
-	//api.add_files("tests_publish.js", both);
-	//api.add_files("tests_userid_in_find_hooks_within_publish.js", both);
+	api.add_files(["tests/insecure_login.js"], both);
 
-	// TODO: @mizzao, is this still applicable?
-	//api.use(["coffeescript"], "server");
-	//api.add_files(["client_server_userId_tests.coffee"], both);
+	// local = minimongo (on server and client)
+	// sync = minimongo on client, mongo on server, with mutator methods to sync
+	// allow = same as sync but with an allow rule test
+	api.add_files(["tests/insert_local.js"], both);
+	//api.add_files(["tests/insert_sync.js"], both);
+	//api.add_files(["tests/insert_allow.js"], both);
+	//api.add_files(["tests/insert_user.js"], "server");
+
+	/*
+	api.add_files(["tests/update_local.js"], both);
+	api.add_files(["tests/update_sync.js"], both);
+	api.add_files(["tests/update_allow.js"], both);
+	api.add_files(["tests/update_user.js"], "server");
+
+	api.add_files(["tests/remove_local.js"], both);
+	api.add_files(["tests/remove_sync.js"], both);
+	api.add_files(["tests/remove_allow.js"], both);
+
+	// fetch can only work server-side because find's "fields" option is limited
+	// to only working on the server
+	api.add_files(["tests/fetch.js"], "server");
+	api.add_files(["tests/multiple_hooks.js"], both);
+	api.add_files(["tests/transform.js"], both);
+	*/
 });

@@ -1,47 +1,71 @@
 # Meteor Collection Hooks
 
-Extends Meteor.Collection with before/after hooks for insert/update/remove/find/findOne methods.
+Extends Meteor.Collection with before/after hooks for insert/update/remove.
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
-The only downside to these hooks is that they currently match the function signatures of their respective methods, i.e. the hook is fired on a per method-call basis, not per-document.
-
-This means that when an `update` method is called, a hook callback will have the same function signature (with `userId` added though, if applicable). You will need to run a query to take any action on the affected documents:
-
-```
-MyCollection.before("update", function (userId, selector) {
-	var docs = MyCollection.find(selector);
-	docs.forEach(function (doc) {
-		// etc
-	});
-});
-```
-
 ### Example usage:
 
-```
+```javascript
 var test = new Meteor.Collection("test");
 
-test.before("insert", function (userId, doc) {
-	doc.created = Date.now();
-});
+test.before({
+  insert: function (userId, doc) {
+    // Fired before the doc is inserted.
+    // Gives you an opportunity to modify doc as needed, or run additional
+    // functionality
+    // doc._transform() obtains transformed version of doc, if defined.
+    doc.createdAt = Date.now();
+  },
+  update: function (userId, doc, fieldNames, modifier) {
+    // Fired before the doc is updated.
+    // Gives you an opportunity to modify doc as needed, or run additional
+    // functionality. Note that we are changing the modifier, and not the
+    // doc. Setting the value on the doc introduces far too much complexity
+    // when multi:true is used.
+    // doc._transform() obtains transformed version of doc, if defined.
+    modifier.$set.modifiedAt = Date.now();
+  },
+  remove: function (userId, doc) {
+    // Fired just before the doc is removed.
+    // Gives you an opportunity to affect your system while the document is
+    // still in existence -- useful for maintaining system integrity, such
+    // as cascading deletes
+    // doc._transform() obtains transformed version of doc, if defined.
+  },
+  fetch: ... /* only works server-side */
+})
 
-test.after("insert", function (userId, doc) {
-	// In the case of after insert, doc will have been pre-fetched for you
-});
-
-test.after("update", function (userId, selector, modifier, options, previous) {
-	// Notice the "previous" parameter, which is also available in "remove" (only for the after type).
-	// It contains an array of the affected documents before update/remove was applied
-	doSomething();
-});
-
-test.before("find", function (userId, selector, options) {
-	// Note that userId will be available even when find is invoked within a Meteor.publish
+test.after({
+  insert: function (userId, doc) {
+    // Fired after the doc was inserted.
+    // Gives you an opportunity to run post-insert tasks, such as sending
+    // notifications of new document insertions.
+    // doc._transform() obtains transformed version of doc, if defined.
+  },
+  update: function (userId, doc, fieldNames, modifier) {
+    // Fired after the doc was updated.
+    // Gives you an opportunity to run post-update tasks, potentially comparing
+    // the previous and new documents to take further action.
+    // doc._previous contains the doc before it was updated;
+    // doc._transform() obtains transformed version of doc, if defined.
+  },
+  remove: function (userId, doc) {
+    // Fired after the doc was removed.
+    // "doc" contains a copy of the doc before it was removed.
+    // Gives you an opportunity to run post-removal tasks that don't
+    // necessarily depend on the document being found in the database
+    // (external service clean-up for instance).
+  },
+  fetch: ... /* only works server-side */
 });
 ```
 
-#### Contributors
+### TODO
+
+- Write tests to verify that `this._super` and `this.context` in hook callbacks are functioning as intended
+
+### Contributors
 
 - Mathieu Bouchard (@matb33)
 - Kevin Kaland (@wizonesolutions)

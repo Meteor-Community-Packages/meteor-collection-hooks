@@ -3,7 +3,7 @@
   "description": "Extends Meteor.Collection with before/after hooks for insert/update/remove",
   "homepage": "https://github.com/matb33/meteor-collection-hooks",
   "author": "Mathieu Bouchard <matb33@gmail.com>",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "git": "https://github.com/matb33/meteor-collection-hooks.git",
   "packages": {}
 }

@@ -1,0 +1,56 @@
+Tinytest.addAsync("general - hook callbacks should have _transform function that works", function (test, next) {
+  var collection = new Meteor.Collection(null, {
+    transform: function (doc) {
+      return _.extend(doc, {isTransformed: true});
+    }
+  });
+
+  collection.allow({
+    insert: function () { return true; },
+    update: function () { return true; },
+    remove: function () { return true; }
+  });
+
+  var counts = {
+    before: {
+      insert: 0,
+      update: 0,
+      remove: 0
+    },
+    after: {
+      insert: 0,
+      update: 0,
+      remove: 0
+    }
+  };
+
+  collection.before({
+    insert: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.before.insert++; } },
+    update: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.before.update++; } },
+    remove: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.before.remove++; } }
+  });
+
+  collection.after({
+    insert: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.after.insert++; } },
+    update: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.after.update++; } },
+    remove: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.after.remove++; } }
+  });
+
+  InsecureLogin.ready(function () {
+    collection.insert({start_value: true}, function (err, id) {
+      if (err) throw err;
+      collection.update({_id: id}, {$set: {update_value: true}}, function (err) {
+        if (err) throw err;
+        collection.remove({_id: id}, function (err) {
+          test.equal(counts.before.insert, 1, "before insert should have 1 count");
+          test.equal(counts.before.update, 1, "before update should have 1 count");
+          test.equal(counts.before.remove, 1, "before remove should have 1 count");
+          test.equal(counts.after.insert, 1, "after insert should have 1 count");
+          test.equal(counts.after.update, 1, "after update should have 1 count");
+          test.equal(counts.after.remove, 0, "after remove should have 0 count");
+          next();
+        })
+      });
+    });
+  });
+});
