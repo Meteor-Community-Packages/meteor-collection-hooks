@@ -1,7 +1,7 @@
-var defaultPointcutLocations = ["before", "after"];
 var argParsers = {};
+var advices = {};
 
-function makeArgs(method, _arguments) {
+function makeArgs(method, _arguments, offset) {
   var args = _.toArray(_arguments);
 
   var ret = {
@@ -10,14 +10,39 @@ function makeArgs(method, _arguments) {
   };
 
   if (!argParsers[method]) {
-    throw "No argument parser defined for " + method + "";
+    throw "No argument parser defined for " + method + ".";
   }
 
-  return argParsers[method](args, ret);
+  // In the case of MongoInternals.Connection, the first argument is the
+  // collection name. The provided offset helps us to optionally skip over the
+  // first argument (or slice it out)
+  offset = offset || 0;
+
+  return argParsers[method](args, ret, offset);
 }
 
 function getAdviceName(method) {
   return "_" + method + "Advice"; // _insertAdvice for example
+}
+
+if (Meteor.isServer) {
+  // Workaround to allow MongoInternals.Connection to speak to Meteor.Collection
+  _.extend(MongoInternals.RemoteCollectionDriver.prototype, {
+    open: function (name, connection) {
+      var self = this;
+      var ret = {};
+      //------------------------------------------------------------------------
+      ret.__CONNECTION__ = self.mongo.__CONNECTION__ = connection;
+      //------------------------------------------------------------------------
+      _.each(
+        ['find', 'findOne', 'insert', 'update', 'remove', '_ensureIndex',
+         '_dropIndex', '_createCappedCollection'],
+        function (m) {
+          ret[m] = _.bind(self.mongo[m], self.mongo, name);
+        });
+      return ret;
+    }
+  });
 }
 
 //==============================================================================
@@ -52,20 +77,26 @@ CollectionHooks.getUserId = function () {
   return userId;
 };
 
-CollectionHooks.addPointcuts = function (constructor, pointcutLocations) {
-  pointcutLocations = pointcutLocations || defaultPointcutLocations;
+CollectionHooks.addPointcuts = function (pointcutLocations) {
+  pointcutLocations = pointcutLocations || ["before", "after"];
 
   _.each(pointcutLocations, function (loc) {
 
-    // Add methods at the pointcut locations to allow the user to push
-    // advice (hooks) into instance._advice[loc][method] array
-    constructor.prototype[loc] = function (method, advice) {
-      // Make sure instance._advice[loc][method] is initialized properly
-      Meteor._ensure(this, "_advice", loc);
-      if (!this._advice[loc][method]) this._advice[loc][method] = [];
+    // Add pointcuts on Meteor.Collection. Store the advice on the child
+    // _collection object so that MongoInternals.Connection and LocalCollection
+    // can read them:
+    Meteor.Collection.prototype[loc] = function (method, advice) {
+      // Workaround to allow MongoInternals.Connection to see Meteor.Collection
+      if (this._collection.__CONNECTION__) {
+        this._collection.__CONNECTION__.__COLLECTION__ = this._collection;
+      }
+
+      // Initialize empty array
+      Meteor._ensure(this, "_collection", "_advice", loc);
+      if (!this._collection._advice[loc][method]) this._collection._advice[loc][method] = [];
 
       // Push advice
-      this._advice[loc][method].push(advice);
+      this._collection._advice[loc][method].push(advice);
     };
 
   });
@@ -73,27 +104,7 @@ CollectionHooks.addPointcuts = function (constructor, pointcutLocations) {
 
 CollectionHooks.defineAdvice = function (method, advice) {
   var adviceName = getAdviceName(method);
-  Meteor.Collection.prototype[adviceName] = advice;
-};
-
-CollectionHooks.wrapMethod = function (method) {
-  var _super = Meteor.Collection.prototype[method];
-  Meteor.Collection.prototype[method] = function () {
-    var adviceName = getAdviceName(method);
-
-    // If advice has not been defined, fallback to regular behavior
-    if (!Meteor.Collection.prototype[adviceName]) {
-      return _super.apply(this, arguments);
-    }
-
-    // Call the advice, passing in a userId (if applicable) and the super,
-    // implying that the advice is responsible for calling the super to get the
-    // original behavior. We also send the arguments parsed as per the arg
-    // parsing rules defined by each implementation
-    return Meteor.Collection.prototype[adviceName].call(this,
-      CollectionHooks.getUserId(), _super, makeArgs(method, arguments)
-    );
-  };
+  advices[adviceName] = advice;
 };
 
 CollectionHooks.defineArgParser = function (method, parser) {
@@ -103,7 +114,51 @@ CollectionHooks.defineArgParser = function (method, parser) {
   argParsers[method] = parser;
 };
 
-CollectionHooks.addPointcuts(Meteor.Collection);
+CollectionHooks.wrapMethod = function (method) {
+
+  function wrap(constructor, offset) {
+    var _super = constructor.prototype[method];
+
+    constructor.prototype[method] = function () {
+      var adviceName = getAdviceName(method);
+      var advice;
+
+      // If advice has not been defined, fallback to regular behavior
+      if (!advices[adviceName]) {
+        return _super.apply(this, arguments);
+      }
+
+      if (this.__CONNECTION__) {
+        // MongoInternals.Connection
+        // OOPS, this advice is too broad -- applies to all collections!!!
+        advice = this.__CONNECTION__.__COLLECTION__._advice;
+      } else {
+        // LocalCollection
+        advice = this._advice;
+      }
+
+      // Call the advice, passing in a userId (if applicable) and the super,
+      // implying that the advice is responsible for calling the super to run
+      // the original behavior. We also send the arguments parsed as per the arg
+      // parsing rules defined by each implementation
+      return advices[adviceName].call(this,
+        CollectionHooks.getUserId(), _super, advice || {}, makeArgs(method, arguments, offset)
+      );
+    };
+  }
+
+  if (Meteor.isServer) {
+    wrap(MongoInternals.Connection, 1);
+    wrap(LocalCollection);
+  }
+
+  if (Meteor.isClient) {
+    wrap(LocalCollection);
+  }
+
+};
+
+CollectionHooks.addPointcuts();
 
 /*
 var directFind = Meteor.Collection.prototype.find;

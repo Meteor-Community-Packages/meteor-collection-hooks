@@ -35,21 +35,21 @@ Package.on_test(function (api) {
   api.add_files(["tests/insecure_login.js"], both);
 
   // local = minimongo (on server and client)
-  // sync = minimongo on client, mongo on server, with mutator methods to sync
+  // both = minimongo on client and server,  mongo on server, with mutator methods
   // allow = same as sync but with an allow rule test
   api.add_files(["tests/insert_local.js"], both);
-  api.add_files(["tests/insert_sync.js"], both);
+  api.add_files(["tests/insert_both.js"], both);
   //api.add_files(["tests/insert_allow.js"], both);
   //api.add_files(["tests/insert_user.js"], "server");
 
   /*
   api.add_files(["tests/update_local.js"], both);
-  api.add_files(["tests/update_sync.js"], both);
+  api.add_files(["tests/update_both.js"], both);
   api.add_files(["tests/update_allow.js"], both);
   api.add_files(["tests/update_user.js"], "server");
 
   api.add_files(["tests/remove_local.js"], both);
-  api.add_files(["tests/remove_sync.js"], both);
+  api.add_files(["tests/remove_both.js"], both);
   api.add_files(["tests/remove_allow.js"], both);
 
   // fetch can only work server-side because find's "fields" option is limited
