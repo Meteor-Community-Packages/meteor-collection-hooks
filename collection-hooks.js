@@ -22,9 +22,10 @@
 // Advice: Wrapper code that knows when to calls user code (aspects)
 // Pointcut: before/after
 
-var CollectionHooks = {};
 var advices = {};
 var constructor = Meteor.Collection;
+
+CollectionHooks = {};
 
 Meteor.Collection = function () {
   var self = this;
@@ -35,21 +36,21 @@ Meteor.Collection = function () {
   _.each(["before", "after"], function (pointcut) {
     _.each(advices, function (advice, method) {
       Meteor._ensure(self, pointcut, method);
-      Meteor._ensure(self, "aspects", method);
+      Meteor._ensure(self, "_aspects", method);
 
-      self.aspects[method][pointcut] = [];
+      self._aspects[method][pointcut] = [];
       self[pointcut][method] = function (aspect) {
-        self.aspects[method][pointcut].push(aspect);
+        self._aspects[method][pointcut].push(aspect);
       };
     });
   });
 
   // Wrap mutator methods, letting the defined advice do the work
   _.each(advices, function (advice, method) {
-    var _super = self._collection[method];
+    var _super = Meteor.isClient ? self[method] : self._collection[method];
 
-    self._collection[method] = function () {
-      return advice.call(this, CollectionHooks.getUserId(), _super, self.aspects[method] || {}, _.toArray(arguments));
+    (Meteor.isClient ? self : self._collection)[method] = function () {
+      return advice.call(this, CollectionHooks.getUserId(), _super, self._aspects[method] || {}, _.toArray(arguments));
     };
   });
 
@@ -108,67 +109,10 @@ CollectionHooks.afterTrailingCallback = function (args, func) {
   return args;
 };
 
+/*
 //===================
 // Tests
 //===================
-
-CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, args) {
-  var self = this;
-  var ctx = {context: self, _super: _super};
-  var async = _.isFunction(_.last(args));
-
-  // before
-  _.each(aspects.before, function (aspect) {
-    aspect.call(ctx, userId, args[0]);
-  });
-
-  function after() {
-    _.each(aspects.after, function (aspect) {
-      aspect.call(ctx, userId, args[0]);
-    });
-  }
-
-  if (async) {
-    _super.apply(self, CollectionHooks.afterTrailingCallback(args, function (err, id) {
-      after();
-    }));
-  } else {
-    _super.apply(self, args);
-    after();
-  }
-
-  return args[0]._id || null;
-});
-
-CollectionHooks.defineAdvice("update", function (userId, _super, aspects, args) {
-  var self = this;
-  var ctx = {context: self, _super: _super};
-  var async = _.isFunction(_.last(args));
-
-  if (async) {
-    return _super.apply(self, CollectionHooks.afterTrailingCallback(args, function (err, id) {
-      //after();
-    }));
-  } else {
-    return _super.apply(self, args);
-    //after();
-  }
-});
-
-CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, args) {
-  var self = this;
-  var ctx = {context: self, _super: _super};
-  var async = _.isFunction(_.last(args));
-
-  if (async) {
-    return _super.apply(self, CollectionHooks.afterTrailingCallback(args, function (err, id) {
-      //after();
-    }));
-  } else {
-    return _super.apply(self, args);
-    //after();
-  }
-});
 
 var c = new Meteor.Collection(null);
 c.before.insert(function (userId, doc) {
@@ -178,8 +122,7 @@ c.before.insert(function (userId, doc) {
 
 c.insert({test: 1});
 console.log(c.find().fetch());
-c.update({test: 2}, {$set: {test: 3}});
-console.log(c.find().fetch());
+*/
 
 
 /*

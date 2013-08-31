@@ -1,55 +1,29 @@
-CollectionHooks.wrapMethod("insert");
-
-CollectionHooks.defineArgParser("insert", function (args, ret, offset) {
-  var callback;
-
-  ret.doc = args[0 + offset];
-  callback = args[1 + offset];
-
-  if (typeof callback === "function") {
-    ret._async = true;
-    ret._get = function (cb) {
-      return args.slice(0, offset).concat([ret.doc, function () {
-        if (typeof cb === "function") cb.apply(this, arguments);
-        callback.apply(this, arguments);
-      }]);
-    };
-  }
-
-  return ret;
-});
-
-CollectionHooks.defineAdvice("insert", function (userId, _super, advice, args) {
+CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, args) {
   var self = this;
   var ctx = {context: self, _super: _super};
+  var async = _.isFunction(_.last(args));
 
-  //console.log("inside insert advice", args, self)
+  //console.log("run insert advice", userId, aspects, args)
 
   // before
-  if (advice.before) {
-    _.each(advice.before.insert, function (advice) {
-      advice.call(ctx, userId, args.doc);
+  _.each(aspects.before, function (aspect) {
+    aspect.call(ctx, userId, args[0]);
+  });
+
+  function after(id) {
+    args[0]._id = args[0]._id || id;  // client version won't have _id yet
+    _.each(aspects.after, function (aspect) {
+      aspect.call(ctx, userId, args[0]);
     });
   }
 
-  function after() {
-    //args.doc._id = id;
-    if (advice.after) {
-      _.each(advice.after.insert, function (advice) {
-        advice.call(ctx, userId, args.doc);
-      });
-    }
-  }
-
-  if (args._async) {
-    _super.apply(self, args._get(function (err, id) {
-      after(/*err, id*/);
+  if (async) {
+    _super.apply(self, CollectionHooks.afterTrailingCallback(args, function (err, id) {
+      after(id);
     }));
   } else {
-    //console.log(_super.toString())
-    _super.apply(self, args._get());
-    after(/*null, ret._id || ret*/);
+    after(_super.apply(self, args));
   }
 
-  return args.doc._id || null;
+  return args[0]._id || null;
 });

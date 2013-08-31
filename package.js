@@ -15,8 +15,10 @@ Package.on_use(function (api, where) {
   ], both);
 
   api.add_files([
-      "collection-hooks.js"
-      //"insert.js"
+      "collection-hooks.js",
+      "insert.js",
+      "update.js",
+      "remove.js"
   ], both);
 
   api.export("CollectionHooks");
@@ -26,21 +28,21 @@ Package.on_test(function (api) {
   api.use([
     "collection-hooks-refactor",
     "underscore",
-    //"accounts-base",
-    //"accounts-password",
+    "accounts-base",
+    "accounts-password",
     "tinytest",
     "test-helpers"
   ], both);
 
-  //api.add_files(["tests/insecure_login.js"], both);
+  api.add_files(["tests/insecure_login.js"], both);
 
   // local = minimongo (on server and client)
   // both = minimongo on client and server,  mongo on server, with mutator methods
-  // allow = same as sync but with an allow rule test
-  //api.add_files(["tests/insert_local.js"], both);
-  //api.add_files(["tests/insert_both.js"], both);
-  //api.add_files(["tests/insert_allow.js"], both);
-  //api.add_files(["tests/insert_user.js"], "server");
+  // allow = same as both but with an allow rule test
+  api.add_files(["tests/insert_local.js"], both);
+  api.add_files(["tests/insert_both.js"], both);
+  api.add_files(["tests/insert_allow.js"], both);
+  api.add_files(["tests/insert_user.js"], "server");
 
   /*
   api.add_files(["tests/update_local.js"], both);
