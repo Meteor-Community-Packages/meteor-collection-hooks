@@ -1,6 +1,3 @@
-var argParsers = {};
-var advices = {};
-
 // TODO: not quite sure what to do yet. I end up with aspects that are shared
 // across collections. It seems due to the fact that I'm setting up these
 // advices on Meteor.Collection, which has a "_collection" property that may
@@ -18,6 +15,185 @@ var advices = {};
 // The best approach I think is to wrap Meteor.Collection, and after it has
 // been constructed, wrap each of the mutator methods of its _collection object.
 // It's more memory intensive, but probably negligible.
+
+
+// Relevant AOP terminology:
+// Aspect: User code that runs before/after (hook)
+// Advice: Wrapper code that knows when to calls user code (aspects)
+// Pointcut: before/after
+
+var CollectionHooks = {};
+var advices = {};
+var constructor = Meteor.Collection;
+
+Meteor.Collection = function () {
+  var self = this;
+  var ret = constructor.apply(self, arguments);
+
+  // Offer a public API to allow the user to define aspects
+  // Example: collection.before.insert(func);
+  _.each(["before", "after"], function (pointcut) {
+    _.each(advices, function (advice, method) {
+      Meteor._ensure(self, pointcut, method);
+      Meteor._ensure(self, "aspects", method);
+
+      self.aspects[method][pointcut] = [];
+      self[pointcut][method] = function (aspect) {
+        self.aspects[method][pointcut].push(aspect);
+      };
+    });
+  });
+
+  // Wrap mutator methods, letting the defined advice do the work
+  _.each(advices, function (advice, method) {
+    var _super = self._collection[method];
+
+    self._collection[method] = function () {
+      return advice.call(this, CollectionHooks.getUserId(), _super, self.aspects[method] || {}, _.toArray(arguments));
+    };
+  });
+
+  return ret;
+};
+
+Meteor.Collection.prototype = Object.create(constructor.prototype);
+
+for (var func in constructor) {
+  if (constructor.hasOwnProperty(func)) {
+    Meteor.Collection[func] = constructor[func];
+  }
+}
+
+CollectionHooks.getUserId = function () {
+  var userId;
+
+  if (Meteor.isClient) {
+    Deps.nonreactive(function () {
+      userId = Meteor.userId && Meteor.userId();
+    });
+  }
+
+  if (Meteor.isServer) {
+    try {
+      // Will throw an error unless within method call.
+      // Attempt to recover gracefully by catching:
+      userId = Meteor.userId && Meteor.userId();
+    } catch (e) {}
+
+    // TODO: re-implement this
+    //if (!userId) {
+    //    userId = Meteor.__collection_hooks_publish_userId;
+    //}
+  }
+
+  return userId;
+};
+
+CollectionHooks.defineAdvice = function (method, advice) {
+  advices[method] = advice;
+};
+
+CollectionHooks.afterTrailingCallback = function (args, func) {
+  if (!_.isFunction(_.last(args))) return args;
+
+  var i = args.length - 1;
+  var callback = args[i];
+
+  args[i] = function () {
+    var ret = callback.apply(this, arguments);
+    func.apply(this, arguments);
+    return ret;
+  };
+
+  return args;
+};
+
+//===================
+// Tests
+//===================
+
+CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, args) {
+  var self = this;
+  var ctx = {context: self, _super: _super};
+  var async = _.isFunction(_.last(args));
+
+  // before
+  _.each(aspects.before, function (aspect) {
+    aspect.call(ctx, userId, args[0]);
+  });
+
+  function after() {
+    _.each(aspects.after, function (aspect) {
+      aspect.call(ctx, userId, args[0]);
+    });
+  }
+
+  if (async) {
+    _super.apply(self, CollectionHooks.afterTrailingCallback(args, function (err, id) {
+      after();
+    }));
+  } else {
+    _super.apply(self, args);
+    after();
+  }
+
+  return args[0]._id || null;
+});
+
+CollectionHooks.defineAdvice("update", function (userId, _super, aspects, args) {
+  var self = this;
+  var ctx = {context: self, _super: _super};
+  var async = _.isFunction(_.last(args));
+
+  if (async) {
+    return _super.apply(self, CollectionHooks.afterTrailingCallback(args, function (err, id) {
+      //after();
+    }));
+  } else {
+    return _super.apply(self, args);
+    //after();
+  }
+});
+
+CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, args) {
+  var self = this;
+  var ctx = {context: self, _super: _super};
+  var async = _.isFunction(_.last(args));
+
+  if (async) {
+    return _super.apply(self, CollectionHooks.afterTrailingCallback(args, function (err, id) {
+      //after();
+    }));
+  } else {
+    return _super.apply(self, args);
+    //after();
+  }
+});
+
+var c = new Meteor.Collection(null);
+c.before.insert(function (userId, doc) {
+  console.log("Before insert called!")
+  doc.test = 2;
+});
+
+c.insert({test: 1});
+console.log(c.find().fetch());
+c.update({test: 2}, {$set: {test: 3}});
+console.log(c.find().fetch());
+
+
+/*
+var _Meteor_Collection = Meteor.Collection;
+
+Meteor.Collection = function () {
+  return _Meteor_Collection.apply(this, arguments);
+  console.log("it ran")
+};
+*/
+
+/*
+var argParsers = {};
+var advices = {};
 
 var mongoConnectionAspects = {};
 var localCollectionAspects = {};
@@ -50,28 +226,6 @@ function getAdviceName(method) {
 function isMongoConnection(obj) {
   return _.has(obj._collection, "_ensureIndex");
 }
-/*
-
-if (Meteor.isServer) {
-  // Workaround to allow MongoInternals.Connection to speak to Meteor.Collection
-  _.extend(MongoInternals.RemoteCollectionDriver.prototype, {
-    open: function (name, connection) {
-      var self = this;
-      var ret = {};
-      //------------------------------------------------------------------------
-      ret.__CONNECTION__ = self.mongo.__CONNECTION__ = new Object();
-      //------------------------------------------------------------------------
-      _.each(
-        ['find', 'findOne', 'insert', 'update', 'remove', '_ensureIndex',
-         '_dropIndex', '_createCappedCollection'],
-        function (m) {
-          ret[m] = _.bind(self.mongo[m], self.mongo, name);
-        });
-      return ret;
-    }
-  });
-}
-*/
 
 //==============================================================================
 // Public API
@@ -95,11 +249,10 @@ CollectionHooks.getUserId = function () {
       userId = Meteor.userId && Meteor.userId();
     } catch (e) {}
 
-    /* TODO: re-implement this
-    if (!userId) {
-        userId = Meteor.__collection_hooks_publish_userId;
-    }
-    */
+    // TODO: re-implement this
+    //if (!userId) {
+    //    userId = Meteor.__collection_hooks_publish_userId;
+    //}
   }
 
   return userId;
@@ -133,14 +286,12 @@ CollectionHooks.addPointcuts = function (pointcutLocations) {
         // Push advice
         localCollectionAspects[this.__collection_hook_id][loc][method].push(advice);
 
-        /*
         // Initialize empty array
-        Meteor._ensure(this, "_collection", "_advice", loc);
-        if (!this._collection._advice[loc][method]) this._collection._advice[loc][method] = [];
+        //Meteor._ensure(this, "_collection", "_advice", loc);
+        //if (!this._collection._advice[loc][method]) this._collection._advice[loc][method] = [];
 
         // Push advice
-        this._collection._advice[loc][method].push(advice);
-        */
+        //this._collection._advice[loc][method].push(advice);
       }
     };
 
@@ -209,6 +360,7 @@ CollectionHooks.wrapMethod = function (method) {
 };
 
 CollectionHooks.addPointcuts();
+*/
 
 /*
 var directFind = Meteor.Collection.prototype.find;
