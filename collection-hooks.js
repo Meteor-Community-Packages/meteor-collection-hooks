@@ -1,6 +1,28 @@
 var argParsers = {};
 var advices = {};
 
+// TODO: not quite sure what to do yet. I end up with aspects that are shared
+// across collections. It seems due to the fact that I'm setting up these
+// advices on Meteor.Collection, which has a "_collection" property that may
+// or may not even be of type LocalCollection or MongoInternals.Connection.
+// I then need to have LocalCollection and MongoInternals.Connection refer to
+// the exact instance of Meteor.Collection to which they are related. This has
+// proven to be very tricky, because the instances of LocalCollection don't
+// appear to store a reference back to the parent Meteor.Collection, and worse
+// still, MongoInternals.Connection is so far removed from Meteor.Collection
+// that it's not even stored as a child object anywhere in Meteor.Collection --
+// it seems a few of its functions are bound to it but the trouble is that I
+// think it's a single instance of MongoInternals.Connection... that would
+// explain the _.bind() trickery in remote_mongo_driver.js
+
+// The best approach I think is to wrap Meteor.Collection, and after it has
+// been constructed, wrap each of the mutator methods of its _collection object.
+// It's more memory intensive, but probably negligible.
+
+var mongoConnectionAspects = {};
+var localCollectionAspects = {};
+var lc = 0;
+
 function makeArgs(method, _arguments, offset) {
   var args = _.toArray(_arguments);
 
@@ -25,6 +47,11 @@ function getAdviceName(method) {
   return "_" + method + "Advice"; // _insertAdvice for example
 }
 
+function isMongoConnection(obj) {
+  return _.has(obj._collection, "_ensureIndex");
+}
+/*
+
 if (Meteor.isServer) {
   // Workaround to allow MongoInternals.Connection to speak to Meteor.Collection
   _.extend(MongoInternals.RemoteCollectionDriver.prototype, {
@@ -32,7 +59,7 @@ if (Meteor.isServer) {
       var self = this;
       var ret = {};
       //------------------------------------------------------------------------
-      ret.__CONNECTION__ = self.mongo.__CONNECTION__ = connection;
+      ret.__CONNECTION__ = self.mongo.__CONNECTION__ = new Object();
       //------------------------------------------------------------------------
       _.each(
         ['find', 'findOne', 'insert', 'update', 'remove', '_ensureIndex',
@@ -44,6 +71,7 @@ if (Meteor.isServer) {
     }
   });
 }
+*/
 
 //==============================================================================
 // Public API
@@ -82,21 +110,38 @@ CollectionHooks.addPointcuts = function (pointcutLocations) {
 
   _.each(pointcutLocations, function (loc) {
 
-    // Add pointcuts on Meteor.Collection. Store the advice on the child
-    // _collection object so that MongoInternals.Connection and LocalCollection
-    // can read them:
+    // Add pointcuts
     Meteor.Collection.prototype[loc] = function (method, advice) {
-      // Workaround to allow MongoInternals.Connection to see Meteor.Collection
-      if (this._collection.__CONNECTION__) {
-        this._collection.__CONNECTION__.__COLLECTION__ = this._collection;
+      if (isMongoConnection(this)) {
+        // Initialize empty array
+        Meteor._ensure(mongoConnectionAspects, this._name, loc);
+        if (!mongoConnectionAspects[this._name][loc][method])
+          mongoConnectionAspects[this._name][loc][method] = [];
+
+        // Push advice
+        mongoConnectionAspects[this._name][loc][method].push(advice);
+      } else {
+        // Generate id for this collection instance
+        if (!this.__collection_hook_id) this.__collection_hook_id = (lc++);
+        this._collection.__collection_hook_id = this.__collection_hook_id;
+
+        // Initialize empty array
+        Meteor._ensure(localCollectionAspects, this.__collection_hook_id, loc);
+        if (!localCollectionAspects[this.__collection_hook_id][loc][method])
+          localCollectionAspects[this.__collection_hook_id][loc][method] = [];
+
+        // Push advice
+        localCollectionAspects[this.__collection_hook_id][loc][method].push(advice);
+
+        /*
+        // Initialize empty array
+        Meteor._ensure(this, "_collection", "_advice", loc);
+        if (!this._collection._advice[loc][method]) this._collection._advice[loc][method] = [];
+
+        // Push advice
+        this._collection._advice[loc][method].push(advice);
+        */
       }
-
-      // Initialize empty array
-      Meteor._ensure(this, "_collection", "_advice", loc);
-      if (!this._collection._advice[loc][method]) this._collection._advice[loc][method] = [];
-
-      // Push advice
-      this._collection._advice[loc][method].push(advice);
     };
 
   });
@@ -128,13 +173,18 @@ CollectionHooks.wrapMethod = function (method) {
         return _super.apply(this, arguments);
       }
 
-      if (this.__CONNECTION__) {
-        // MongoInternals.Connection
-        // OOPS, this advice is too broad -- applies to all collections!!!
-        advice = this.__CONNECTION__.__COLLECTION__._advice;
+      if (_.isString(arguments[0]) && _.has(mongoConnectionAspects, arguments[0])) {
+        // MongoInternals.Connection is a level of abstraction too far for us to
+        // store advices on it. Since they are always uniquely named, we can
+        // store them in an object:
+        advice = mongoConnectionAspects[arguments[0]];
       } else {
-        // LocalCollection
-        advice = this._advice;
+        // LocalCollection advices can be named or null, so we must store them
+        // on each collection instance:
+        //console.log("this", this);
+        advice = localCollectionAspects[this.__collection_hook_id];
+        //advice = this._advice;
+        console.log("advice", method, advice, this.__collection_hook_id);
       }
 
       // Call the advice, passing in a userId (if applicable) and the super,

@@ -32,8 +32,8 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, advice, args) {
     });
   }
 
-  function after(err, id) {
-    args.doc._id = id;
+  function after() {
+    //args.doc._id = id;
     if (advice.after) {
       _.each(advice.after.insert, function (advice) {
         advice.call(ctx, userId, args.doc);
@@ -43,12 +43,13 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, advice, args) {
 
   if (args._async) {
     _super.apply(self, args._get(function (err, id) {
-      after(err, id);
+      after(/*err, id*/);
     }));
   } else {
-    ret = _super.apply(self, args._get());
-    after(null, ret);
+    //console.log(_super.toString())
+    _super.apply(self, args._get());
+    after(/*null, ret._id || ret*/);
   }
 
-  return ret;
+  return args.doc._id || null;
 });

@@ -7,7 +7,6 @@ if (Meteor.isServer) {
     collection1.remove({});
 
     collection1.before("insert", function (userId, doc) {
-      console.log("test_insert_collection1 BEFORE INSERT!")
       // There should be no userId because the insert was initiated
       // on the server -- there's no correlation to any specific user
       tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
