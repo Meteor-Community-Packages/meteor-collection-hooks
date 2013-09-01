@@ -50,7 +50,17 @@ Meteor.Collection = function () {
     var _super = Meteor.isClient ? self[method] : self._collection[method];
 
     (Meteor.isClient ? self : self._collection)[method] = function () {
-      return advice.call(this, CollectionHooks.getUserId(), _super, self._aspects[method] || {}, _.toArray(arguments));
+      return advice.call(this,
+        getUserId(),
+        _super,
+        self._aspects[method] || {},
+        function (doc) {
+          return  _.isFunction(self._transform)
+                  ? function () { return self._transform(doc); }
+                  : function () { return doc; };
+        },
+        _.toArray(arguments)
+      );
     };
   });
 
@@ -65,7 +75,25 @@ for (var func in constructor) {
   }
 }
 
-CollectionHooks.getUserId = function () {
+CollectionHooks.defineAdvice = function (method, advice) {
+  advices[method] = advice;
+};
+
+CollectionHooks.beforeTrailingCallback = function (args, func) {
+  if (!_.isFunction(_.last(args))) return args;
+
+  var i = args.length - 1;
+  var callback = args[i];
+
+  args[i] = function () {
+    func.apply(this, arguments);
+    return callback.apply(this, arguments);
+  };
+
+  return args;
+};
+
+function getUserId() {
   var userId;
 
   if (Meteor.isClient) {
@@ -88,25 +116,18 @@ CollectionHooks.getUserId = function () {
   }
 
   return userId;
-};
+}
 
-CollectionHooks.defineAdvice = function (method, advice) {
-  advices[method] = advice;
-};
-
-CollectionHooks.afterTrailingCallback = function (args, func) {
-  if (!_.isFunction(_.last(args))) return args;
-
-  var i = args.length - 1;
-  var callback = args[i];
-
-  args[i] = function () {
-    var ret = callback.apply(this, arguments);
-    func.apply(this, arguments);
-    return ret;
-  };
-
-  return args;
+getTransform = function (transform, doc) {
+  if (_.isFunction(transform)) {
+    return function () {
+      return transform(doc);
+    };
+  } else {
+    return function () {
+      return doc;
+    };
+  }
 };
 
 /*

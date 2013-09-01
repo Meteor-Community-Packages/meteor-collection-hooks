@@ -2,22 +2,20 @@ Tinytest.addAsync("update - local collection documents should have extra propert
   var collection = new Meteor.Collection(null);
 
   function start() {
-    collection.before({
-      update: function (userId, doc, fieldNames, modifier) {
-        // There should be a userId if we're running on the client.
-        // Since this is a local collection, the server should NOT know
-        // about any userId
-        if (Meteor.isServer) {
-          test.equal(userId, undefined);
-        } else {
-          test.notEqual(userId, undefined);
-        }
-
-        test.equal(fieldNames.length, 1);
-        test.equal(fieldNames[0], "update_value");
-
-        modifier.$set.before_update_value = true;
+    collection.before.update(function (userId, doc, fieldNames, modifier) {
+      // There should be a userId if we're running on the client.
+      // Since this is a local collection, the server should NOT know
+      // about any userId
+      if (Meteor.isServer) {
+        test.equal(userId, undefined);
+      } else {
+        test.notEqual(userId, undefined);
       }
+
+      test.equal(fieldNames.length, 1);
+      test.equal(fieldNames[0], "update_value");
+
+      modifier.$set.before_update_value = true;
     });
 
     collection.update({start_value: true}, {$set: {update_value: true}}, {multi: true}, function (err) {
@@ -43,25 +41,23 @@ Tinytest.addAsync("update - local collection should fire after-update hook", fun
   var c = 0, n = function () { if (++c === 2) { next(); } };
 
   function start() {
-    collection.after({
-      update: function (userId, doc, fieldNames, modifier) {
-        // There should be a userId if we're running on the client.
-        // Since this is a local collection, the server should NOT know
-        // about any userId
-        if (Meteor.isServer) {
-          test.equal(userId, undefined);
-        } else {
-          test.notEqual(userId, undefined);
-        }
-
-        test.equal(fieldNames.length, 1);
-        test.equal(fieldNames[0], "update_value");
-
-        test.equal(doc.update_value, true);
-        test.equal(_.has(doc._previous, "update_value"), false);
-
-        n();
+    collection.after.update(function (userId, doc, fieldNames, modifier) {
+      // There should be a userId if we're running on the client.
+      // Since this is a local collection, the server should NOT know
+      // about any userId
+      if (Meteor.isServer) {
+        test.equal(userId, undefined);
+      } else {
+        test.notEqual(userId, undefined);
       }
+
+      test.equal(fieldNames.length, 1);
+      test.equal(fieldNames[0], "update_value");
+
+      test.equal(doc.update_value, true);
+      test.equal(_.has(doc._previous, "update_value"), false);
+
+      n();
     });
 
     collection.update({start_value: true}, {$set: {update_value: true}}, {multi: true});
@@ -81,10 +77,8 @@ Tinytest.addAsync("update - local collection should fire before-update hook with
   var collection = new Meteor.Collection(null);
 
   function start() {
-    collection.before({
-      update: function (userId, doc, fieldNames, modifier) {
-        modifier.$set.before_update_value = true;
-      }
+    collection.before.update(function (userId, doc, fieldNames, modifier) {
+      modifier.$set.before_update_value = true;
     });
 
     collection.update({start_value: true}, {$set: {update_value: true}}, function (err) {
@@ -104,10 +98,8 @@ Tinytest.addAsync("update - local collection should fire after-update hook witho
   var c = 0, n = function () { if (++c === 2) { next(); } };
 
   function start() {
-    collection.after({
-      update: function (userId, doc, fieldNames, modifier) {
-        n();
-      }
+    collection.after.update(function (userId, doc, fieldNames, modifier) {
+      n();
     });
 
     collection.update({start_value: true}, {$set: {update_value: true}}, function (err) {

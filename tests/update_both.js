@@ -5,13 +5,11 @@ if (Meteor.isServer) {
     var tmp = {};
 
     function start() {
-      collection1.before({
-        update: function (userId, doc, fieldNames, modifier) {
-          // There should be no userId because the update was initiated
-          // on the server -- there's no correlation to any specific user
-          tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
-          modifier.$set.before_update_value = true;
-        }
+      collection1.before.update(function (userId, doc, fieldNames, modifier) {
+        // There should be no userId because the update was initiated
+        // on the server -- there's no correlation to any specific user
+        tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
+        modifier.$set.before_update_value = true;
       });
 
       collection1.update({start_value: true}, {$set: {update_value: true}}, {multi: true}, function (err) {
@@ -53,10 +51,8 @@ if (Meteor.isServer) {
     return collection2.find();
   });
 
-  collection2.before({
-    update: function (userId, doc, fieldNames, modifier) {
-      modifier.$set.server_value = true;
-    }
+  collection2.before.update(function (userId, doc, fieldNames, modifier) {
+    modifier.$set.server_value = true;
   });
 }
 
@@ -69,24 +65,20 @@ if (Meteor.isClient) {
     function start(err, id) {
       if (err) throw err;
 
-      collection2.before({
-        update: function (userId, doc, fieldNames, modifier) {
-          // Insert is initiated on the client, a userId must be present
-          test.notEqual(userId, undefined);
+      collection2.before.update(function (userId, doc, fieldNames, modifier) {
+        // Insert is initiated on the client, a userId must be present
+        test.notEqual(userId, undefined);
 
-          test.equal(fieldNames.length, 1);
-          test.equal(fieldNames[0], "update_value");
+        test.equal(fieldNames.length, 1);
+        test.equal(fieldNames[0], "update_value");
 
-          modifier.$set.client_value = true;
-        }
+        modifier.$set.client_value = true;
       });
 
-      collection2.after({
-        update: function (userId, doc, fieldNames, modifier) {
-          test.equal(doc.update_value, true);
-          test.equal(_.has(doc._previous, "update_value"), false);
-          n();
-        }
+      collection2.after.update(function (userId, doc, fieldNames, modifier) {
+        test.equal(doc.update_value, true);
+        test.equal(_.has(doc._previous, "update_value"), false);
+        n();
       });
 
       collection2.update({_id: id}, {$set: {update_value: true}}, function (err) {

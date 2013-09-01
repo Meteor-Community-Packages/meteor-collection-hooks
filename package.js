@@ -44,7 +44,6 @@ Package.on_test(function (api) {
   api.add_files(["tests/insert_allow.js"], both);
   api.add_files(["tests/insert_user.js"], "server");
 
-  /*
   api.add_files(["tests/update_local.js"], both);
   api.add_files(["tests/update_both.js"], both);
   api.add_files(["tests/update_allow.js"], both);
@@ -56,8 +55,7 @@ Package.on_test(function (api) {
 
   // fetch can only work server-side because find's "fields" option is limited
   // to only working on the server
-  api.add_files(["tests/fetch.js"], "server");
+  //api.add_files(["tests/fetch.js"], "server");
   api.add_files(["tests/multiple_hooks.js"], both);
-  api.add_files(["tests/transform.js"], both);
-  */
+  api.add_files(["tests/transform.js"], "server");
 });

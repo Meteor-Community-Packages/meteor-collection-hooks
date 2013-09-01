@@ -4,19 +4,17 @@ Tinytest.addAsync("remove - local collection document should affect external var
   function start(err, id) {
     var external = 0;
 
-    collection.before({
-      remove: function (userId, doc) {
-        // There should be a userId if we're running on the client.
-        // Since this is a local collection, the server should NOT know
-        // about any userId
-        if (Meteor.isServer) {
-          test.equal(userId, undefined);
-        } else {
-          test.notEqual(userId, undefined);
-        }
-        test.equal(doc.start_value, true);
-        external = 1;
+    collection.before.remove(function (userId, doc) {
+      // There should be a userId if we're running on the client.
+      // Since this is a local collection, the server should NOT know
+      // about any userId
+      if (Meteor.isServer) {
+        test.equal(userId, undefined);
+      } else {
+        test.notEqual(userId, undefined);
       }
+      test.equal(doc.start_value, true);
+      external = 1;
     });
 
     collection.remove({_id: id}, function (err) {
@@ -44,23 +42,21 @@ Tinytest.addAsync("remove - local collection should fire after-remove hook and a
   };
 
   function start(err, id) {
-    collection.after({
-      remove: function (userId, doc) {
-        // There should be a userId if we're running on the client.
-        // Since this is a local collection, the server should NOT know
-        // about any userId
-        if (Meteor.isServer) {
-          test.equal(userId, undefined);
-        } else {
-          test.notEqual(userId, undefined);
-        }
-
-        // The doc should contain a copy of the original doc
-        test.equal(doc._id, id);
-        external = 1;
-
-        n();
+    collection.after.remove(function (userId, doc) {
+      // There should be a userId if we're running on the client.
+      // Since this is a local collection, the server should NOT know
+      // about any userId
+      if (Meteor.isServer) {
+        test.equal(userId, undefined);
+      } else {
+        test.notEqual(userId, undefined);
       }
+
+      // The doc should contain a copy of the original doc
+      test.equal(doc._id, id);
+      external = 1;
+
+      n();
     });
 
     collection.remove({_id: id}, function (err) {

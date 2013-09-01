@@ -72,7 +72,7 @@ if (Meteor.isClient) {
         // Hacky way to wait for server to send me the updated document via pub-sub
         test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1, "collection2 should have the test document with client_value AND server_value in it");
         next();
-      }, 100);
+      }, 500);
     });
   });
 }

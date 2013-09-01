@@ -7,14 +7,12 @@ if (Meteor.isServer) {
 
     function start(err, id) {
 
-      collection1.before({
-        remove: function (userId, doc) {
-          // There should be no userId because the remove was initiated
-          // on the server -- there's no correlation to any specific user
-          tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
-          tmp.doc_start_value = doc.start_value;  // HACK: can't test here directly otherwise refreshing test stops execution here
-          external = true;
-        }
+      collection1.before.remove(function (userId, doc) {
+        // There should be no userId because the remove was initiated
+        // on the server -- there's no correlation to any specific user
+        tmp.userId = userId;  // HACK: can't test here directly otherwise refreshing test stops execution here
+        tmp.doc_start_value = doc.start_value;  // HACK: can't test here directly otherwise refreshing test stops execution here
+        external = true;
       });
 
       collection1.remove({_id: id}, function (err) {
@@ -55,33 +53,29 @@ if (Meteor.isServer) {
   //Tinytest.addAsync("remove - collection2 document should affect external variable before and after it is removed", function (test, next) {
     var external2 = -1;
 
-    collection2.before({
-      remove: function (userId, doc) {
-        // Remove is initiated by a client, a userId must be present
-        //test.notEqual(userId, undefined);
+    collection2.before.remove(function (userId, doc) {
+      // Remove is initiated by a client, a userId must be present
+      //test.notEqual(userId, undefined);
 
-        //test.equal(doc.start_value, true);
-        external2 = 0;
-      }
+      //test.equal(doc.start_value, true);
+      external2 = 0;
     });
 
-    collection2.after({
-      remove: function (userId, doc) {
-        // Remove is initiated on the client, a userId must be present
-        //test.notEqual(userId, undefined);
+    collection2.after.remove(function (userId, doc) {
+      // Remove is initiated on the client, a userId must be present
+      //test.notEqual(userId, undefined);
 
-        //test.equal(doc.start_value, true);
+      //test.equal(doc.start_value, true);
 
-        external2++;
+      external2++;
 
-        //test.equal(external2, 1);
-        //next();
+      //test.equal(external2, 1);
+      //next();
 
-        // Can't get the test suite to run when this is in a test.
-        // Beyond me why. The console outputs true, so the "test" does
-        // pass...
-        console.log("(temp) test passes:", external2 === 1);
-      }
+      // Can't get the test suite to run when this is in a test.
+      // Beyond me why. The console outputs true, so the "test" does
+      // pass...
+      console.log("(temp) test passes:", external2 === 1);
     });
   //});
 }
@@ -101,26 +95,22 @@ if (Meteor.isClient) {
     function start(err, id) {
       if (err) throw err;
 
-      collection2.before({
-        remove: function (userId, doc) {
-          // Remove is initiated on the client, a userId must be present
-          test.notEqual(userId, undefined);
+      collection2.before.remove(function (userId, doc) {
+        // Remove is initiated on the client, a userId must be present
+        test.notEqual(userId, undefined);
 
-          test.equal(doc._id, id);
-          test.equal(doc.start_value, true);
-          external++;
-        }
+        test.equal(doc._id, id);
+        test.equal(doc.start_value, true);
+        external++;
       });
 
-      collection2.after({
-        remove: function (userId, doc) {
-          // Remove is initiated on the client, a userId must be present
-          test.notEqual(userId, undefined);
+      collection2.after.remove(function (userId, doc) {
+        // Remove is initiated on the client, a userId must be present
+        test.notEqual(userId, undefined);
 
-          external++;
-          test.equal(doc._id, id);
-          n();
-        }
+        external++;
+        test.equal(doc._id, id);
+        n();
       });
 
       collection2.remove({_id: id}, function (err) {

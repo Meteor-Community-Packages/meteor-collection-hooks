@@ -2,10 +2,8 @@ Tinytest.addAsync("update - Meteor.users collection document should have extra p
   var collection = Meteor.users;
 
   function start() {
-    collection.before({
-      update: function (userId, doc, fieldNames, modifier) {
-        modifier.$set.before_update_value = true;
-      }
+    collection.before.update(function (userId, doc, fieldNames, modifier) {
+      modifier.$set.before_update_value = true;
     });
 
     var user = collection.findOne();

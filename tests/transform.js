@@ -24,17 +24,13 @@ Tinytest.addAsync("general - hook callbacks should have _transform function that
     }
   };
 
-  collection.before({
-    insert: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.before.insert++; } },
-    update: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.before.update++; } },
-    remove: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.before.remove++; } }
-  });
+  collection.before.insert(function (userId, doc) { if (_.isFunction(doc._transform) && doc._transform().isTransformed) { counts.before.insert++; } });
+  collection.before.update(function (userId, doc) { if (_.isFunction(doc._transform) && doc._transform().isTransformed) { counts.before.update++; } });
+  collection.before.remove(function (userId, doc) { if (_.isFunction(doc._transform) && doc._transform().isTransformed) { counts.before.remove++; } });
 
-  collection.after({
-    insert: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.after.insert++; } },
-    update: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.after.update++; } },
-    remove: function (userId, doc) { if (doc._transform && doc._transform().isTransformed) { counts.after.remove++; } }
-  });
+  collection.after.insert(function (userId, doc) { if (_.isFunction(doc._transform) && doc._transform().isTransformed) { counts.after.insert++; } });
+  collection.after.update(function (userId, doc) { if (_.isFunction(doc._transform) && doc._transform().isTransformed) { counts.after.update++; } });
+  collection.after.remove(function (userId, doc) { if (_.isFunction(doc._transform) && doc._transform().isTransformed) { counts.after.remove++; } });
 
   InsecureLogin.ready(function () {
     collection.insert({start_value: true}, function (err, id) {

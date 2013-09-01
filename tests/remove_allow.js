@@ -23,10 +23,8 @@ if (Meteor.isClient) {
   Meteor.subscribe("test_remove_allow_publish_collection");
 
   Tinytest.addAsync("remove - only one of two collection documents should be allowed to be removed", function (test, next) {
-    collection.before({
-      remove: function (userId, doc) {
-        test.equal(doc.start_value, true);
-      }
+    collection.before.remove(function (userId, doc) {
+      test.equal(doc.start_value, true);
     });
 
     InsecureLogin.ready(function () {

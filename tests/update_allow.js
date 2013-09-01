@@ -18,10 +18,8 @@ if (Meteor.isServer) {
     return collection.find();
   });
 
-  collection.before({
-    update: function (userId, doc, fieldNames, modifier) {
-      modifier.$set.server_value = true;
-    }
+  collection.before.update(function (userId, doc, fieldNames, modifier) {
+    modifier.$set.server_value = true;
   });
 }
 
@@ -29,10 +27,8 @@ if (Meteor.isClient) {
   Meteor.subscribe("test_update_allow_publish_collection");
 
   Tinytest.addAsync("update - only one of two collection documents should be allowed to be updated, and should carry the extra server and client properties", function (test, next) {
-    collection.before({
-      update: function (userId, doc, fieldNames, modifier) {
-        modifier.$set.client_value = true;
-      }
+    collection.before.update(function (userId, doc, fieldNames, modifier) {
+      modifier.$set.client_value = true;
     });
 
     InsecureLogin.ready(function () {
