@@ -47,25 +47,3 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
     return result;
   }
 });
-
-// This function contains a snippet of code pulled from:
-// ~/.meteor/packages/mongo-livedata/collection.js:721-731
-var getDocs = function (collection, selector) {
-  var self = this;
-
-  var findOptions = {transform: null, reactive: false}; // added reactive: false
-
-  /*
-  // No "fields" support for the time being
-  if (!self._validators.fetchAllFields) {
-    findOptions.fields = {};
-    _.each(self._validators.fetch, function(fieldName) {
-      findOptions.fields[fieldName] = 1;
-    });
-  }
-  */
-
-  // Unlike validators, we iterate over multiple docs, so use
-  // find instead of findOne:
-  return collection.find(selector, findOptions);
-};

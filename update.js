@@ -89,31 +89,3 @@ var getFields = function (mutator) {
 
   return fields;
 };
-
-var getDocs = function (collection, selector, options) {
-  var self = this;
-
-  var findOptions = {transform: null, reactive: false}; // added reactive: false
-
-  /*
-  // No "fields" support for the time being
-  if (!self._validators.fetchAllFields) {
-    findOptions.fields = {};
-    _.each(self._validators.fetch, function (fieldName) {
-      findOptions.fields[fieldName] = 1;
-    });
-  }
-  */
-
-  // This was added because in our case, we are potentially iterating over
-  // multiple docs. If multi isn't enabled, force a limit (almost like findOne),
-  // as the default for update without multi enabled is to affect only the first
-  // matched document:
-  if (!options.multi) {
-    findOptions.limit = 1;
-  }
-
-  // Unlike validators, we iterate over multiple docs, so use
-  // find instead of findOne:
-  return collection.find(selector, findOptions);
-};
