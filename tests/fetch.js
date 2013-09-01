@@ -1,7 +1,5 @@
 Tinytest.addAsync("general - local collection documents should only have fetched fields", function (test, next) {
-  // can't use null for local minimongo collection, fields option won't work in find
-  // see: https://github.com/meteor/meteor/issues/1287
-  var collection = new Meteor.Collection("test_fetch");
+  var collection = new Meteor.Collection(null);
 
   function same(arr1, arr2) {
     return arr1.length === arr2.length && _.intersection(arr1, arr2).length === arr1.length;
@@ -10,12 +8,11 @@ Tinytest.addAsync("general - local collection documents should only have fetched
   function start(err, id) {
     var fields = ["fetch_value1", "fetch_value2"];
 
-    collection.after({
-      update: function (userId, doc, fieldNames, modifier) {
-        var docKeys = _.without(_.keys(doc), "_id", "_transform", "_previous");
-        test.equal(same(docKeys, fields), true);
-        next();
-      },
+    collection.after.update(function (userId, doc, fieldNames, modifier) {
+      var docKeys = _.without(_.keys(doc), "_id", "_transform", "_previous");
+      test.equal(same(docKeys, fields), true);
+      next();
+    }, {
       fetch: fields
     });
 

@@ -8,7 +8,7 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
   // args[0] : selector
   // args[1] : callback
 
-  var docs = getDocs.call(self, collection, args[0]).fetch();
+  var docs = CollectionHooks.getDocs.call(self, collection, args[0]).fetch();
 
   // copy originals for convenience for the "after" pointcut
   if (aspects.after) {

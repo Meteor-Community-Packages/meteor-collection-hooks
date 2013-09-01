@@ -6,6 +6,31 @@
 var advices = {};
 var constructor = Meteor.Collection;
 
+function getUserId() {
+  var userId;
+
+  if (Meteor.isClient) {
+    Deps.nonreactive(function () {
+      userId = Meteor.userId && Meteor.userId();
+    });
+  }
+
+  if (Meteor.isServer) {
+    try {
+      // Will throw an error unless within method call.
+      // Attempt to recover gracefully by catching:
+      userId = Meteor.userId && Meteor.userId();
+    } catch (e) {}
+
+    // TODO: re-implement this
+    //if (!userId) {
+    //    userId = Meteor.__collection_hooks_publish_userId;
+    //}
+  }
+
+  return userId;
+}
+
 CollectionHooks = {};
 
 Meteor.Collection = function () {
@@ -56,7 +81,7 @@ for (var func in constructor) {
   }
 }
 
-CollectionHooks.defineAdvice = function (method, advice/*, ----fields?----*/) {
+CollectionHooks.defineAdvice = function (method, advice) {
   advices[method] = advice;
 };
 
@@ -74,38 +99,13 @@ CollectionHooks.beforeTrailingCallback = function (args, func) {
   return args;
 };
 
-function getUserId() {
-  var userId;
-
-  if (Meteor.isClient) {
-    Deps.nonreactive(function () {
-      userId = Meteor.userId && Meteor.userId();
-    });
-  }
-
-  if (Meteor.isServer) {
-    try {
-      // Will throw an error unless within method call.
-      // Attempt to recover gracefully by catching:
-      userId = Meteor.userId && Meteor.userId();
-    } catch (e) {}
-
-    // TODO: re-implement this
-    //if (!userId) {
-    //    userId = Meteor.__collection_hooks_publish_userId;
-    //}
-  }
-
-  return userId;
-}
-
-getDocs = function (collection, selector, options) {
+CollectionHooks.getDocs = function (collection, selector, options) {
   var self = this;
 
   var findOptions = {transform: null, reactive: false}; // added reactive: false
 
   /*
-  // No "fields" support for the time being
+  // No "fetch" support at this time.
   if (!self._validators.fetchAllFields) {
     findOptions.fields = {};
     _.each(self._validators.fetch, function(fieldName) {

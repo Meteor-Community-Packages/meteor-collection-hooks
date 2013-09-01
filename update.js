@@ -18,7 +18,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   args[2] = args[2] || {};
 
   fields = getFields(args[1]);
-  docs = getDocs.call(self, collection, args[0], args[2]).fetch();
+  docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
 
   // copy originals for convenience for the "after" pointcut
   if (aspects.after) {
@@ -43,7 +43,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
 
   function after() {
     var fields = getFields(args[1]);
-    var docs = getDocs.call(self, collection, args[0], args[2]).fetch();
+    var docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
 
     _.each(aspects.after, function (aspect) {
       _.each(docs, function (doc) {

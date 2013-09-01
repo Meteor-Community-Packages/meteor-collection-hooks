@@ -18,7 +18,10 @@ Package.on_use(function (api, where) {
       "collection-hooks.js",
       "insert.js",
       "update.js",
-      "remove.js"
+      "remove.js"/*,
+TODO: implement this
+      "find.js",
+      "findone.js"*/
   ], both);
 
   api.export("CollectionHooks");
@@ -53,9 +56,11 @@ Package.on_test(function (api) {
   api.add_files(["tests/remove_both.js"], both);
   api.add_files(["tests/remove_allow.js"], both);
 
+  api.add_files(["tests/multiple_hooks.js"], both);
+  api.add_files(["tests/transform.js"], "server");
+
+  // NOTE: not supporting fetch for the time being.
   // fetch can only work server-side because find's "fields" option is limited
   // to only working on the server
   //api.add_files(["tests/fetch.js"], "server");
-  api.add_files(["tests/multiple_hooks.js"], both);
-  api.add_files(["tests/transform.js"], "server");
 });
