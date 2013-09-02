@@ -7,19 +7,14 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
   // args[1] : callback
 
   // before
-  args[0]._transform = getTransform(args[0]);
   _.each(aspects.before, function (aspect) {
-    aspect.call(ctx, userId, args[0]);
+    aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
   });
-  delete args[0]._transform;  // remove so it doesn't get inserted
 
   function after(id) {
-    // Attach _transform helper and provide _id
     args[0]._id = args[0]._id || id;  // client version won't have _id yet
-    args[0]._transform = getTransform(args[0]);
-
     _.each(aspects.after, function (aspect) {
-      aspect.call(ctx, userId, args[0]);
+      aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
     });
   }
 

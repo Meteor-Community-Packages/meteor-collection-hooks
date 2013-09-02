@@ -20,19 +20,14 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
   // before
   _.each(aspects.before, function (aspect) {
     _.each(docs, function (doc) {
-      // Attach _transform helper
-      doc._transform = getTransform(doc);
-      // Invoke the aspect
-      aspect.call(ctx, userId, doc);
-      // Remove _transform helper
-      delete doc._transform;
+      aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
     });
   });
 
   function after() {
     _.each(aspects.after, function (aspect) {
       _.each(prev, function (doc) {
-        aspect.call(ctx, userId, doc);
+        aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
       });
     });
   }

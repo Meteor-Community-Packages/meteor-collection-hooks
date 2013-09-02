@@ -32,12 +32,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   // before
   _.each(aspects.before, function (aspect) {
     _.each(docs, function (doc) {
-      // Attach _transform helper
-      doc._transform = getTransform(doc);
-      // Invoke the aspect
-      aspect.call(ctx, userId, doc, fields, args[1]);
-      // Remove _transform helper
-      delete doc._transform;
+      aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1]);
     });
   });
 
@@ -47,11 +42,10 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
 
     _.each(aspects.after, function (aspect) {
       _.each(docs, function (doc) {
-        // Attach _transform and _previous helpers
-        doc._transform = getTransform(doc);
-        doc._previous = prev.docs[doc._id];
-        // Invoke the aspect
-        aspect.call(ctx, userId, doc, fields, prev.mutator);
+        aspect.call(_.extend({
+          transform: getTransform(doc),
+          previous: prev.docs[doc._id]
+        }, ctx), userId, doc, fields, prev.mutator);
       });
     });
   }
