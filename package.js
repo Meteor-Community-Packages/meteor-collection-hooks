@@ -28,7 +28,7 @@ Package.on_use(function (api, where) {
 
 Package.on_test(function (api) {
   api.use([
-    "collection-hooks-refactor",
+    "collection-hooks",
     "underscore",
     "accounts-base",
     "accounts-password",

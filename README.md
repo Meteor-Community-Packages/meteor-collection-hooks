@@ -81,10 +81,6 @@ test.after.findOne: function (userId, selector, options, doc) {
 });
 ```
 
-### TODO
-
-- Write tests to verify that `this._super` and `this.context` in hook callbacks are functioning as intended
-
 ### Contributors
 
 - Mathieu Bouchard (@matb33)
