@@ -22,7 +22,7 @@ function getUserId() {
       userId = Meteor.userId && Meteor.userId();
     } catch (e) {}
 
-    // TODO: re-implement this
+    // TODO: figure out if this is safe to re-implement
     //if (!userId) {
     //    userId = Meteor.__collection_hooks_publish_userId;
     //}

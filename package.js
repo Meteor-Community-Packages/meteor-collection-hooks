@@ -60,10 +60,12 @@ Package.on_test(function (api) {
 
   api.add_files(["tests/find.js"], both);
   api.add_files(["tests/findone.js"], both);
+
+  // TODO: enable once we figure out if the code behind providing userId is safe
   //api.add_files(["tests/find_findone_userid.js"], both);
 
   // NOTE: not supporting fetch for the time being.
-  // fetch can only work server-side because find's "fields" option is limited
-  // to only working on the server
+  // NOTE: fetch can only work server-side because find's "fields" option is
+  // limited to only working on the server
   //api.add_files(["tests/fetch.js"], "server");
 });
