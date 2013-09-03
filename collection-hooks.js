@@ -33,10 +33,7 @@ function getUserId() {
 
 CollectionHooks = {};
 
-Meteor.Collection = function () {
-  var self = this;
-  var ret = constructor.apply(self, arguments);
-
+CollectionHooks.extendCollectionInstance = function (self) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   _.each(["before", "after"], function (pointcut) {
@@ -69,17 +66,7 @@ Meteor.Collection = function () {
       );
     };
   });
-
-  return ret;
 };
-
-Meteor.Collection.prototype = Object.create(constructor.prototype);
-
-for (var func in constructor) {
-  if (constructor.hasOwnProperty(func)) {
-    Meteor.Collection[func] = constructor[func];
-  }
-}
 
 CollectionHooks.defineAdvice = function (method, advice) {
   advices[method] = advice;
@@ -130,3 +117,17 @@ CollectionHooks.getDocs = function (collection, selector, options) {
   // find instead of findOne:
   return collection.find(selector, findOptions);
 };
+
+Meteor.Collection = function () {
+  var ret = constructor.apply(this, arguments);
+  CollectionHooks.extendCollectionInstance(this);
+  return ret;
+};
+
+Meteor.Collection.prototype = Object.create(constructor.prototype);
+
+for (var func in constructor) {
+  if (constructor.hasOwnProperty(func)) {
+    Meteor.Collection[func] = constructor[func];
+  }
+}

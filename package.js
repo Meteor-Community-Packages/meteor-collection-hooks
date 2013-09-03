@@ -23,6 +23,8 @@ Package.on_use(function (api, where) {
       "findone.js"
   ], both);
 
+  api.add_files("users-compat.js", both); // must always be last, which could pose a problem for other packages using CollectionHooks utils
+
   api.export("CollectionHooks");
 });
 
