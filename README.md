@@ -13,7 +13,7 @@ Fired before the doc is inserted.
 Gives you an opportunity to modify doc as needed, or run additional
 functionality
 
-`this.transform()` obtains transformed version of document, if a transform was
+- `this.transform()` obtains transformed version of document, if a transform was
 defined.
 
 ```javascript
@@ -35,7 +35,7 @@ functionality. _Important_: note that we are changing `modifier`, and not `doc`.
 Changing `doc` won't have any effect as the document is a copy and is not what
 ultimately gets sent down to the real `update` method.
 
-`this.transform()` obtains transformed version of document, if a transform was
+- `this.transform()` obtains transformed version of document, if a transform was
 defined.
 
 ```javascript
@@ -53,7 +53,7 @@ Fired just before the doc is removed.
 Gives you an opportunity to affect your system while the document is still in
 existence -- useful for maintaining system integrity, such as cascading deletes.
 
-`this.transform()` obtains transformed version of document, if a transform was
+- `this.transform()` obtains transformed version of document, if a transform was
 defined.
 
 ```javascript
@@ -71,7 +71,7 @@ Fired after the doc was inserted.
 Gives you an opportunity to run post-insert tasks, such as sending notifications
 of new document insertions.
 
-`this.transform()` obtains transformed version of document, if a transform was
+- `this.transform()` obtains transformed version of document, if a transform was
 defined.
 
 ```javascript
@@ -89,9 +89,8 @@ Fired after the doc was updated.
 Gives you an opportunity to run post-update tasks, potentially comparing the
 previous and new documents to take further action.
 
-`this.previous` contains the document before it was updated.
-
-`this.transform()` obtains transformed version of document, if a transform was
+- `this.previous` contains the document before it was updated.
+- `this.transform()` obtains transformed version of document, if a transform was
 defined.
 
 ```javascript
@@ -112,7 +111,7 @@ Gives you an opportunity to run post-removal tasks that don't necessarily depend
 on the document being found in the database (external service clean-up for
 instance).
 
-`this.transform()` obtains transformed version of document, if a transform was
+- `this.transform()` obtains transformed version of document, if a transform was
 defined.
 
 ```javascript
