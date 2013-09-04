@@ -1,6 +1,6 @@
 # Meteor Collection Hooks
 
-Extends Meteor.Collection with before/after hooks for insert/update/remove.
+Extends Meteor.Collection with `before`/`after` hooks for `insert`/`update`/`remove`/`find`/`findOne`.
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
@@ -56,6 +56,7 @@ test.after.remove: function (userId, doc) {
   // Gives you an opportunity to run post-removal tasks that don't
   // necessarily depend on the document being found in the database
   // (external service clean-up for instance).
+  // this.transform() obtains transformed version of doc, if defined.
 });
 
 test.before.find: function (userId, selector, options) {
