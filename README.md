@@ -4,7 +4,9 @@ Extends Meteor.Collection with `before`/`after` hooks for `insert`/`update`/`rem
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
-##### .before.insert(userId, doc)
+--------------------------------------------------------------------------------
+
+### .before.insert(userId, doc)
 
 Fired before the doc is inserted.
 
@@ -22,7 +24,9 @@ test.before.insert(function (userId, doc) {
 });
 ```
 
-##### .before.update(userId, doc, fieldNames, modifier)
+--------------------------------------------------------------------------------
+
+### .before.update(userId, doc, fieldNames, modifier)
 
 Fired before the doc is updated.
 
@@ -40,7 +44,9 @@ test.before.update(function (userId, doc, fieldNames, modifier) {
 });
 ```
 
-##### .before.remove(userId, doc)
+--------------------------------------------------------------------------------
+
+### .before.remove(userId, doc)
 
 Fired just before the doc is removed.
 
@@ -56,7 +62,9 @@ test.before.remove(function (userId, doc) {
 });
 ```
 
-##### .after.insert(userId, doc)
+--------------------------------------------------------------------------------
+
+### .after.insert(userId, doc)
 
 Fired after the doc was inserted.
 
@@ -72,7 +80,9 @@ test.after.insert(function (userId, doc) {
 });
 ```
 
-##### .after.update(userId, doc, fieldNames, modifier)
+--------------------------------------------------------------------------------
+
+### .after.update(userId, doc, fieldNames, modifier)
 
 Fired after the doc was updated.
 
@@ -90,7 +100,9 @@ test.after.update(function (userId, doc, fieldNames, modifier) {
 });
 ```
 
-##### .after.remove(userId, doc)
+--------------------------------------------------------------------------------
+
+### .after.remove(userId, doc)
 
 Fired after the doc was removed.
 
@@ -109,7 +121,9 @@ test.after.remove: function (userId, doc) {
 });
 ```
 
-##### .before.find(userId, selector, options)
+--------------------------------------------------------------------------------
+
+### .before.find(userId, selector, options)
 
 Fired before a find query.
 
@@ -121,7 +135,9 @@ test.before.find: function (userId, selector, options) {
 });
 ```
 
-##### .after.find(userId, selector, options, cursor)
+--------------------------------------------------------------------------------
+
+### .after.find(userId, selector, options, cursor)
 
 Fired after a find query.
 
@@ -133,7 +149,10 @@ test.after.find: function (userId, selector, options, cursor) {
   // ...
 });
 ```
-##### .before.findOne(userId, selector, options)
+
+--------------------------------------------------------------------------------
+
+### .before.findOne(userId, selector, options)
 
 Fired before a findOne query.
 
@@ -144,7 +163,10 @@ test.before.findOne: function (userId, selector, options) {
   // ...
 });
 ```
-##### .after.findOne(userId, selector, options, doc)
+
+--------------------------------------------------------------------------------
+
+### .after.findOne(userId, selector, options, doc)
 
 Fired after a findOne query.
 
@@ -157,7 +179,9 @@ test.after.findOne: function (userId, selector, options, doc) {
 });
 ```
 
-### Contributors
+--------------------------------------------------------------------------------
+
+## Contributors
 
 - Mathieu Bouchard (@matb33)
 - Kevin Kaland (@wizonesolutions)
