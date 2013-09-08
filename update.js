@@ -23,6 +23,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   // copy originals for convenience for the "after" pointcut
   if (aspects.after) {
     prev.mutator = EJSON.clone(args[1]);
+    prev.options = EJSON.clone(args[2]);
     prev.docs = {};
     _.each(docs, function (doc) {
       prev.docs[doc._id] = EJSON.clone(doc);
@@ -32,7 +33,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   // before
   _.each(aspects.before, function (aspect) {
     _.each(docs, function (doc) {
-      aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1]);
+      aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2]);
     });
   });
 
@@ -45,7 +46,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
         aspect.call(_.extend({
           transform: getTransform(doc),
           previous: prev.docs[doc._id]
-        }, ctx), userId, doc, fields, prev.mutator);
+        }, ctx), userId, doc, fields, prev.mutator, prev.options);
       });
     });
   }
