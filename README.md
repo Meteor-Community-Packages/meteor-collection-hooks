@@ -26,7 +26,7 @@ test.before.insert(function (userId, doc) {
 
 --------------------------------------------------------------------------------
 
-### .before.update(userId, doc, fieldNames, modifier)
+### .before.update(userId, doc, fieldNames, modifier, options)
 
 Fired before the doc is updated.
 
@@ -39,7 +39,7 @@ ultimately gets sent down to the real `update` method.
 defined.
 
 ```javascript
-test.before.update(function (userId, doc, fieldNames, modifier) {
+test.before.update(function (userId, doc, fieldNames, modifier, options) {
   modifier.$set.modifiedAt = Date.now();
 });
 ```
@@ -82,7 +82,7 @@ test.after.insert(function (userId, doc) {
 
 --------------------------------------------------------------------------------
 
-### .after.update(userId, doc, fieldNames, modifier)
+### .after.update(userId, doc, fieldNames, modifier, options)
 
 Fired after the doc was updated.
 
@@ -94,7 +94,7 @@ previous and new documents to take further action.
 defined.
 
 ```javascript
-test.after.update(function (userId, doc, fieldNames, modifier) {
+test.after.update(function (userId, doc, fieldNames, modifier, options) {
   // ...
 });
 ```
