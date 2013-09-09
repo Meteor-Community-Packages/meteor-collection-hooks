@@ -31,9 +31,7 @@ test.before.insert(function (userId, doc) {
 Fired before the doc is updated.
 
 Gives you an opportunity to change the `modifier` as needed, or run additional
-functionality. _Important_: note that we are changing `modifier`, and not `doc`.
-Changing `doc` won't have any effect as the document is a copy and is not what
-ultimately gets sent down to the real `update` method.
+functionality.
 
 - `this.transform()` obtains transformed version of document, if a transform was
 defined.
@@ -43,6 +41,10 @@ test.before.update(function (userId, doc, fieldNames, modifier, options) {
   modifier.$set.modifiedAt = Date.now();
 });
 ```
+
+__Important__: note that we are changing `modifier`, and not `doc`.
+Changing `doc` won't have any effect as the document is a copy and is not what
+ultimately gets sent down to the underlying `update` method.
 
 --------------------------------------------------------------------------------
 
