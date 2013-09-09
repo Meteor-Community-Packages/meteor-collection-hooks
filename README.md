@@ -180,6 +180,27 @@ test.after.findOne: function (userId, selector, options, doc) {
 
 --------------------------------------------------------------------------------
 
+## Tips
+
+- Returning `false` in any `before` hook will prevent the underlying method (and
+subsequent `after` hooks) from executing. Note that all `before` hooks will
+still continue to run even if the first hook returns `false`.
+
+- If you wish to make `userId` available to a `find` query in a `publish`
+function, try the technique detailed in this [comment](https://github.com/matb33/meteor-collection-hooks/issues/7#issuecomment-24021616).
+
+- All hook callbacks have `this._super` available to them (the underlying
+method) as well as `this.context`, the equivalent of `this` to the underlying
+method.
+
+- It is quite normal for `userId` to sometimes be unavailable to hook callbacks
+in some circumstances. For example, if an `update` is fired from the server
+with no user context, the server certainly won't be able to provide any
+particular userId.
+
+--------------------------------------------------------------------------------
+
+
 ## Contributors
 
 - Mathieu Bouchard (@matb33)

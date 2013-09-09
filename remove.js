@@ -2,7 +2,7 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
   var self = this;
   var ctx = {context: self, _super: _super};
   var async = _.isFunction(_.last(args));
-  var docs, prev = [];
+  var docs, abort, prev = [];
   var collection = _.has(self, "_collection") ? self._collection : self;
 
   // args[0] : selector
@@ -20,9 +20,12 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
   // before
   _.each(aspects.before, function (aspect) {
     _.each(docs, function (doc) {
-      aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
+      var r = aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
+      if (r === false) abort = true;
     });
   });
+
+  if (abort) return false;
 
   function after() {
     _.each(aspects.after, function (aspect) {

@@ -2,7 +2,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   var self = this;
   var ctx = {context: self, _super: _super};
   var async = _.isFunction(_.last(args));
-  var docs, fields, prev = {};
+  var docs, fields, abort, prev = {};
   var collection = _.has(self, "_collection") ? self._collection : self;
 
   // args[0] : selector
@@ -33,9 +33,12 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   // before
   _.each(aspects.before, function (aspect) {
     _.each(docs, function (doc) {
-      aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2]);
+      var r = aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2]);
+      if (r === false) abort = true;
     });
   });
+
+  if (abort) return false;
 
   function after() {
     var fields = getFields(args[1]);
