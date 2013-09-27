@@ -20,15 +20,14 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
     _.each(aspects.after, function (aspect) {
       aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
     });
+    return args[0]._id;
   }
 
   if (async) {
-    _super.apply(self, CollectionHooks.beforeTrailingCallback(args, function (err, id) {
+    return _super.apply(self, CollectionHooks.beforeTrailingCallback(args, function (err, id) {
       after(id);
     }));
   } else {
-    after(_super.apply(self, args));
+    return after(_super.apply(self, args));
   }
-
-  return args[0]._id || null;
 });
