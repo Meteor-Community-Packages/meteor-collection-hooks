@@ -87,3 +87,35 @@ var getFields = function (mutator) {
 
   return fields;
 };
+
+// This function contains a snippet of code pulled and modified from:
+// ~/.meteor/packages/mongo-livedata/collection.js
+// It's contained in these utility functions to make updates easier for us in
+// case this code changes.
+var getFields = function (mutator) {
+  // compute modified fields
+  var fields = [];
+
+  _.each(mutator, function (params, op) {
+    //====ADDED START=======================
+    if (_.contains(["$set", "$unset", "$inc", "$push", "$pull", "$pop", "$rename", "$pullAll", "$addToSet", "$bit"], op)) {
+    //====ADDED END=========================
+      _.each(_.keys(params), function (field) {
+        // treat dotted fields as if they are replacing their
+        // top-level part
+        if (field.indexOf('.') !== -1)
+          field = field.substring(0, field.indexOf('.'));
+
+        // record the field we are trying to change
+        if (!_.contains(fields, field))
+          fields.push(field);
+      });
+    //====ADDED START=======================
+    } else {
+      fields.push(op);
+    }
+    //====ADDED END=========================
+  });
+
+  return fields;
+};
