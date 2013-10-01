@@ -93,7 +93,9 @@ previous and new documents to take further action.
 
 - `this.previous` contains the document before it was updated.
 - `this.transform()` obtains transformed version of document, if a transform was
-defined.
+  defined. Note that this function accepts an optional parameter to specify the
+  document to transform — useful to transform previous:
+  `this.transform(this.previous)`.
 
 ```javascript
 test.after.update(function (userId, doc, fieldNames, modifier, options) {

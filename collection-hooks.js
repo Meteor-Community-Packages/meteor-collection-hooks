@@ -59,8 +59,8 @@ CollectionHooks.extendCollectionInstance = function (self) {
         self._aspects[method] || {},
         function (doc) {
           return  _.isFunction(self._transform)
-                  ? function () { return self._transform(doc); }
-                  : function () { return doc; };
+                  ? function (d) { return self._transform(d || doc); }
+                  : function (d) { return d || doc; };
         },
         _.toArray(arguments)
       );
