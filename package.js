@@ -25,7 +25,8 @@ Package.on_use(function (api, where) {
 
   api.add_files("users-compat.js", both); // must always be last, which could pose a problem for other packages using CollectionHooks utils
 
-  api.export("CollectionHooks");
+  if (typeof api.export !== 'undefined')
+    api.export("CollectionHooks");
 });
 
 Package.on_test(function (api) {
