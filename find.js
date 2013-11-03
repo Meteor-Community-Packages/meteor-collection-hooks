@@ -1,5 +1,5 @@
 CollectionHooks.defineAdvice("find", function (userId, _super, aspects, getTransform, args) {
-  var self = this
+  var self = this;
   var ctx = {context: self, _super: _super};
   var ret, abort;
 
