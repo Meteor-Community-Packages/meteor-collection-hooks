@@ -202,11 +202,16 @@ in some circumstances. For example, if an `update` is fired from the server
 with no user context, the server certainly won't be able to provide any
 particular userId.
 
+- If, like me, you transform `Meteor.users` through a round-about way involving
+`find` and `findOne`, then you won't be able to use `this.transform()`. Instead,
+grab the transformed user with `findOne`.
+
 --------------------------------------------------------------------------------
 
 
 ## Contributors
 
-- Mathieu Bouchard (@matb33)
-- Kevin Kaland (@wizonesolutions)
-- Andrew Mao (@mizzao)
+- Mathieu Bouchard ([matb33](https://github.com/matb33))
+- Kevin Kaland ([wizonesolutions](https://github.com/wizonesolutions))
+- Andrew Mao ([mizzao](https://github.com/mizzao))
+- Jonathan James ([jonjamz](https://github.com/jonjamz))
