@@ -4,6 +4,7 @@
 // Pointcut: before/after
 
 var advices = {};
+var currentUserId;
 var constructor = Meteor.Collection;
 
 function getUserId() {
@@ -22,10 +23,9 @@ function getUserId() {
       userId = Meteor.userId && Meteor.userId();
     } catch (e) {}
 
-    // TODO: figure out if this is safe to re-implement
-    //if (!userId) {
-    //    userId = Meteor.__collection_hooks_publish_userId;
-    //}
+    if (!userId) {
+        userId = currentUserId;
+    }
   }
 
   return userId;
@@ -138,4 +138,16 @@ for (var func in constructor) {
   if (constructor.hasOwnProperty(func)) {
     Meteor.Collection[func] = constructor[func];
   }
+}
+
+if (Meteor.isServer) {
+  var _publish = Meteor.publish;
+  Meteor.publish = function (name, func) {
+    return _publish.call(this, name, function () {
+      currentUserId = this && this.userId;
+      var ret = func.apply(this, arguments);
+      currentUserId = undefined;
+      return ret;
+    });
+  };
 }

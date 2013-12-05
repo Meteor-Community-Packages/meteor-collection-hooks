@@ -18,31 +18,27 @@ InsecureLogin = {
 };
 
 if (Meteor.isClient) {
-  Meteor.startup(function () {
-    Accounts.callLoginMethod({
-      methodArguments: [{username: "test"}],
-      userCallback: function (err) {
-        if (err) throw err;
-        console.info("Insecure login successful!");
-        InsecureLogin.run();
-      }
-    });
+  Accounts.callLoginMethod({
+    methodArguments: [{username: "test"}],
+    userCallback: function (err) {
+      if (err) throw err;
+      console.info("Insecure login successful!");
+      InsecureLogin.run();
+    }
   });
 } else {
   InsecureLogin.run();
 }
 
 if (Meteor.isServer) {
-  Meteor.startup(function () {
-    if (!Meteor.users.find({"profile.name": "Test"}).count()) {
-      Accounts.createUser({
-        username: "test",
-        email: "test@test.com",
-        password: "password",
-        profile: {name: "Test"}
-      });
-    }
-  });
+  if (!Meteor.users.find({"profile.name": "Test"}).count()) {
+    Accounts.createUser({
+      username: "test",
+      email: "test@test.com",
+      password: "password",
+      profile: {name: "Test"}
+    });
+  }
 
   Accounts.registerLoginHandler(function (options) {
     if (!options.username) return;
