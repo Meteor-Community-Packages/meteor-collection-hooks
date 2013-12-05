@@ -1,5 +1,5 @@
 Package.describe({
-  summary: "Extends Meteor.Collection with before/after hooks for insert/update/remove"
+  summary: "Extends Meteor.Collection with before/after hooks for insert/update/remove/find/findOne"
 });
 
 var both = ["client", "server"];

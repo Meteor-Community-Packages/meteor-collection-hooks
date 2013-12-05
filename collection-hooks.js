@@ -1,6 +1,6 @@
 // Relevant AOP terminology:
 // Aspect: User code that runs before/after (hook)
-// Advice: Wrapper code that knows when to calls user code (aspects)
+// Advice: Wrapper code that knows when to call user code (aspects)
 // Pointcut: before/after
 
 var advices = {};
