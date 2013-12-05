@@ -15,12 +15,12 @@ Package.on_use(function (api, where) {
   ], both);
 
   api.add_files([
-      "collection-hooks.js",
-      "insert.js",
-      "update.js",
-      "remove.js",
-      "find.js",
-      "findone.js"
+    "collection-hooks.js",
+    "insert.js",
+    "update.js",
+    "remove.js",
+    "find.js",
+    "findone.js"
   ], both);
 
   api.add_files("users-compat.js", both); // must always be last, which could pose a problem for other packages using CollectionHooks utils

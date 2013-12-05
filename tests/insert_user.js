@@ -1,7 +1,7 @@
 Tinytest.addAsync("insert - Meteor.users collection document should have extra property added before being inserted", function (test, next) {
   var collection = Meteor.users;
 
-  collection.before.insert(function (nil, doc) {
+  var aspect = collection.before.insert(function (nil, doc) {
     if (!doc.profile) doc.profile = {};
     doc.profile.before_insert_value = true;
   });
@@ -10,6 +10,7 @@ Tinytest.addAsync("insert - Meteor.users collection document should have extra p
     if (err) throw err;
     test.equal(collection.find({"profile.start_value": true, "profile.before_insert_value": true}).count(), 1);
     collection.remove({_id: id});
+    aspect.remove();
     next();
   });
 });

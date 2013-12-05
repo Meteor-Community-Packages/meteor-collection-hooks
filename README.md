@@ -74,7 +74,8 @@ Gives you an opportunity to run post-insert tasks, such as sending notifications
 of new document insertions.
 
 - `this.transform()` obtains transformed version of document, if a transform was
-defined.
+defined;
+- `this._id` holds the newly inserted `_id` if available.
 
 ```javascript
 test.after.insert(function (userId, doc) {

@@ -43,7 +43,15 @@ CollectionHooks.extendCollectionInstance = function (self) {
 
       self._aspects[method][pointcut] = [];
       self[pointcut][method] = function (aspect) {
-        self._aspects[method][pointcut].push(aspect);
+        var len = self._aspects[method][pointcut].push(aspect);
+        return {
+          replace: function (aspect) {
+            self._aspects[method][pointcut].splice(len - 1, 1, aspect);
+          },
+          remove: function () {
+            self._aspects[method][pointcut].splice(len - 1, 1);
+          }
+        };
       };
     });
   });

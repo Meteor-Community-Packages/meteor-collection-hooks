@@ -31,7 +31,8 @@ Tinytest.addAsync("insert - local collection should fire after-insert hook", fun
       test.equal(typeof userId, "string", "There should be a userId on the client");
     }
 
-    test.notEqual(doc._id, undefined, "should provide the inserted doc (includes _id)");
+    test.notEqual(doc.start_value, undefined, "doc should have start_value");
+    test.notEqual(this._id, undefined, "should provide inserted _id on this");
 
     next();
   });

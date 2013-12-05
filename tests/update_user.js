@@ -2,7 +2,7 @@ Tinytest.addAsync("update - Meteor.users collection document should have extra p
   var collection = Meteor.users;
 
   function start() {
-    collection.before.update(function (userId, doc, fieldNames, modifier) {
+    var aspect = collection.before.update(function (userId, doc, fieldNames, modifier) {
       modifier.$set.before_update_value = true;
     });
 
@@ -11,6 +11,7 @@ Tinytest.addAsync("update - Meteor.users collection document should have extra p
     collection.update({_id: user._id}, {$set: {update_value: true}}, function (err) {
       if (err) throw err;
       test.equal(collection.find({_id: user._id, update_value: true, before_update_value: true}).count(), 1);
+      aspect.remove();
       next();
     });
   }

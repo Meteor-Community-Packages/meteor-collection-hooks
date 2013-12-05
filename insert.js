@@ -16,11 +16,10 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
   if (abort) return false;
 
   function after(id) {
-    args[0]._id = args[0]._id || id;  // client version won't have _id yet
     _.each(aspects.after, function (aspect) {
-      aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
+      aspect.call(_.extend({transform: getTransform(args[0]), _id: id}, ctx), userId, args[0]);
     });
-    return args[0]._id;
+    return id;
   }
 
   if (async) {

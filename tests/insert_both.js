@@ -60,7 +60,7 @@ if (Meteor.isClient) {
 
     collection2.after.insert(function (userId, doc) {
       //console.log("test_insert_collection2 AFTER INSERT", userId, doc);
-      test.notEqual(doc._id, undefined, "the test document should have an _id");
+      test.notEqual(this._id, undefined, "the _id should be available on this");
     });
 
     InsecureLogin.ready(function () {
