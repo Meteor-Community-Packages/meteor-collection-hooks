@@ -191,8 +191,8 @@ test.after.findOne: function (userId, selector, options, doc) {
 subsequent `after` hooks) from executing. Note that all `before` hooks will
 still continue to run even if the first hook returns `false`.
 
-- If you wish to make `userId` available to a `find` query in a `publish`
-function, try the technique detailed in this [comment](https://github.com/matb33/meteor-collection-hooks/issues/7#issuecomment-24021616).
+- ~~If you wish to make `userId` available to a `find` query in a `publish`
+function, try the technique detailed in this [comment](https://github.com/matb33/meteor-collection-hooks/issues/7#issuecomment-24021616)~~ `userId` is available to `find` and `findOne` queries that were invoked within a `publish` function.
 
 - All hook callbacks have `this._super` available to them (the underlying
 method) as well as `this.context`, the equivalent of `this` to the underlying
