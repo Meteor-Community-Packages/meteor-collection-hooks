@@ -6,9 +6,6 @@ CollectionHooks.defineAdvice("find", function (userId, _super, aspects, getTrans
   // args[0] : selector
   // args[1] : options
 
-  args[0] = args[0] || {};
-  args[1] = args[1] || {};
-
   // before
   _.each(aspects.before, function (aspect) {
     var r = aspect.call(ctx, userId, args[0], args[1]);

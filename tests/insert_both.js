@@ -66,13 +66,11 @@ if (Meteor.isClient) {
     InsecureLogin.ready(function () {
       Meteor.call("test_insert_reset_collection2", function (err, result) {
         //console.log("test_insert_collection2 INSERT");
-        collection2.insert({start_value: true});
+        collection2.insert({start_value: true}, function () {
+          test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1, "collection2 should have the test document with client_value AND server_value in it");
+          next();
+        });
       });
-      Meteor.setTimeout(function () {
-        // Hacky way to wait for server to send me the updated document via pub-sub
-        test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1, "collection2 should have the test document with client_value AND server_value in it");
-        next();
-      }, 500);
     });
   });
 }

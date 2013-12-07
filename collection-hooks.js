@@ -80,20 +80,6 @@ CollectionHooks.defineAdvice = function (method, advice) {
   advices[method] = advice;
 };
 
-CollectionHooks.beforeTrailingCallback = function (args, func) {
-  if (!_.isFunction(_.last(args))) return args;
-
-  var last = args.length - 1;
-  var callback = args[last];
-
-  args[last] = function () {
-    func.apply(this, arguments);
-    return callback.apply(this, arguments);
-  };
-
-  return args;
-};
-
 CollectionHooks.getDocs = function (collection, selector, options) {
   var self = this;
 

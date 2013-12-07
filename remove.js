@@ -27,18 +27,19 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
 
   if (abort) return false;
 
-  function after() {
+  function after(err) {
     _.each(aspects.after, function (aspect) {
       _.each(prev, function (doc) {
-        aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
+        aspect.call(_.extend({transform: getTransform(doc), err: err}, ctx), userId, doc);
       });
     });
   }
 
   if (async) {
-    return _super.apply(self, CollectionHooks.beforeTrailingCallback(args, function (err) {
-      after();
-    }));
+    return _super.call(self, args[0], function (err) {
+      after(err);
+      return args[1].apply(this, arguments);
+    });
   } else {
     var result = _super.apply(self, args);
     after();

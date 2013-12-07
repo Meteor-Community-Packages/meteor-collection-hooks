@@ -2,13 +2,14 @@ Tinytest.addAsync("insert - Meteor.users collection document should have extra p
   var collection = Meteor.users;
 
   var aspect = collection.before.insert(function (nil, doc) {
-    if (!doc.profile) doc.profile = {};
-    doc.profile.before_insert_value = true;
+    if (doc && doc.test) {
+      doc.before_insert_value = true;
+    }
   });
 
-  collection.insert({profile: {start_value: true}}, function (err, id) {
+  collection.insert({start_value: true, test: 1}, function (err, id) {
     if (err) throw err;
-    test.equal(collection.find({"profile.start_value": true, "profile.before_insert_value": true}).count(), 1);
+    test.notEqual(collection.find({start_value: true, before_insert_value: true}).count(), 0);
     collection.remove({_id: id});
     aspect.remove();
     next();

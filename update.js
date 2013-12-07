@@ -15,8 +15,6 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
     args[2] = {};
   }
 
-  args[2] = args[2] || {};
-
   fields = getFields(args[1]);
   docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
 
@@ -40,7 +38,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
 
   if (abort) return false;
 
-  function after() {
+  function after(affected, err) {
     var fields = getFields(args[1]);
     var docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
 
@@ -48,20 +46,23 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
       _.each(docs, function (doc) {
         aspect.call(_.extend({
           transform: getTransform(doc),
-          previous: prev.docs[doc._id]
+          previous: prev.docs[doc._id],
+          affected: affected,
+          err: err
         }, ctx), userId, doc, fields, prev.mutator, prev.options);
       });
     });
   }
 
   if (async) {
-    return _super.apply(self, CollectionHooks.beforeTrailingCallback(args, function (err, result) {
-      after(result);
-    }));
+    return _super.call(self, args[0], args[1], args[2], function (err, affected) {
+      after(affected, err);
+      return args[3].apply(this, arguments);
+    });
   } else {
-    var result = _super.apply(self, args);
-    after(result);
-    return result;
+    var affected = _super.apply(self, args);
+    after(affected);
+    return affected;
   }
 });
 
