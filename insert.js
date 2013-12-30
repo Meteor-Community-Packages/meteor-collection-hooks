@@ -2,7 +2,7 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
   var self = this;
   var ctx = {context: self, _super: _super};
   var async = _.isFunction(_.last(args));
-  var abort;
+  var abort, ret;
 
   // args[0] : doc
   // args[1] : callback
@@ -29,11 +29,12 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
   }
 
   if (async) {
-    return _super.call(self, args[0], function (err, id) {
-      after(id, err);
+    return _super.call(self, args[0], function (err, obj) {
+      after(obj && obj[0] && obj[0]._id || obj, err);
       return args[1].apply(this, arguments);
     });
   } else {
-    return after(_super.apply(self, args));
+    ret = _super.apply(self, args);
+    return after(ret && ret[0] && ret[0]._id || ret);
   }
 });
