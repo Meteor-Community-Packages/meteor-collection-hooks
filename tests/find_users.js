@@ -19,6 +19,9 @@ Tinytest.addAsync("users - hooks should be capable of being used on special Mete
     test.equal(_.has(selector, "b"), true);
     aspect1.remove();
     aspect2.remove();
+
+    test.notEqual(Meteor.users.find().count(), 0);
+
     next();
   });
 });
