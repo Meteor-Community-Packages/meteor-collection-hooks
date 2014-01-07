@@ -31,8 +31,6 @@ if (Meteor.isServer) {
   var serverTestsAdded = false;
 
   Meteor.publish("test_publish_for_find_findone_userid", function () {
-    console.log("PUBLISHING");
-
     beforeFindUserId = null;
     afterFindUserId = null;
     beforeFindOneUserId = null;
@@ -96,7 +94,6 @@ if (Meteor.isClient) {
   });
 
   InsecureLogin.ready(function () {
-    console.log("TRIGGERING SERVER FIND TESTS");
     // Run server tests
     Meteor.subscribe("test_publish_for_find_findone_userid");
   });
