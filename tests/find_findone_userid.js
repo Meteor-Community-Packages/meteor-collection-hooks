@@ -28,6 +28,8 @@ collection.after.findOne(function (userId, selector, options, result) {
 });
 
 if (Meteor.isServer) {
+  var serverTestsAdded = false;
+
   Meteor.publish("test_publish_for_find_findone_userid", function () {
     console.log("PUBLISHING");
 
@@ -40,23 +42,25 @@ if (Meteor.isServer) {
     collection.find({}, {test: 1});
     collection.findOne({}, {test: 1});
 
-    // TODO: reloading the browser will break these tests, because duplicate names are generated.
+    if (!serverTestsAdded) {
+      serverTestsAdded = true;
 
-    Tinytest.add("find - userId available to before find hook when within publish context", function (test) {
-      test.notEqual(beforeFindUserId, null);
-    });
+      Tinytest.add("find - userId available to before find hook when within publish context", function (test) {
+        test.notEqual(beforeFindUserId, null);
+      });
 
-    Tinytest.add("find - userId available to after find hook when within publish context", function (test) {
-      test.notEqual(afterFindUserId, null);
-    });
+      Tinytest.add("find - userId available to after find hook when within publish context", function (test) {
+        test.notEqual(afterFindUserId, null);
+      });
 
-    Tinytest.add("findone - userId available to before findOne hook when within publish context", function (test) {
-      test.notEqual(beforeFindOneUserId, null);
-    });
+      Tinytest.add("findone - userId available to before findOne hook when within publish context", function (test) {
+        test.notEqual(beforeFindOneUserId, null);
+      });
 
-    Tinytest.add("findone - userId available to after findOne hook when within publish context", function (test) {
-      test.notEqual(afterFindOneUserId, null);
-    });
+      Tinytest.add("findone - userId available to after findOne hook when within publish context", function (test) {
+        test.notEqual(afterFindOneUserId, null);
+      });
+    }
 
     return;
   });
