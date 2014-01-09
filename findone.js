@@ -1,6 +1,6 @@
 CollectionHooks.defineAdvice("findOne", function (userId, _super, aspects, getTransform, args) {
   var self = this;
-  var ctx = {context: self, _super: _super};
+  var ctx = {context: self, _super: _super, args: args};
   var ret, abort;
 
   // args[0] : selector

@@ -196,14 +196,16 @@ function, try the technique detailed in this [comment](https://github.com/matb33
 
 - All hook callbacks have `this._super` available to them (the underlying
 method) as well as `this.context`, the equivalent of `this` to the underlying
-method.
+method. Additionally, `this.args` contain the original arguments passed to the
+method and can be modified by reference (for example, modifying a selector in a
+`before` hook so that the underlying method uses this new selector).
 
 - It is quite normal for `userId` to sometimes be unavailable to hook callbacks
 in some circumstances. For example, if an `update` is fired from the server
 with no user context, the server certainly won't be able to provide any
 particular userId.
 
-- If, like me, you transform `Meteor.users` through a round-about way involving
+- If, like me, you transform `Meteor.users` through a [round-about way](https://github.com/matb33/meteor-collection-hooks/issues/15#issuecomment-25809919) involving
 `find` and `findOne`, then you won't be able to use `this.transform()`. Instead,
 grab the transformed user with `findOne`.
 
@@ -213,6 +215,6 @@ grab the transformed user with `findOne`.
 ## Contributors
 
 - Mathieu Bouchard ([matb33](https://github.com/matb33))
-- Kevin Kaland ([wizonesolutions](https://github.com/wizonesolutions))
 - Andrew Mao ([mizzao](https://github.com/mizzao))
+- Kevin Kaland ([wizonesolutions](https://github.com/wizonesolutions))
 - Jonathan James ([jonjamz](https://github.com/jonjamz))

@@ -1,6 +1,6 @@
 CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTransform, args) {
   var self = this;
-  var ctx = {context: self, _super: _super};
+  var ctx = {context: self, _super: _super, args: args};
   var async = _.isFunction(_.last(args));
   var docs, fields, abort, prev = {};
   var collection = _.has(self, "_collection") ? self._collection : self;
