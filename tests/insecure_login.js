@@ -19,7 +19,7 @@ InsecureLogin = {
 
 if (Meteor.isClient) {
   Accounts.callLoginMethod({
-    methodArguments: [{username: "test"}],
+    methodArguments: [{username: "InsecureLogin"}],
     userCallback: function (err) {
       if (err) throw err;
       console.info("Insecure login successful!");
@@ -31,12 +31,14 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
-  if (!Meteor.users.find({"profile.name": "Test"}).count()) {
+  // Meteor.users.remove({"username": "InsecureLogin"});
+
+  if (!Meteor.users.find({"username": "InsecureLogin"}).count()) {
     Accounts.createUser({
-      username: "test",
+      username: "InsecureLogin",
       email: "test@test.com",
       password: "password",
-      profile: {name: "Test"}
+      profile: {name: "InsecureLogin"}
     });
   }
 
@@ -47,20 +49,12 @@ if (Meteor.isServer) {
     if (!user) return;
 
     var stampedLoginToken = Accounts._generateStampedLoginToken();
-
-    Meteor._ensure(user, "services", "resume");
-
-    if (_.has(user.services.resume, "loginTokens")) {
-      user.services.resume.loginTokens.push(stampedLoginToken);
-    } else {
-      user.services.resume.loginTokens = [stampedLoginToken];
-    }
-
-    Meteor.users.update({_id: user._id}, {$set: {services: user.services}});
+    Meteor.users.update(user._id, {$push: {"services.resume.loginTokens": Accounts._hashStampedToken(stampedLoginToken)}});
 
     return {
       id: user._id,
-      token: stampedLoginToken.token
+      token: stampedLoginToken.token,
+      tokenExpires: Accounts._tokenExpiration(stampedLoginToken.when)
     };
   });
 }

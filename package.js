@@ -14,6 +14,10 @@ Package.on_use(function (api, where) {
     "deps"
   ], both);
 
+  api.use([
+    "accounts-base"
+  ], both, { weak: true });
+
   api.add_files([
     "collection-hooks.js",
     "insert.js",
@@ -23,10 +27,13 @@ Package.on_use(function (api, where) {
     "findone.js"
   ], both);
 
-  api.add_files("users-compat.js", both); // must always be last, which could pose a problem for other packages using CollectionHooks utils
+  // Load after all advices have been defined
+  api.add_files([
+    "users-compat.js"
+  ], both);
 
   if (typeof api.export !== 'undefined')
-    api.export("CollectionHooks");
+    api.export(["CollectionHooks"]);
 });
 
 Package.on_test(function (api) {

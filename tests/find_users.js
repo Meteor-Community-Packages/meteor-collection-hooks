@@ -1,4 +1,4 @@
-Tinytest.addAsync("users - hooks should be capable of being used on special Meteor.users collection", function (test, next) {
+Tinytest.addAsync("users - find hooks should be capable of being used on special Meteor.users collection", function (test, next) {
 
   var aspect1 = Meteor.users.before.find(function (userId, selector, options) {
     if (selector && selector.test) {
@@ -26,7 +26,7 @@ Tinytest.addAsync("users - hooks should be capable of being used on special Mete
   });
 });
 
-Tinytest.addAsync("users - hooks should be capable of being used on wrapped Meteor.users collection", function (test, next) {
+Tinytest.addAsync("users - find hooks should be capable of being used on wrapped Meteor.users collection", function (test, next) {
 
   function TestUser(doc) {
     return _.extend(this, doc);

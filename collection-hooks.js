@@ -6,6 +6,7 @@
 var advices = {};
 var currentUserId;
 var constructor = Meteor.Collection;
+var proto = new Meteor.Collection(null);
 
 function getUserId() {
   var userId;
@@ -112,17 +113,31 @@ CollectionHooks.getDocs = function (collection, selector, options) {
   return collection.find(selector, findOptions);
 };
 
+CollectionHooks.reassignPrototype = function (instance, constr) {
+  var hasSetPrototypeOf = typeof Object.setPrototypeOf === "function";
+
+  if (!constr) constr = Meteor.Collection;
+
+  // __proto__ is not available in < IE11
+  // Note: Assigning a prototype dynamically has performance implications
+  if (hasSetPrototypeOf) {
+    Object.setPrototypeOf(instance, constr.prototype);
+  } else if (instance.__proto__) {
+    instance.__proto__ = constr.prototype;
+  }
+};
+
 Meteor.Collection = function () {
   var ret = constructor.apply(this, arguments);
   CollectionHooks.extendCollectionInstance(this);
   return ret;
 };
 
-Meteor.Collection.prototype = Object.create(constructor.prototype);
+Meteor.Collection.prototype = proto;
 
-for (var func in constructor) {
-  if (constructor.hasOwnProperty(func)) {
-    Meteor.Collection[func] = constructor[func];
+for (var prop in constructor) {
+  if (constructor.hasOwnProperty(prop)) {
+    Meteor.Collection[prop] = constructor[prop];
   }
 }
 
