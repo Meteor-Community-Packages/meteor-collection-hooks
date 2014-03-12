@@ -218,3 +218,4 @@ grab the transformed user with `findOne`.
 - Andrew Mao ([mizzao](https://github.com/mizzao))
 - Kevin Kaland ([wizonesolutions](https://github.com/wizonesolutions))
 - Jonathan James ([jonjamz](https://github.com/jonjamz))
+- Dave Workman ([davidworkman9](https://github.com/davidworkman9))
