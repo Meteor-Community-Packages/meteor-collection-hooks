@@ -48,13 +48,8 @@ if (Meteor.isServer) {
     var user = Meteor.users.findOne({"username": options.username});
     if (!user) return;
 
-    var stampedLoginToken = Accounts._generateStampedLoginToken();
-    Meteor.users.update(user._id, {$push: {"services.resume.loginTokens": Accounts._hashStampedToken(stampedLoginToken)}});
-
     return {
-      id: user._id,
-      token: stampedLoginToken.token,
-      tokenExpires: Accounts._tokenExpiration(stampedLoginToken.when)
+      userId: user._id
     };
   });
 }
