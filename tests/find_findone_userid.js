@@ -65,33 +65,64 @@ if (Meteor.isServer) {
 }
 
 if (Meteor.isClient) {
-  beforeFindUserId = null;
-  afterFindUserId = null;
-  beforeFindOneUserId = null;
-  afterFindOneUserId = null;
+  function cleanup() {
+    beforeFindUserId = null;
+    afterFindUserId = null;
+    beforeFindOneUserId = null;
+    afterFindOneUserId = null;
+  }
 
-  // Trigger hooks
-  collection.find({}, {test: 1});
-  collection.findOne({}, {test: 1});
+  function withLogin(testFunc) {
+    return function() {
+      // grab arguments passed to testFunc (i.e. "test")
+      var context = this;
+      var args = arguments;
+
+      function wrapper(cb) {
+        InsecureLogin.ready(function() {
+          cleanup();
+          var err;
+
+          try {
+            var result = testFunc.apply(context, args);
+            cb(null, result);
+          } catch (error) {
+            err = error;
+            cb(err);
+          } finally {
+            cleanup();
+          }
+        });
+      };
+
+      return Meteor._wrapAsync(wrapper); // Don't run this function, just wrap it
+    };
+  }
 
   // Run client tests.
   // TODO: Somehow, Tinytest.add / addAsync doesn't work inside InsecureLogin.ready().
+  // Hence, we add these tests wrapped synchronously with a login hook.
 
-  Tinytest.add("find - userId available to before find hook", function(test) {
+  // Ideally, this function should wrap the test functions.
+  Tinytest.add("find - userId available to before find hook", withLogin(function(test) {
+    collection.find({}, {test: 1});
     test.notEqual(beforeFindUserId, null);
-  });
+  }));
 
-  Tinytest.add("find - userId available to after find hook", function(test) {
+  Tinytest.add("find - userId available to after find hook", withLogin(function(test) {
+    collection.find({}, {test: 1});
     test.notEqual(afterFindUserId, null);
-  });
+  }));
 
-  Tinytest.add("findone - userId available to before findOne hook", function(test) {
+  Tinytest.add("findone - userId available to before findOne hook", withLogin(function(test) {
+    collection.findOne({}, {test: 1});
     test.notEqual(beforeFindOneUserId, null);
-  });
+  }));
 
-  Tinytest.add("findone - userId available to after findOne hook", function(test) {
+  Tinytest.add("findone - userId available to after findOne hook", withLogin(function(test) {
+    collection.findOne({}, {test: 1});
     test.notEqual(afterFindOneUserId, null);
-  });
+  }));
 
   InsecureLogin.ready(function () {
     // Run server tests
