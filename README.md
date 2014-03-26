@@ -4,6 +4,15 @@ Extends Meteor.Collection with `before`/`after` hooks for `insert`/`update`/`rem
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
+
+## Getting Started
+
+Install using meteorite (https://github.com/oortcloud/meteorite):
+
+```
+mrt add collection-hooks
+```
+
 --------------------------------------------------------------------------------
 
 ### .before.insert(userId, doc)
