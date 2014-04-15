@@ -7,6 +7,10 @@ var advices = {};
 var currentUserId;
 var constructor = Meteor.Collection;
 var proto = new Meteor.Collection(null);
+var directEnv = new Meteor.EnvironmentVariable();
+var directOp = function (func) {
+  return directEnv.withValue(true, func);
+};
 
 function getUserId() {
   var userId;
@@ -61,11 +65,6 @@ CollectionHooks.extendCollectionInstance = function (self) {
   _.each(advices, function (advice, method) {
     // Store a reference to the mutator method in a publicly reachable location
     var _super = Meteor.isClient ? self[method] : self._collection[method];
-
-    var directEnv = new Meteor.EnvironmentVariable();
-    var directOp = function (func) {
-      return directEnv.withValue(true, func);
-    };
 
     Meteor._ensure(self, "direct", method);
     self.direct[method] = function () {
