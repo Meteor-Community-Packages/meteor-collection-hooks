@@ -59,7 +59,21 @@ CollectionHooks.extendCollectionInstance = function (self) {
 
   // Wrap mutator methods, letting the defined advice do the work
   _.each(advices, function (advice, method) {
+    // Store a reference to the mutator method in a publicly reachable location
     var _super = Meteor.isClient ? self[method] : self._collection[method];
+
+    var directEnv = new Meteor.EnvironmentVariable();
+    var directOp = function (func) {
+      return directEnv.withValue(true, func);
+    };
+
+    Meteor._ensure(self, "direct", method);
+    self.direct[method] = function () {
+      if (directEnv.get() === true) return;
+      return directOp(function () {
+        return _super.bind(Meteor.isClient ? self : self._collection);
+      });
+    };
 
     (Meteor.isClient ? self : self._collection)[method] = function () {
       return advice.call(this,
