@@ -71,7 +71,7 @@ CollectionHooks.extendCollectionInstance = function (self) {
     self.direct[method] = function () {
       if (directEnv.get() === true) return;
       return directOp(function () {
-        return _super && _super.bind(Meteor.isClient ? self : self._collection);
+        return _super.bind(Meteor.isClient ? self : self._collection);
       });
     };
 

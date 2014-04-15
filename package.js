@@ -19,6 +19,7 @@ Package.on_use(function (api, where) {
   ], both, { weak: true });
 
   api.add_files([
+    "bind-polyfill.js",
     "collection-hooks.js",
     "insert.js",
     "update.js",
