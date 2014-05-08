@@ -195,7 +195,7 @@ test.after.findOne: function (userId, selector, options, doc) {
 
 ## Direct access (circumventing hooks)
 
-All hooks have a `direct` equivalent that circumvent the hooks. For example:
+All compatible methods have a `direct` version that circumvent any defined hooks. For example:
 
 ```javascript
 collection.direct.insert({_id: "test", test: 1});
