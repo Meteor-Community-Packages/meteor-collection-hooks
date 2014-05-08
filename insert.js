@@ -1,7 +1,8 @@
 CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTransform, args) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
-  var async = _.isFunction(_.last(args));
+  var callback = _.last(args); // more future proof to use last vs. args[1]
+  var async = _.isFunction(callback);
   var abort, ret;
 
   // args[0] : doc
@@ -29,10 +30,11 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
   }
 
   if (async) {
-    return _super.call(self, args[0], function (err, obj) {
+    args[args.length - 1] = function (err, obj) {
       after(obj && obj[0] && obj[0]._id || obj, err);
-      return args[1].apply(this, arguments);
-    });
+      return callback.apply(this, arguments);
+    };
+    return _super.apply(self, args);
   } else {
     ret = _super.apply(self, args);
     return after(ret && ret[0] && ret[0]._id || ret);
