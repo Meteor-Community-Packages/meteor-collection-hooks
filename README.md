@@ -4,7 +4,6 @@ Extends Meteor.Collection with `before`/`after` hooks for `insert`/`update`/`rem
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
-
 ## Getting Started
 
 Install using meteorite (https://github.com/oortcloud/meteorite):
@@ -193,6 +192,18 @@ test.after.findOne: function (userId, selector, options, doc) {
 ```
 
 --------------------------------------------------------------------------------
+
+## Direct access (circumventing hooks)
+
+All hooks have a `direct` equivalent that circumvent the hooks. For example:
+
+```javascript
+collection.direct.insert({_id: "test", test: 1});
+collection.direct.update({_id: "test"}, {$set: {test: 1}});
+collection.direct.find({test: 1});
+collection.direct.findOne({test: 1});
+collection.direct.remove({_id: "test"});
+```
 
 ## Tips
 
