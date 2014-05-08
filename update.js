@@ -3,7 +3,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);
   var async = _.isFunction(callback);
-  var docs, fields, abort, prev = {};
+  var docs, docsIds, fields, abort, prev = {};
   var collection = _.has(self, "_collection") ? self._collection : self;
 
   // args[0] : selector
@@ -18,6 +18,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
 
   fields = getFields(args[1]);
   docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
+  docIds = _.map(docs, function (doc) { return doc._id; });
 
   // copy originals for convenience for the "after" pointcut
   if (aspects.after) {
@@ -41,7 +42,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
 
   function after(affected, err) {
     var fields = getFields(args[1]);
-    var docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
+    var docs = CollectionHooks.getDocs.call(self, collection, {_id: {$in: docIds}}, args[2]).fetch();
 
     _.each(aspects.after, function (aspect) {
       _.each(docs, function (doc) {

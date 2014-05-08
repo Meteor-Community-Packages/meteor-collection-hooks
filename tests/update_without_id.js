@@ -19,9 +19,9 @@ Tinytest.addAsync("update - server collection documents should have extra proper
       if (err) throw err;
       collection.insert({not_an_id: "testing"}, function (err, id3) {
         if (err) throw err;
-        collection.update({not_an_id: "testing"}, {$set: {update_value: true, test: true}}, {multi: true}, function (err) {
+        collection.update({not_an_id: "testing"}, {$set: {not_an_id: "newvalue", test: true}}, {multi: true}, function (err) {
           if (err) throw err;
-          test.equal(collection.find({update_value: true, before_update_value: true, after_update_value: true}).count(), 3, "number of docs found should be 3");
+          test.equal(collection.find({not_an_id: "newvalue", before_update_value: true, after_update_value: true}).count(), 3, "number of docs found should be 3");
           next();
         });
       });
