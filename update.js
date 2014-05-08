@@ -1,7 +1,8 @@
 CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTransform, args) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
-  var async = _.isFunction(_.last(args));
+  var callback = _.last(args);
+  var async = _.isFunction(callback);
   var docs, fields, abort, prev = {};
   var collection = _.has(self, "_collection") ? self._collection : self;
 
@@ -11,7 +12,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   // args[3] : callback
 
   if (_.isFunction(args[2])) {
-    args[3] = args[2];
+    callback = args[2];
     args[2] = {};
   }
 
@@ -55,10 +56,11 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
   }
 
   if (async) {
-    return _super.call(self, args[0], args[1], args[2], function (err, affected) {
+    args[args.length - 1] = function (err, affected) {
       after(affected, err);
-      return args[3].apply(this, arguments);
-    });
+      return callback.apply(this, arguments);
+    };
+    return _super.apply(this, args);
   } else {
     var affected = _super.apply(self, args);
     after(affected);

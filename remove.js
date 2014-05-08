@@ -1,7 +1,8 @@
 CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTransform, args) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
-  var async = _.isFunction(_.last(args));
+  var callback = _.last(args);
+  var async = _.isFunction(callback);
   var docs, abort, prev = [];
   var collection = _.has(self, "_collection") ? self._collection : self;
 
@@ -36,10 +37,11 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
   }
 
   if (async) {
-    return _super.call(self, args[0], function (err) {
+    args[args.length - 1] = function (err) {
       after(err);
-      return args[1].apply(this, arguments);
-    });
+      return callback.apply(this, arguments);
+    };
+    return _super.apply(self, args);
   } else {
     var result = _super.apply(self, args);
     after();

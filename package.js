@@ -50,7 +50,7 @@ Package.on_test(function (api) {
   api.add_files(["tests/insecure_login.js"], both);
 
   // local = minimongo (on server and client)
-  // both = minimongo on client and server,  mongo on server, with mutator methods
+  // both = minimongo on client and server, mongo on server, with mutator methods
   // allow = same as both but with an allow rule test
   api.add_files(["tests/insert_local.js"], both);
   api.add_files(["tests/insert_both.js"], both);

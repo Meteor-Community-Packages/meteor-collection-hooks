@@ -236,6 +236,7 @@ grab the transformed user with `findOne`.
 
 - Mathieu Bouchard ([matb33](https://github.com/matb33))
 - Andrew Mao ([mizzao](https://github.com/mizzao))
+- Eric Dobbertin ([aldeed](https://github.com/aldeed))
 - Kevin Kaland ([wizonesolutions](https://github.com/wizonesolutions))
 - Jonathan James ([jonjamz](https://github.com/jonjamz))
 - Dave Workman ([davidworkman9](https://github.com/davidworkman9))
