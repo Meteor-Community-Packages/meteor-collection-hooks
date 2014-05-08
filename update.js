@@ -16,9 +16,11 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
     args[2] = {};
   }
 
-  fields = getFields(args[1]);
-  docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
-  docIds = _.map(docs, function (doc) { return doc._id; });
+  if (aspects.before || aspects.after) {
+    fields = getFields(args[1]);
+    docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
+    docIds = _.map(docs, function (doc) { return doc._id; });
+  }
 
   // copy originals for convenience for the "after" pointcut
   if (aspects.after) {
