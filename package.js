@@ -61,6 +61,7 @@ Package.on_test(function (api) {
   api.add_files(["tests/update_both.js"], both);
   api.add_files(["tests/update_allow.js"], both);
   api.add_files(["tests/update_user.js"], "server");
+  api.add_files(["tests/update_without_id.js"], "server");
 
   api.add_files(["tests/remove_local.js"], both);
   api.add_files(["tests/remove_both.js"], both);
