@@ -118,6 +118,12 @@ test.after.update(function (userId, doc, fieldNames, modifier, options) {
 }, {fetchPrevious: true/false});
 ```
 
+__Important:__ If you have multiple hooks defined, and at least one of them does
+*not* specify `fetchPrevious: false`, then the the documents *will* be fetched
+and provided as `this.previous`. All after-update hooks for the same collection
+must have `fetchPrevious: false` set in order to effectively disable the
+pre-fetching of documents.
+
 --------------------------------------------------------------------------------
 
 ### .after.remove(userId, doc)
@@ -232,8 +238,8 @@ CollectionHooks.defaults.before.insert = {exampleOption: 6};
 CollectionHooks.defaults.after.remove = {exampleOption: 7};
 ```
 
-__Currently (as of 0.7.0), only `fetchPrevious` is implemented as an option, and
-is only relevant to after-update hooks.__
+_Currently (as of 0.7.0), only `fetchPrevious` is implemented as an option, and
+is only relevant to after-update hooks._
 
 --------------------------------------------------------------------------------
 
