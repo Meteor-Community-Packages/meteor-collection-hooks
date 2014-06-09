@@ -53,7 +53,7 @@ test.before.update(function (userId, doc, fieldNames, modifier, options) {
 });
 ```
 
-__Important__: note that we are changing `modifier`, and not `doc`.
+__Important__: Note that we are changing `modifier`, and not `doc`.
 Changing `doc` won't have any effect as the document is a copy and is not what
 ultimately gets sent down to the underlying `update` method.
 
@@ -119,10 +119,10 @@ test.after.update(function (userId, doc, fieldNames, modifier, options) {
 ```
 
 __Important:__ If you have multiple hooks defined, and at least one of them does
-*not* specify `fetchPrevious: false`, then the the documents *will* be fetched
-and provided as `this.previous`. All after-update hooks for the same collection
-must have `fetchPrevious: false` set in order to effectively disable the
-pre-fetching of documents.
+*not* specify `fetchPrevious: false`, then the documents *will* be fetched
+and provided as `this.previous` to all hook callbacks. All after-update hooks
+for the same collection must have `fetchPrevious: false` set in order to
+effectively disable the pre-fetching of documents.
 
 --------------------------------------------------------------------------------
 
