@@ -1,8 +1,10 @@
 # Meteor Collection Hooks [![Build Status](https://travis-ci.org/matb33/meteor-collection-hooks.png?branch=master)](https://travis-ci.org/matb33/meteor-collection-hooks)
 
-Extends Meteor.Collection with `before`/`after` hooks for `insert`/`update`/`remove`/`find`/`findOne`.
+Extends Meteor.Collection with `before`/`after` hooks for `insert`, `update`, `remove`, `find`, and `findOne`.
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
+
+Please refer to [History.md](History.md) for a summary of recent changes.
 
 ## Getting Started
 
@@ -102,6 +104,9 @@ Gives you an opportunity to run post-update tasks, potentially comparing the
 previous and new documents to take further action.
 
 - `this.previous` contains the document before it was updated.
+  - The optional `fetchPrevious` option, when set to false, will not fetch
+    documents before running the hooks. `this.previous` will then not be
+    available. The default behavior is to fetch the documents.
 - `this.transform()` obtains transformed version of document, if a transform was
   defined. Note that this function accepts an optional parameter to specify the
   document to transform — useful to transform previous:
@@ -110,7 +115,7 @@ previous and new documents to take further action.
 ```javascript
 test.after.update(function (userId, doc, fieldNames, modifier, options) {
   // ...
-});
+}, {fetchPrevious: true/false});
 ```
 
 --------------------------------------------------------------------------------
@@ -206,7 +211,33 @@ collection.direct.findOne({test: 1});
 collection.direct.remove({_id: "test"});
 ```
 
-## Tips
+--------------------------------------------------------------------------------
+
+## Default options
+
+As of version 0.7.0, options can be passed to hook definitions. Default options
+can be specified for all or some hooks, with more specific ones having higher
+specificity. Examples (in order of least specific to most specific):
+
+```javascript
+CollectionHooks.defaults.all.all = {exampleOption: 1};
+
+CollectionHooks.defaults.before.all = {exampleOption: 2};
+CollectionHooks.defaults.after.all = {exampleOption: 3};
+
+CollectionHooks.defaults.all.update = {exampleOption: 4};
+CollectionHooks.defaults.all.remove = {exampleOption: 5};
+
+CollectionHooks.defaults.before.insert = {exampleOption: 6};
+CollectionHooks.defaults.after.remove = {exampleOption: 7};
+```
+
+__Currently (as of 0.7.0), only `fetchPrevious` is implemented as an option, and
+is only relevant to after-update hooks.__
+
+--------------------------------------------------------------------------------
+
+## Additional notes
 
 - Returning `false` in any `before` hook will prevent the underlying method (and
 subsequent `after` hooks) from executing. Note that all `before` hooks will
@@ -231,7 +262,6 @@ particular userId.
 grab the transformed user with `findOne`.
 
 --------------------------------------------------------------------------------
-
 
 ## Contributors
 

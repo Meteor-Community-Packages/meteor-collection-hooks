@@ -21,9 +21,9 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
   }
 
   // before
-  _.each(aspects.before, function (aspect) {
+  _.each(aspects.before, function (o) {
     _.each(docs, function (doc) {
-      var r = aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
+      var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
       if (r === false) abort = true;
     });
   });
@@ -31,9 +31,9 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTra
   if (abort) return false;
 
   function after(err) {
-    _.each(aspects.after, function (aspect) {
+    _.each(aspects.after, function (o) {
       _.each(prev, function (doc) {
-        aspect.call(_.extend({transform: getTransform(doc), err: err}, ctx), userId, doc);
+        o.aspect.call(_.extend({transform: getTransform(doc), err: err}, ctx), userId, doc);
       });
     });
   }

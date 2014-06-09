@@ -33,8 +33,9 @@ Package.on_use(function (api, where) {
     "users-compat.js"
   ], both);
 
-  if (typeof api.export !== 'undefined')
+  if (typeof api.export !== 'undefined') {
     api.export(["CollectionHooks"]);
+  }
 });
 
 Package.on_test(function (api) {
@@ -74,8 +75,8 @@ Package.on_test(function (api) {
 
   api.add_files(["tests/multiple_hooks.js"], both);
   api.add_files(["tests/transform.js"], both);
-
   api.add_files(["tests/direct.js"], both);
+  api.add_files(["tests/optional-previous.js"], both);
 
   // NOTE: not supporting fetch for the time being.
   // NOTE: fetch can only work server-side because find's "fields" option is

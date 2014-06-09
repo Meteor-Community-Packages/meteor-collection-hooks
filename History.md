@@ -1,3 +1,11 @@
+## vNEXT
+
+## v0.7.0
+
+* Implement second parameter `options` for all hooks (`coll.before.update(func, {option: 123})`)
+* Add global `CollectionHooks.defaults` to specify options that apply to all or specific hooks
+* Add `fetchPrevious` option, which must be set to `false` to prevent fetching `this.previous` (which can also be set via global `CollectionHooks.defaults`)
+
 ## v0.6.7
 
 * Eliminate unnecessary reduction in performance from iterating through individual documents when no hooks are defined. (#38)

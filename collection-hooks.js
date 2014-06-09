@@ -36,7 +36,13 @@ function getUserId() {
   return userId;
 }
 
-CollectionHooks = {};
+CollectionHooks = {
+  defaults: {
+    before: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
+    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
+    all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
+  }
+};
 
 CollectionHooks.extendCollectionInstance = function (self) {
   // Offer a public API to allow the user to define aspects
@@ -47,11 +53,18 @@ CollectionHooks.extendCollectionInstance = function (self) {
       Meteor._ensure(self, "_aspects", method);
 
       self._aspects[method][pointcut] = [];
-      self[pointcut][method] = function (aspect) {
-        var len = self._aspects[method][pointcut].push(aspect);
+      self[pointcut][method] = function (aspect, options) {
+        var len = self._aspects[method][pointcut].push({
+          aspect: aspect,
+          options: CollectionHooks.mergeOptions(options, pointcut, method)
+        });
+
         return {
-          replace: function (aspect) {
-            self._aspects[method][pointcut].splice(len - 1, 1, aspect);
+          replace: function (aspect, options) {
+            self._aspects[method][pointcut].splice(len - 1, 1, {
+              aspect: aspect,
+              options: CollectionHooks.mergeOptions(options, pointcut, method)
+            });
           },
           remove: function () {
             self._aspects[method][pointcut].splice(len - 1, 1);
@@ -92,6 +105,14 @@ CollectionHooks.extendCollectionInstance = function (self) {
 
 CollectionHooks.defineAdvice = function (method, advice) {
   advices[method] = advice;
+};
+
+CollectionHooks.mergeOptions = function (options, pointcut, method) {
+  options = _.extend(options || {}, CollectionHooks.defaults.all.all);
+  options = _.extend(options, CollectionHooks.defaults[pointcut].all);
+  options = _.extend(options, CollectionHooks.defaults.all[method]);
+  options = _.extend(options, CollectionHooks.defaults[pointcut][method]);
+  return options;
 };
 
 CollectionHooks.getDocs = function (collection, selector, options) {

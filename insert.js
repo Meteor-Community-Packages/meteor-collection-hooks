@@ -9,8 +9,8 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
   // args[1] : callback
 
   // before
-  _.each(aspects.before, function (aspect) {
-    var r = aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
+  _.each(aspects.before, function (o) {
+    var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
     if (r === false) abort = true;
   });
 
@@ -23,8 +23,8 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, aspects, getTra
       doc._id = id;
     }
     var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx);
-    _.each(aspects.after, function (aspect) {
-      aspect.call(lctx, userId, doc);
+    _.each(aspects.after, function (o) {
+      o.aspect.call(lctx, userId, doc);
     });
     return id;
   }
