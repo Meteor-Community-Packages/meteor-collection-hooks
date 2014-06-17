@@ -210,11 +210,11 @@ test.after.findOne: function (userId, selector, options, doc) {
 All compatible methods have a `direct` version that circumvent any defined hooks. For example:
 
 ```javascript
-collection.direct.insert({_id: "test", test: 1});
-collection.direct.update({_id: "test"}, {$set: {test: 1}});
-collection.direct.find({test: 1});
-collection.direct.findOne({test: 1});
-collection.direct.remove({_id: "test"});
+collection.direct.insert()({_id: "test", test: 1});
+collection.direct.update()({_id: "test"}, {$set: {test: 1}});
+collection.direct.find()({test: 1});
+collection.direct.findOne()({test: 1});
+collection.direct.remove()({_id: "test"});
 ```
 
 --------------------------------------------------------------------------------
