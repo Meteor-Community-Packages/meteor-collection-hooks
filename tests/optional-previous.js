@@ -97,6 +97,8 @@ Tinytest.add("optional-previous - update hook should not prefetch previous, via 
     }
   });
 
+  CollectionHooks.defaults.all.update = {};
+
   collection.insert({_id: "test", test: 1});
   collection.update({_id: "test"}, {$set: {test: 1}});
 });

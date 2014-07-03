@@ -55,7 +55,7 @@ Tinytest.addAsync("update - local collection should fire after-update hook", fun
       test.equal(fieldNames[0], "update_value");
 
       test.equal(doc.update_value, true);
-      test.equal(_.has(this.previous, "update_value"), false);
+      test.equal(_.has(this.previous || {}, "update_value"), false);
 
       n();
     });

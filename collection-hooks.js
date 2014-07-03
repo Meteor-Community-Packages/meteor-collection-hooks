@@ -81,13 +81,17 @@ CollectionHooks.extendCollectionInstance = function (self) {
 
     Meteor._ensure(self, "direct", method);
     self.direct[method] = function () {
-      if (directEnv.get() === true) return;
+      var args = _.toArray(arguments);
       return directOp(function () {
-        return _super.bind(Meteor.isClient ? self : self._collection);
+        return _super.apply(Meteor.isClient ? self : self._collection, args);
       });
     };
 
     (Meteor.isClient ? self : self._collection)[method] = function () {
+      if (directEnv.get() === true) {
+        return _super.apply(Meteor.isClient ? self : self._collection, arguments);
+      }
+
       return advice.call(this,
         getUserId(),
         _super,
