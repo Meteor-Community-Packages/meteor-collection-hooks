@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.7.2
+
+* Allow specifying hook options on a per-collection basis
+
 ## v0.7.1
 
 * Fix direct implementation and associated tests (#46)

@@ -45,57 +45,65 @@ CollectionHooks = {
 };
 
 CollectionHooks.extendCollectionInstance = function (self) {
+  var collection = Meteor.isClient ? self : self._collection;
+
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   _.each(["before", "after"], function (pointcut) {
     _.each(advices, function (advice, method) {
       Meteor._ensure(self, pointcut, method);
-      Meteor._ensure(self, "_aspects", method);
+      Meteor._ensure(self, "_hookAspects", method);
 
-      self._aspects[method][pointcut] = [];
+      self._hookAspects[method][pointcut] = [];
       self[pointcut][method] = function (aspect, options) {
-        var len = self._aspects[method][pointcut].push({
+        var len = self._hookAspects[method][pointcut].push({
           aspect: aspect,
-          options: CollectionHooks.mergeOptions(options, pointcut, method)
+          options: CollectionHooks.initOptions(options, pointcut, method)
         });
 
         return {
           replace: function (aspect, options) {
-            self._aspects[method][pointcut].splice(len - 1, 1, {
+            self._hookAspects[method][pointcut].splice(len - 1, 1, {
               aspect: aspect,
-              options: CollectionHooks.mergeOptions(options, pointcut, method)
+              options: CollectionHooks.initOptions(options, pointcut, method)
             });
           },
           remove: function () {
-            self._aspects[method][pointcut].splice(len - 1, 1);
+            self._hookAspects[method][pointcut].splice(len - 1, 1);
           }
         };
       };
     });
   });
 
+  // Offer a publicly accessible object to allow the user to define
+  // collection-wide hook options.
+  // Example: collection.hookOptions.after.update = {fetchPrevious: false};
+  self.hookOptions = EJSON.clone(CollectionHooks.defaults);
+
   // Wrap mutator methods, letting the defined advice do the work
   _.each(advices, function (advice, method) {
     // Store a reference to the mutator method in a publicly reachable location
-    var _super = Meteor.isClient ? self[method] : self._collection[method];
+    var _super = collection[method];
 
     Meteor._ensure(self, "direct", method);
     self.direct[method] = function () {
       var args = _.toArray(arguments);
       return directOp(function () {
-        return _super.apply(Meteor.isClient ? self : self._collection, args);
+        return _super.apply(collection, args);
       });
     };
 
-    (Meteor.isClient ? self : self._collection)[method] = function () {
+    collection[method] = function () {
       if (directEnv.get() === true) {
-        return _super.apply(Meteor.isClient ? self : self._collection, arguments);
+        return _super.apply(collection, arguments);
       }
 
       return advice.call(this,
         getUserId(),
         _super,
-        self._aspects[method] || {},
+        self,
+        self._hookAspects[method] || {},
         function (doc) {
           return  _.isFunction(self._transform)
                   ? function (d) { return self._transform(d || doc); }
@@ -111,11 +119,15 @@ CollectionHooks.defineAdvice = function (method, advice) {
   advices[method] = advice;
 };
 
-CollectionHooks.mergeOptions = function (options, pointcut, method) {
-  options = _.extend(options || {}, CollectionHooks.defaults.all.all);
-  options = _.extend(options, CollectionHooks.defaults[pointcut].all);
-  options = _.extend(options, CollectionHooks.defaults.all[method]);
-  options = _.extend(options, CollectionHooks.defaults[pointcut][method]);
+CollectionHooks.initOptions = function (options, pointcut, method) {
+  return CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method);
+};
+
+CollectionHooks.extendOptions = function (source, options, pointcut, method) {
+  options = _.extend(options || {}, source.all.all);
+  options = _.extend(options, source[pointcut].all);
+  options = _.extend(options, source.all[method]);
+  options = _.extend(options, source[pointcut][method]);
   return options;
 };
 

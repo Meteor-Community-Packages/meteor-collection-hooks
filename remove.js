@@ -1,4 +1,4 @@
-CollectionHooks.defineAdvice("remove", function (userId, _super, aspects, getTransform, args) {
+CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspects, getTransform, args) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);

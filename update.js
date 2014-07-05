@@ -1,4 +1,4 @@
-CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTransform, args) {
+CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspects, getTransform, args) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);
@@ -24,7 +24,8 @@ CollectionHooks.defineAdvice("update", function (userId, _super, aspects, getTra
 
   // copy originals for convenience for the "after" pointcut
   if (aspects.after) {
-    if (_.some(aspects.after, function (o) { return o.options.fetchPrevious !== false; })) {
+    if (_.some(aspects.after, function (o) { return o.options.fetchPrevious !== false; }) &&
+        CollectionHooks.extendOptions(instance.hookOptions, {}, "after", "update").fetchPrevious !== false) {
       prev.mutator = EJSON.clone(args[1]);
       prev.options = EJSON.clone(args[2]);
       prev.docs = {};

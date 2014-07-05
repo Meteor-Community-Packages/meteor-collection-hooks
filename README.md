@@ -124,6 +124,9 @@ and provided as `this.previous` to all hook callbacks. All after-update hooks
 for the same collection must have `fetchPrevious: false` set in order to
 effectively disable the pre-fetching of documents.
 
+It is instead recommended to use the collection-wide options (e.g.
+`MyCollection.hookOptions.after.update = {fetchPrevious: false};`).
+
 --------------------------------------------------------------------------------
 
 ### .after.remove(userId, doc)
@@ -222,8 +225,10 @@ collection.direct.remove({_id: "test"});
 ## Default options
 
 As of version 0.7.0, options can be passed to hook definitions. Default options
-can be specified for all or some hooks, with more specific ones having higher
-specificity. Examples (in order of least specific to most specific):
+can be specified globally and on a per-collection basis for all or some hooks,
+with more specific ones having higher specificity.
+
+Examples (in order of least specific to most specific):
 
 ```javascript
 CollectionHooks.defaults.all.all = {exampleOption: 1};
@@ -236,6 +241,24 @@ CollectionHooks.defaults.all.remove = {exampleOption: 5};
 
 CollectionHooks.defaults.before.insert = {exampleOption: 6};
 CollectionHooks.defaults.after.remove = {exampleOption: 7};
+```
+
+Similarly, collection-wide options can be defined (these have a higher
+specificity than the global defaults from above):
+
+```javascript
+var testCollection = new Meteor.Collection("test");
+
+testCollection.hookOptions.all.all = {exampleOption: 1};
+
+testCollection.hookOptions.before.all = {exampleOption: 2};
+testCollection.hookOptions.after.all = {exampleOption: 3};
+
+testCollection.hookOptions.all.update = {exampleOption: 4};
+testCollection.hookOptions.all.remove = {exampleOption: 5};
+
+testCollection.hookOptions.before.insert = {exampleOption: 6};
+testCollection.hookOptions.after.remove = {exampleOption: 7};
 ```
 
 _Currently (as of 0.7.0), only `fetchPrevious` is implemented as an option, and

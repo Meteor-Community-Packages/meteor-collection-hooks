@@ -1,12 +1,5 @@
-Tinytest.addAsync("optional-previous - update hook should not prefetch previous, via option param", function (test, next) {
+Tinytest.addAsync("optional-previous - update hook should not prefetch previous, via hook option param", function (test, next) {
   var collection = new Meteor.Collection(null);
-
-  // Full permissions on collection
-  collection.allow({
-    insert: function () { return true; },
-    update: function () { return true; },
-    remove: function () { return true; }
-  });
 
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
     if (doc && doc._id === "test") {
@@ -14,6 +7,23 @@ Tinytest.addAsync("optional-previous - update hook should not prefetch previous,
       next();
     }
   }, {fetchPrevious: false});
+
+  collection.insert({_id: "test", test: 1}, function () {
+    collection.update({_id: "test"}, {$set: {test: 1}});
+  });
+});
+
+Tinytest.addAsync("optional-previous - update hook should not prefetch previous, via collection option param", function (test, next) {
+  var collection = new Meteor.Collection(null);
+
+  collection.hookOptions.after.update = {fetchPrevious: false};
+
+  collection.after.update(function (userId, doc, fieldNames, modifier, options) {
+    if (doc && doc._id === "test") {
+      test.equal(!!this.previous, false);
+      next();
+    }
+  });
 
   collection.insert({_id: "test", test: 1}, function () {
     collection.update({_id: "test"}, {$set: {test: 1}});
@@ -33,13 +43,6 @@ if (Meteor.isClient) return;
 Tinytest.add("optional-previous - update hook should not prefetch previous, via defaults param variation 1: after.update", function (test) {
   var collection = new Meteor.Collection(null);
 
-  // Full permissions on collection
-  collection.allow({
-    insert: function () { return true; },
-    update: function () { return true; },
-    remove: function () { return true; }
-  });
-
   CollectionHooks.defaults.after.update = {fetchPrevious: false};
 
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
@@ -57,13 +60,6 @@ Tinytest.add("optional-previous - update hook should not prefetch previous, via 
 
 Tinytest.add("optional-previous - update hook should not prefetch previous, via defaults param variation 2: after.all", function (test) {
   var collection = new Meteor.Collection(null);
-
-  // Full permissions on collection
-  collection.allow({
-    insert: function () { return true; },
-    update: function () { return true; },
-    remove: function () { return true; }
-  });
 
   CollectionHooks.defaults.after.all = {fetchPrevious: false};
 
@@ -84,13 +80,6 @@ Tinytest.add("optional-previous - update hook should not prefetch previous, via 
 
   CollectionHooks.defaults.all.update = {fetchPrevious: false};
 
-  // Full permissions on collection
-  collection.allow({
-    insert: function () { return true; },
-    update: function () { return true; },
-    remove: function () { return true; }
-  });
-
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
     if (options && options.test) {
       test.equal(!!this.previous, false);
@@ -105,13 +94,6 @@ Tinytest.add("optional-previous - update hook should not prefetch previous, via 
 
 Tinytest.add("optional-previous - update hook should not prefetch previous, via defaults param variation 4: all.all", function (test) {
   var collection = new Meteor.Collection(null);
-
-  // Full permissions on collection
-  collection.allow({
-    insert: function () { return true; },
-    update: function () { return true; },
-    remove: function () { return true; }
-  });
 
   CollectionHooks.defaults.all.all = {fetchPrevious: false};
 
