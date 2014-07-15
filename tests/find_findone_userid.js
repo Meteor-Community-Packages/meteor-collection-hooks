@@ -1,40 +1,74 @@
 var collection = new Meteor.Collection("test_collection_for_find_findone_userid");
 
 var beforeFindUserId, afterFindUserId, beforeFindOneUserId, afterFindOneUserId;
+var beforeFindWithinPublish, afterFindWithinPublish,
+  beforeFindOneWithinPublish, afterFindOneWithinPublish;
 
 // Don't declare hooks in publish method, as it is problematic
 collection.before.find(function (userId, selector, options) {
   if (options && options.test) { // ignore other calls to find (caused by insert/update)
     beforeFindUserId = userId;
+
+    if( CollectionHooks.isWithinPublish ) {
+      beforeFindWithinPublish = CollectionHooks.isWithinPublish();
+    }
   }
 });
 
 collection.after.find(function (userId, selector, options, result) {
   if (options && options.test) { // ignore other calls to find (caused by insert/update)
     afterFindUserId = userId;
+
+    if( CollectionHooks.isWithinPublish ) {
+      afterFindWithinPublish = CollectionHooks.isWithinPublish();
+    }
   }
 });
 
 collection.before.findOne(function (userId, selector, options) {
   if (options && options.test) { // ignore other calls to find (caused by insert/update)
     beforeFindOneUserId = userId;
+
+    if( CollectionHooks.isWithinPublish ) {
+      beforeFindOneWithinPublish = CollectionHooks.isWithinPublish();
+    }
   }
 });
 
 collection.after.findOne(function (userId, selector, options, result) {
   if (options && options.test) { // ignore other calls to find (caused by insert/update)
     afterFindOneUserId = userId;
+
+    if( CollectionHooks.isWithinPublish ) {
+      afterFindOneWithinPublish = CollectionHooks.isWithinPublish();
+    }
   }
 });
 
 if (Meteor.isServer) {
   var serverTestsAdded = false;
+  var publishContext = null;
+
+  Tinytest.add("general - isWithinPublish is false outside of publish function", function(test) {
+    test.equal(CollectionHooks.isWithinPublish(), false);
+  });
 
   Meteor.publish("test_publish_for_find_findone_userid", function () {
+    // Reset test values on each connection
+    publishContext = null;
+
     beforeFindUserId = null;
     afterFindUserId = null;
     beforeFindOneUserId = null;
     afterFindOneUserId = null;
+
+    beforeFindWithinPublish = false;
+    afterFindWithinPublish = false;
+    beforeFindOneWithinPublish = false;
+    afterFindOneWithinPublish = false;
+
+    // Check publish context
+    publishContext = this;
 
     // Trigger hooks
     collection.find({}, {test: 1});
@@ -43,20 +77,29 @@ if (Meteor.isServer) {
     if (!serverTestsAdded) {
       serverTestsAdded = true;
 
+      // Our monkey-patch of Meteor.publish should preserve the value of 'this'.
+      Tinytest.add("general - this (context) preserved in publish functions", function(test) {
+        test.isTrue(publishContext && publishContext.userId);
+      });
+
       Tinytest.add("find - userId available to before find hook when within publish context", function (test) {
         test.notEqual(beforeFindUserId, null);
+        test.equal(beforeFindWithinPublish, true);
       });
 
       Tinytest.add("find - userId available to after find hook when within publish context", function (test) {
         test.notEqual(afterFindUserId, null);
+        test.equal(afterFindWithinPublish, true);
       });
 
       Tinytest.add("findone - userId available to before findOne hook when within publish context", function (test) {
         test.notEqual(beforeFindOneUserId, null);
+        test.equal(beforeFindOneWithinPublish, true);
       });
 
       Tinytest.add("findone - userId available to after findOne hook when within publish context", function (test) {
         test.notEqual(afterFindOneUserId, null);
+        test.equal(afterFindOneWithinPublish, true);
       });
     }
 

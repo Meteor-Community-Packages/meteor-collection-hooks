@@ -4,9 +4,11 @@
 // Pointcut: before/after
 
 var advices = {};
-var currentUserId;
+// XXX this only used on the server; should it really be here?
+var publishUserId = new Meteor.EnvironmentVariable();
 var constructor = Meteor.Collection;
 var proto = new Meteor.Collection(null);
+
 var directEnv = new Meteor.EnvironmentVariable();
 var directOp = function (func) {
   return directEnv.withValue(true, func);
@@ -29,7 +31,8 @@ function getUserId() {
     } catch (e) {}
 
     if (!userId) {
-        userId = currentUserId;
+      // Get the userId if we are in a publish function.
+      userId = publishUserId.get();
     }
   }
 
@@ -195,10 +198,17 @@ if (Meteor.isServer) {
   var _publish = Meteor.publish;
   Meteor.publish = function (name, func) {
     return _publish.call(this, name, function () {
-      currentUserId = this && this.userId;
-      var ret = func.apply(this, arguments);
-      currentUserId = undefined;
-      return ret;
+      // This function is called repeatedly in publications
+      var ctx = this, args = arguments;
+      return publishUserId.withValue(ctx && ctx.userId, function() {
+        return func.apply(ctx, args);
+      });
     });
+  };
+
+  // Make the above available for packages with hooks that want to determine
+  // whether they are running inside a publish function or not.
+  CollectionHooks.isWithinPublish = function () {
+    return publishUserId.get() !== undefined;
   };
 }

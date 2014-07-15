@@ -1,5 +1,7 @@
 ## vNEXT
 
+* Store the value of `this.userId` from a `Meteor.publish` function in an environment variable so it is preserved across yielding operations.
+
 ## v0.7.2
 
 * Allow specifying hook options on a per-collection basis
