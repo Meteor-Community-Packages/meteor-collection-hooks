@@ -1,0 +1,6 @@
+{
+  "meteor": {
+    "branch": "devel",
+    "git": "https://github.com/meteor/meteor.git"
+  }
+}
