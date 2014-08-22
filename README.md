@@ -8,10 +8,10 @@ Please refer to [History.md](History.md) for a summary of recent changes.
 
 ## Getting Started
 
-Install using meteorite (https://github.com/oortcloud/meteorite):
+Installation:
 
 ```
-mrt add collection-hooks
+meteor add matb33:collection-hooks
 ```
 
 --------------------------------------------------------------------------------

@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.7.3
+
 * **Update for Meteor 0.9.**
 * Store the value of `this.userId` from a `Meteor.publish` function in an environment variable so it is preserved across yielding operations.
 
