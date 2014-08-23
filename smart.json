@@ -1,11 +1,6 @@
 {
-  "packages": {
-    "matb33:collection-hooks": {
-      "path": "."
-    }
-  },  
   "meteor": {
-    "branch": "devel",
+    "branch": "release-0.9.0",
     "git": "https://github.com/meteor/meteor.git"
   }
 }
