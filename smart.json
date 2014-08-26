@@ -1,6 +1,0 @@
-{
-  "meteor": {
-    "branch": "release-0.9.0",
-    "git": "https://github.com/meteor/meteor.git"
-  }
-}
