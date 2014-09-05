@@ -1,5 +1,5 @@
 Tinytest.addAsync("general - local collection documents should only have fetched fields", function (test, next) {
-  var collection = new Meteor.Collection(null);
+  var collection = new Mongo.Collection(null);
 
   function same(arr1, arr2) {
     return arr1.length === arr2.length && _.intersection(arr1, arr2).length === arr1.length;

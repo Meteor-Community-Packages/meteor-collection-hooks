@@ -1,6 +1,6 @@
 Package.describe({
   name: "matb33:collection-hooks",
-  summary: "Extends Meteor.Collection with before/after hooks for insert/update/remove/find/findOne",
+  summary: "Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne",
   version: "0.7.3",
   git: "https://github.com/matb33/meteor-collection-hooks.git"
 });
@@ -17,7 +17,7 @@ Package.onUse(function (api, where) {
     "meteor",
     "underscore",
     "ejson",
-    "mongo-livedata",
+    "mongo",
     "minimongo",
     "deps"
   ]);

@@ -1,4 +1,4 @@
-var collection = new Meteor.Collection("test_update_allow_collection");
+var collection = new Mongo.Collection("test_update_allow_collection");
 
 if (Meteor.isServer) {
   // full client-side access

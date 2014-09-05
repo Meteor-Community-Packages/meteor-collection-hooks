@@ -1,6 +1,6 @@
 # Meteor Collection Hooks [![Build Status](https://travis-ci.org/matb33/meteor-collection-hooks.png?branch=master)](https://travis-ci.org/matb33/meteor-collection-hooks)
 
-Extends Meteor.Collection with `before`/`after` hooks for `insert`, `update`, `remove`, `find`, and `findOne`.
+Extends Mongo.Collection with `before`/`after` hooks for `insert`, `update`, `remove`, `find`, and `findOne`.
 
 Works across both client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
@@ -27,7 +27,7 @@ functionality
 defined.
 
 ```javascript
-var test = new Meteor.Collection("test");
+var test = new Mongo.Collection("test");
 
 test.before.insert(function (userId, doc) {
   doc.createdAt = Date.now();
@@ -247,7 +247,7 @@ Similarly, collection-wide options can be defined (these have a higher
 specificity than the global defaults from above):
 
 ```javascript
-var testCollection = new Meteor.Collection("test");
+var testCollection = new Mongo.Collection("test");
 
 testCollection.hookOptions.all.all = {exampleOption: 1};
 

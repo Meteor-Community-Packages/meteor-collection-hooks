@@ -1,4 +1,4 @@
-var collection = new Meteor.Collection("test_collection_for_find_findone_userid");
+var collection = new Mongo.Collection("test_collection_for_find_findone_userid");
 
 var beforeFindUserId, afterFindUserId, beforeFindOneUserId, afterFindOneUserId;
 var beforeFindWithinPublish, afterFindWithinPublish,
