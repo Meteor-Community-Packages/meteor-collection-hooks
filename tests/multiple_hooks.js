@@ -1,5 +1,7 @@
+var Mongo = this.Mongo || this.Meteor;
+
 Tinytest.addAsync("general - multiple hooks should all fire the appropriate number of times", function (test, next) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
   var counts = {
     before: {
       insert: 0,

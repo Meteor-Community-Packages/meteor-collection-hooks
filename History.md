@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.7.4
+
+* Update for Meteor 0.9.1
+
 ## v0.7.3
 
 * **Update for Meteor 0.9.**

@@ -1,4 +1,6 @@
-var collection = new (Mongo ? Mongo : Meteor).Collection("test_remove_allow_collection");
+var Mongo = this.Mongo || this.Meteor;
+
+var collection = new Mongo.Collection("test_remove_allow_collection");
 
 if (Meteor.isServer) {
   // full client-side access

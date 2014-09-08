@@ -1,5 +1,7 @@
+var Mongo = this.Mongo || this.Meteor;
+
 Tinytest.addAsync("general - hook callbacks should have this.transform function that works", function (test, next) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null, {
+  var collection = new Mongo.Collection(null, {
     transform: function (doc) {
       return _.extend(doc, {isTransformed: true});
     }

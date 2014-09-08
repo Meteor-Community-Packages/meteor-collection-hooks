@@ -1,5 +1,7 @@
+var Mongo = this.Mongo || this.Meteor;
+
 if (Meteor.isServer) {
-  var collection1 = new (Mongo ? Mongo : Meteor).Collection("test_remove_collection1");
+  var collection1 = new Mongo.Collection("test_remove_collection1");
   var external = false;
 
   Tinytest.addAsync("remove - collection1 document should affect external variable before it is removed", function (test, next) {
@@ -30,7 +32,7 @@ if (Meteor.isServer) {
   });
 }
 
-var collection2 = new (Mongo ? Mongo : Meteor).Collection("test_remove_collection2");
+var collection2 = new Mongo.Collection("test_remove_collection2");
 
 if (Meteor.isServer) {
   // full client-side access

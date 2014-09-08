@@ -1,5 +1,7 @@
+var Mongo = this.Mongo || this.Meteor;
+
 Tinytest.addAsync("update - server collection documents should have extra properties added before and after being updated despite selector not being _id", function (test, next) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
 
   var retries = 0;
   var retry = function (func, expect, cb) {

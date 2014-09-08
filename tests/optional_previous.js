@@ -1,5 +1,7 @@
+var Mongo = this.Mongo || this.Meteor;
+
 Tinytest.addAsync("optional-previous - update hook should not prefetch previous, via hook option param", function (test, next) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
 
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
     if (doc && doc._id === "test") {
@@ -14,7 +16,7 @@ Tinytest.addAsync("optional-previous - update hook should not prefetch previous,
 });
 
 Tinytest.addAsync("optional-previous - update hook should not prefetch previous, via collection option param", function (test, next) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
 
   collection.hookOptions.after.update = {fetchPrevious: false};
 
@@ -41,7 +43,7 @@ if (Meteor.isClient) return;
 // acceptable in this case.
 
 Tinytest.add("optional-previous - update hook should not prefetch previous, via defaults param variation 1: after.update", function (test) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
 
   CollectionHooks.defaults.after.update = {fetchPrevious: false};
 
@@ -59,7 +61,7 @@ Tinytest.add("optional-previous - update hook should not prefetch previous, via 
 });
 
 Tinytest.add("optional-previous - update hook should not prefetch previous, via defaults param variation 2: after.all", function (test) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
 
   CollectionHooks.defaults.after.all = {fetchPrevious: false};
 
@@ -76,7 +78,7 @@ Tinytest.add("optional-previous - update hook should not prefetch previous, via 
 });
 
 Tinytest.add("optional-previous - update hook should not prefetch previous, via defaults param variation 3: all.update", function (test) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
 
   CollectionHooks.defaults.all.update = {fetchPrevious: false};
 
@@ -93,7 +95,7 @@ Tinytest.add("optional-previous - update hook should not prefetch previous, via 
 });
 
 Tinytest.add("optional-previous - update hook should not prefetch previous, via defaults param variation 4: all.all", function (test) {
-  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
+  var collection = new Mongo.Collection(null);
 
   CollectionHooks.defaults.all.all = {fetchPrevious: false};
 

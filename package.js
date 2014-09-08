@@ -1,7 +1,7 @@
 Package.describe({
   name: "matb33:collection-hooks",
-  summary: "Extends (Mongo ? Mongo : Meteor).Collection with before/after hooks for insert/update/remove/find/findOne",
-  version: "0.7.3",
+  summary: "Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne",
+  version: "0.7.4",
   git: "https://github.com/matb33/meteor-collection-hooks.git"
 });
 
@@ -11,7 +11,7 @@ Package.onTest = Package.onTest || Package.on_test; // backwards-compat
 Package.onUse(function (api, where) {
   api.addFiles = api.addFiles || api.add_files;     // backwards-compat
 
-  api.versionsFrom("METEOR-CORE@0.9.0-atm");
+  if (api.versionsFrom) api.versionsFrom("METEOR-CORE@0.9.1");
 
   api.use([
     "meteor",
