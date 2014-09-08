@@ -1,5 +1,5 @@
 if (Meteor.isServer) {
-  var collection1 = new Mongo.Collection("test_insert_collection1");
+  var collection1 = new (Mongo ? Mongo : Meteor).Collection("test_insert_collection1");
 
   Tinytest.addAsync("insert - collection1 document should have extra property added to it before it is inserted", function (test, next) {
     var tmp = {};
@@ -21,7 +21,7 @@ if (Meteor.isServer) {
   });
 }
 
-var collection2 = new Mongo.Collection("test_insert_collection2");
+var collection2 = new (Mongo ? Mongo : Meteor).Collection("test_insert_collection2");
 
 if (Meteor.isServer) {
   // full client-side access

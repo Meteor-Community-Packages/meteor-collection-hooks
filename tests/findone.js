@@ -1,5 +1,5 @@
 Tinytest.addAsync("findone - selector should have extra property", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
 
   collection.before.findOne(function (userId, selector, options) {
     if (options && options.test) {
@@ -18,7 +18,7 @@ Tinytest.addAsync("findone - selector should have extra property", function (tes
 });
 
 Tinytest.addAsync("findone - tmp variable should have property added after the find", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new (Mongo ? Mongo : Meteor).Collection(null);
   var tmp = {};
 
   collection.after.findOne(function (userId, selector, options) {

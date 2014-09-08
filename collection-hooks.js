@@ -6,8 +6,8 @@
 var advices = {};
 // XXX this only used on the server; should it really be here?
 var publishUserId = new Meteor.EnvironmentVariable();
-var constructor = Mongo.Collection;
-var proto = new Mongo.Collection(null);
+var constructor = (Mongo ? Mongo : Meteor).Collection;
+var proto = new (Mongo ? Mongo : Meteor).Collection(null);
 
 var directEnv = new Meteor.EnvironmentVariable();
 var directOp = function (func) {
@@ -18,7 +18,7 @@ function getUserId() {
   var userId;
 
   if (Meteor.isClient) {
-    Tracker.nonreactive(function () {
+    (Tracker ? Tracker : Deps).nonreactive(function () {
       userId = Meteor.userId && Meteor.userId();
     });
   }
@@ -169,7 +169,7 @@ CollectionHooks.getDocs = function (collection, selector, options) {
 CollectionHooks.reassignPrototype = function (instance, constr) {
   var hasSetPrototypeOf = typeof Object.setPrototypeOf === "function";
 
-  if (!constr) constr = Mongo.Collection;
+  if (!constr) constr = (Mongo ? Mongo : Meteor).Collection;
 
   // __proto__ is not available in < IE11
   // Note: Assigning a prototype dynamically has performance implications
@@ -180,17 +180,17 @@ CollectionHooks.reassignPrototype = function (instance, constr) {
   }
 };
 
-Mongo.Collection = function () {
+(Mongo ? Mongo : Meteor).Collection = function () {
   var ret = constructor.apply(this, arguments);
   CollectionHooks.extendCollectionInstance(this);
   return ret;
 };
 
-Mongo.Collection.prototype = proto;
+(Mongo ? Mongo : Meteor).Collection.prototype = proto;
 
 for (var prop in constructor) {
   if (constructor.hasOwnProperty(prop)) {
-    Mongo.Collection[prop] = constructor[prop];
+    (Mongo ? Mongo : Meteor).Collection[prop] = constructor[prop];
   }
 }
 

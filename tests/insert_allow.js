@@ -1,4 +1,4 @@
-var collection = new Mongo.Collection("test_insert_allow_collection");
+var collection = new (Mongo ? Mongo : Meteor).Collection("test_insert_allow_collection");
 
 if (Meteor.isServer) {
   // full client-side access
