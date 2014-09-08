@@ -1,4 +1,4 @@
-var Mongo = this.Mongo || this.Meteor;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 
 Tinytest.addAsync("update - server collection documents should have extra properties added before and after being updated despite selector not being _id", function (test, next) {
   var collection = new Mongo.Collection(null);

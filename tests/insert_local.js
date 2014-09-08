@@ -1,4 +1,4 @@
-var Mongo = this.Mongo || this.Meteor;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 
 Tinytest.addAsync("insert - local collection document should have extra property added before being inserted", function (test, next) {
   var collection = new Mongo.Collection(null);

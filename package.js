@@ -11,7 +11,7 @@ Package.onTest = Package.onTest || Package.on_test; // backwards-compat
 Package.onUse(function (api, where) {
   api.addFiles = api.addFiles || api.add_files;     // backwards-compat
 
-  if (api.versionsFrom) api.versionsFrom("METEOR-CORE@0.9.1");
+  if (api.versionsFrom) api.versionsFrom("METEOR-CORE@0.9.0-atm");
 
   api.use([
     "meteor",

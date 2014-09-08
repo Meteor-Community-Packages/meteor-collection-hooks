@@ -1,4 +1,4 @@
-var Mongo = this.Mongo || this.Meteor;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 
 Tinytest.addAsync("general - multiple hooks should all fire the appropriate number of times", function (test, next) {
   var collection = new Mongo.Collection(null);

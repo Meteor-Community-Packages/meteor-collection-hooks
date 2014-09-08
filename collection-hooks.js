@@ -4,8 +4,8 @@
 // Pointcut: before/after
 
 var advices = {};
-var Tracker = this.Tracker || this.Deps;
-var Mongo = this.Mongo || this.Meteor;
+var Tracker = Package.tracker && Package.tracker.Tracker || Package.deps.Deps;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 // XXX this only used on the server; should it really be here?
 var publishUserId = new Meteor.EnvironmentVariable();
 var constructor = Mongo.Collection;

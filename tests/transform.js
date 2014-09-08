@@ -1,4 +1,4 @@
-var Mongo = this.Mongo || this.Meteor;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 
 Tinytest.addAsync("general - hook callbacks should have this.transform function that works", function (test, next) {
   var collection = new Mongo.Collection(null, {

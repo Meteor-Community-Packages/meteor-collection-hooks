@@ -1,4 +1,4 @@
-var Mongo = this.Mongo || this.Meteor;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 
 if (Meteor.isServer) {
   var collection1 = new Mongo.Collection("test_remove_collection1");

@@ -1,4 +1,4 @@
-var Mongo = this.Mongo || this.Meteor;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 
 Tinytest.addAsync("remove - local collection document should affect external variable before being removed", function (test, next) {
   var collection = new Mongo.Collection(null);

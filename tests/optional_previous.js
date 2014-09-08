@@ -1,4 +1,4 @@
-var Mongo = this.Mongo || this.Meteor;
+var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 
 Tinytest.addAsync("optional-previous - update hook should not prefetch previous, via hook option param", function (test, next) {
   var collection = new Mongo.Collection(null);
