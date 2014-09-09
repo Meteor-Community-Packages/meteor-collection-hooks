@@ -12,11 +12,11 @@ Package.onUse(function (api, where) {
   api.addFiles = api.addFiles || api.add_files;     // backwards-compat
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
-    api.versionsFrom("METEOR-CORE@0.9.0-atm");
+    api.versionsFrom("METEOR@0.9.0");
 
     api.use([
-      "mongo",
-      "tracker"
+      "mongo@1.0.4",
+      "tracker@1.0.2"
     ]);
   } else {
     api.use([
