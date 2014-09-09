@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 Tinytest.addAsync("insert - local collection document should have extra property added before being inserted", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
   var tmp = {};
 
   collection.before.insert(function (userId, doc) {
@@ -24,7 +24,7 @@ Tinytest.addAsync("insert - local collection document should have extra property
 });
 
 Tinytest.addAsync("insert - local collection should fire after-insert hook", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
 
   collection.after.insert(function (userId, doc) {
     if (Meteor.isServer) {

@@ -5,11 +5,8 @@
 
 var advices = {};
 var Tracker = Package.tracker && Package.tracker.Tracker || Package.deps.Deps;
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
 // XXX this only used on the server; should it really be here?
 var publishUserId = new Meteor.EnvironmentVariable();
-var constructor = Mongo.Collection;
-var proto = new Mongo.Collection(null);
 
 var directEnv = new Meteor.EnvironmentVariable();
 var directOp = function (func) {
@@ -171,7 +168,7 @@ CollectionHooks.getDocs = function (collection, selector, options) {
 CollectionHooks.reassignPrototype = function (instance, constr) {
   var hasSetPrototypeOf = typeof Object.setPrototypeOf === "function";
 
-  if (!constr) constr = Mongo.Collection;
+  if (!constr) constr = typeof Mongo !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
   // __proto__ is not available in < IE11
   // Note: Assigning a prototype dynamically has performance implications
@@ -182,18 +179,35 @@ CollectionHooks.reassignPrototype = function (instance, constr) {
   }
 };
 
-Mongo.Collection = function () {
-  var ret = constructor.apply(this, arguments);
-  CollectionHooks.extendCollectionInstance(this);
-  return ret;
+CollectionHooks.wrapCollection = function (ns, as) {
+  var constructor = as.Collection;
+  var proto = new as.Collection(null);
+
+  ns.Collection = function () {
+    if (!(this instanceof Mongo.Collection) && ns !== as) {
+      console.warn("Consider migrating from `new Meteor.Collection` to `new Mongo.Collection` in:", arguments.callee.caller);
+      CollectionHooks.reassignPrototype(this, as.Collection);
+    }
+    var ret = constructor.apply(this, arguments);
+    CollectionHooks.extendCollectionInstance(this);
+    return ret;
+  };
+
+  ns.Collection.prototype = proto;
+
+  for (var prop in constructor) {
+    if (constructor.hasOwnProperty(prop)) {
+      ns.Collection[prop] = constructor[prop];
+    }
+  }
 };
 
-Mongo.Collection.prototype = proto;
 
-for (var prop in constructor) {
-  if (constructor.hasOwnProperty(prop)) {
-    Mongo.Collection[prop] = constructor[prop];
-  }
+if (typeof Mongo !== "undefined") {
+  CollectionHooks.wrapCollection(Meteor, Mongo);
+  CollectionHooks.wrapCollection(Mongo, Mongo);
+} else {
+  CollectionHooks.wrapCollection(Meteor, Meteor);
 }
 
 if (Meteor.isServer) {

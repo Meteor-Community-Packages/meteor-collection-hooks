@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 Tinytest.addAsync("update - server collection documents should have extra properties added before and after being updated despite selector not being _id", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
 
   var retries = 0;
   var retry = function (func, expect, cb) {

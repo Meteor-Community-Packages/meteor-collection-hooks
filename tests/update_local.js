@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 Tinytest.addAsync("update - local collection documents should have extra property added before being updated", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
 
   function start() {
     collection.before.update(function (userId, doc, fieldNames, modifier) {
@@ -39,7 +39,7 @@ Tinytest.addAsync("update - local collection documents should have extra propert
 });
 
 Tinytest.addAsync("update - local collection should fire after-update hook", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
   var c = 0, n = function () { if (++c === 2) { next(); } };
 
   function start() {
@@ -76,7 +76,7 @@ Tinytest.addAsync("update - local collection should fire after-update hook", fun
 });
 
 Tinytest.addAsync("update - local collection should fire before-update hook without options in update and still fire end-callback", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
 
   function start() {
     collection.before.update(function (userId, doc, fieldNames, modifier) {
@@ -96,7 +96,7 @@ Tinytest.addAsync("update - local collection should fire before-update hook with
 });
 
 Tinytest.addAsync("update - local collection should fire after-update hook without options in update and still fire end-callback", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
   var c = 0, n = function () { if (++c === 2) { next(); } };
 
   function start() {

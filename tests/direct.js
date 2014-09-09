@@ -1,11 +1,11 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 _.each([null, "direct_collection_test"], function (ctype) {
 
   Tinytest.add("direct - hooks should not be fired when using .direct (collection type " + ctype + ")", function (test) {
     // console.log("-------", ctype)
 
-    var collection = new Mongo.Collection(ctype, {connection: null});
+    var collection = new Collection(ctype, {connection: null});
     var hookCount = 0;
 
     // The server will make a call to find when findOne is called, which adds 2 extra counts

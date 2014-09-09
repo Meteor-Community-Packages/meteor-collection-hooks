@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 Tinytest.addAsync("remove - local collection document should affect external variable before being removed", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
 
   function start(err, id) {
     var external = 0;
@@ -33,7 +33,7 @@ Tinytest.addAsync("remove - local collection document should affect external var
 });
 
 Tinytest.addAsync("remove - local collection should fire after-remove hook and affect external variable", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
   var external = 0;
 
   var c = 0, n = function () {

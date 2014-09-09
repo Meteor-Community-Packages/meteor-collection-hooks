@@ -1,6 +1,6 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
-var collection = new Mongo.Collection("test_collection_for_find_findone_userid");
+var collection = new Collection("test_collection_for_find_findone_userid");
 
 var beforeFindUserId, afterFindUserId, beforeFindOneUserId, afterFindOneUserId;
 var beforeFindWithinPublish, afterFindWithinPublish,

@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 Tinytest.addAsync("find - selector should have extra property", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
 
   collection.before.find(function (userId, selector, options) {
     if (options && options.test) {
@@ -20,7 +20,7 @@ Tinytest.addAsync("find - selector should have extra property", function (test, 
 });
 
 Tinytest.addAsync("find - tmp variable should have property added after the find", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
   var tmp = {};
 
   collection.after.find(function (userId, selector, options) {

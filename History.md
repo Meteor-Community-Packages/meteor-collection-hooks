@@ -1,13 +1,17 @@
 ## vNEXT
 
+## v0.7.5
+
+* Fix backward compatibility issue (https://github.com/meteor/meteor/issues/2549)
+
 ## v0.7.4
 
 * Update for Meteor 0.9.1
 
 ## v0.7.3
 
-* **Update for Meteor 0.9.**
-* Store the value of `this.userId` from a `Meteor.publish` function in an environment variable so it is preserved across yielding operations.
+* **Update for Meteor 0.9**
+* Store the value of `this.userId` from a `Meteor.publish` function in an environment variable so it is preserved across yielding operations
 
 ## v0.7.2
 

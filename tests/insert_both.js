@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 if (Meteor.isServer) {
-  var collection1 = new Mongo.Collection("test_insert_collection1");
+  var collection1 = new Collection("test_insert_collection1");
 
   Tinytest.addAsync("insert - collection1 document should have extra property added to it before it is inserted", function (test, next) {
     var tmp = {};
@@ -23,7 +23,7 @@ if (Meteor.isServer) {
   });
 }
 
-var collection2 = new Mongo.Collection("test_insert_collection2");
+var collection2 = new Collection("test_insert_collection2");
 
 if (Meteor.isServer) {
   // full client-side access

@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 Tinytest.addAsync("general - hook callbacks should have this.transform function that works", function (test, next) {
-  var collection = new Mongo.Collection(null, {
+  var collection = new Collection(null, {
     transform: function (doc) {
       return _.extend(doc, {isTransformed: true});
     }

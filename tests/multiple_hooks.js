@@ -1,7 +1,7 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
 Tinytest.addAsync("general - multiple hooks should all fire the appropriate number of times", function (test, next) {
-  var collection = new Mongo.Collection(null);
+  var collection = new Collection(null);
   var counts = {
     before: {
       insert: 0,

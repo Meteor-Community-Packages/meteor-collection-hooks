@@ -1,7 +1,7 @@
 Package.describe({
   name: "matb33:collection-hooks",
   summary: "Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne",
-  version: "0.7.4",
+  version: "0.7.5",
   git: "https://github.com/matb33/meteor-collection-hooks.git"
 });
 
@@ -11,15 +11,24 @@ Package.onTest = Package.onTest || Package.on_test; // backwards-compat
 Package.onUse(function (api, where) {
   api.addFiles = api.addFiles || api.add_files;     // backwards-compat
 
-  if (api.versionsFrom) api.versionsFrom("METEOR-CORE@0.9.0-atm");
+  if (api.versionsFrom) { // 0.9.0+ litmus test
+    api.versionsFrom("METEOR-CORE@0.9.0-atm");
+
+    api.use([
+      "mongo",
+      "tracker"
+    ]);
+  } else {
+    api.use([
+      "mongo-livedata",
+      "deps"
+    ]);
+  }
 
   api.use([
-    "meteor",
     "underscore",
     "ejson",
-    "mongo",
-    "minimongo",
-    "deps"
+    "minimongo"
   ]);
 
   api.use("accounts-base", ["client", "server"], { weak: true });
@@ -52,6 +61,10 @@ Package.onTest(function (api) {
     "test-helpers"
   ]);
 
+  if (api.versionsFrom) { // 0.9.0+ litmus test
+    api.use("mongo");
+  }
+
   api.addFiles("tests/insecure_login.js");
 
   // local = minimongo (on server and client)
@@ -81,6 +94,7 @@ Package.onTest(function (api) {
   api.addFiles("tests/transform.js");
   api.addFiles("tests/direct.js");
   api.addFiles("tests/optional_previous.js");
+  api.addFiles("tests/compat.js");
 
   // NOTE: not supporting fetch for the time being.
   // NOTE: fetch can only work server-side because find's "fields" option is

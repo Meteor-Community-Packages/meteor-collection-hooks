@@ -1,6 +1,6 @@
-var Mongo = Package.mongo && Package.mongo.Mongo || Package.meteor.Meteor;
+var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
 
-var collection = new Mongo.Collection("test_insert_allow_collection");
+var collection = new Collection("test_insert_allow_collection");
 
 if (Meteor.isServer) {
   // full client-side access
