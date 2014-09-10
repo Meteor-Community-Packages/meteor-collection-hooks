@@ -180,14 +180,13 @@ CollectionHooks.reassignPrototype = function (instance, constr) {
 };
 
 CollectionHooks.wrapCollection = function (ns, as) {
-  var constructor = as.Collection;
-  var proto = new as.Collection(null);
+  if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection;
+  if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null);
+
+  var constructor = as._CollectionConstructor;
+  var proto = as._CollectionPrototype;
 
   ns.Collection = function () {
-    if (!(this instanceof Mongo.Collection) && ns !== as) {
-      console.warn("Consider migrating from `new Meteor.Collection` to `new Mongo.Collection` in:", arguments.callee.caller);
-      CollectionHooks.reassignPrototype(this, as.Collection);
-    }
     var ret = constructor.apply(this, arguments);
     CollectionHooks.extendCollectionInstance(this);
     return ret;
@@ -201,7 +200,6 @@ CollectionHooks.wrapCollection = function (ns, as) {
     }
   }
 };
-
 
 if (typeof Mongo !== "undefined") {
   CollectionHooks.wrapCollection(Meteor, Mongo);

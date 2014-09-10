@@ -1,5 +1,10 @@
 ## vNEXT
 
+## v0.7.6
+
+* Use versionsFrom 0.9.1
+* Fix `new Meteor.Collection` so as not to have to re-assign prototype
+
 ## v0.7.5
 
 * Fix backward compatibility issue (https://github.com/meteor/meteor/issues/2549)
