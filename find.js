@@ -15,6 +15,7 @@ CollectionHooks.defineAdvice("find", function (userId, _super, instance, aspects
   if (abort) return false;
 
   function after(cursor) {
+    _.extend(ctx, {cursor: cursor});
     _.each(aspects.after, function (o) {
       o.aspect.call(ctx, userId, args[0], args[1], cursor);
     });
@@ -23,5 +24,5 @@ CollectionHooks.defineAdvice("find", function (userId, _super, instance, aspects
   ret = _super.apply(self, args);
   after(ret);
 
-  return ret;
+  return ctx.cursor;
 });

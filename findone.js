@@ -15,6 +15,7 @@ CollectionHooks.defineAdvice("findOne", function (userId, _super, instance, aspe
   if (abort) return false;
 
   function after(doc) {
+    _.extend(ctx, {doc: doc});
     _.each(aspects.after, function (o) {
       o.aspect.call(ctx, userId, args[0], args[1], doc);
     });
@@ -23,5 +24,5 @@ CollectionHooks.defineAdvice("findOne", function (userId, _super, instance, aspe
   ret = _super.apply(self, args);
   after(ret);
 
-  return ret;
+  return ctx.doc;
 });
