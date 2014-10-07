@@ -34,7 +34,6 @@ Package.onUse(function (api, where) {
   api.use("accounts-base", ["client", "server"], { weak: true });
 
   api.addFiles([
-    "bind-polyfill.js",
     "collection-hooks.js",
     "insert.js",
     "update.js",
