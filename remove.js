@@ -31,7 +31,11 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspec
 
     if (abort) return false;
   } catch (e) {
-    return callback.call(this, e);
+    if (async) {
+      return callback.call(this, e);
+    } else {
+      throw e;
+    }
   }
 
   function after(err) {
