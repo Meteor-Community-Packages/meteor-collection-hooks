@@ -95,6 +95,7 @@ Package.onTest(function (api) {
   api.addFiles("tests/direct.js");
   api.addFiles("tests/optional_previous.js");
   api.addFiles("tests/compat.js");
+  api.addFiles("tests/hooks_in_loop.js");
 
   // NOTE: not supporting fetch for the time being.
   // NOTE: fetch can only work server-side because find's "fields" option is
