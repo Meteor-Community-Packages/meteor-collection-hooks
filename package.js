@@ -1,7 +1,7 @@
 Package.describe({
   name: "matb33:collection-hooks",
   summary: "Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne",
-  version: "0.7.6",
+  version: "0.7.7",
   git: "https://github.com/matb33/meteor-collection-hooks.git"
 });
 
@@ -12,8 +12,6 @@ Package.onUse(function (api, where) {
   api.addFiles = api.addFiles || api.add_files;     // backwards-compat
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
-    api.versionsFrom("0.9.1");
-
     api.use([
       "mongo",
       "tracker"
@@ -34,7 +32,6 @@ Package.onUse(function (api, where) {
   api.use("accounts-base", ["client", "server"], { weak: true });
 
   api.addFiles([
-    "bind-polyfill.js",
     "collection-hooks.js",
     "insert.js",
     "update.js",

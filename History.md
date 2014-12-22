@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.7.7
+
+* Remove bind polyfill (https://github.com/matb33/meteor-collection-hooks/issues/77)
+
 ## v0.7.6
 
 * Use versionsFrom 0.9.1
