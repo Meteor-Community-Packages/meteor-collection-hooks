@@ -6,12 +6,16 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
   var abort, ret;
 
   // args[0] : doc
-  // args[1] : callback
+  // args[1] : options (optional)
+  // args[2] : callback
 
   try {
     // before
     _.each(aspects.before, function (o) {
-      var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
+      var r = o.aspect.call(_.extend({
+        transform: getTransform(args[0]),
+        args: args
+      }, ctx), userId, args[0], args[1]);
       if (r === false) abort = true;
     });
 
@@ -30,9 +34,10 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
       doc = EJSON.clone(args[0]);
       doc._id = id;
     }
-    var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx);
+    var options = EJSON.clone(args[1]);
+    var lctx = _.extend({transform: getTransform(doc), _id: id, err: err, args: args}, ctx);
     _.each(aspects.after, function (o) {
-      o.aspect.call(lctx, userId, doc);
+      o.aspect.call(lctx, userId, doc, options);
     });
     return id;
   }

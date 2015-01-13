@@ -24,7 +24,10 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspec
     // before
     _.each(aspects.before, function (o) {
       _.each(docs, function (doc) {
-        var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
+        var r = o.aspect.call(_.extend({
+          transform: getTransform(doc),
+          args: args
+        }, ctx), userId, doc);
         if (r === false) abort = true;
       });
     });
@@ -41,7 +44,7 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspec
   function after(err) {
     _.each(aspects.after, function (o) {
       _.each(prev, function (doc) {
-        o.aspect.call(_.extend({transform: getTransform(doc), err: err}, ctx), userId, doc);
+        o.aspect.call(_.extend({transform: getTransform(doc), err: err, args: args}, ctx), userId, doc);
       });
     });
   }

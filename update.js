@@ -39,7 +39,10 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
     // before
     _.each(aspects.before, function (o) {
       _.each(docs, function (doc) {
-        var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2]);
+        var r = o.aspect.call(_.extend({
+          transform: getTransform(doc),
+          args: args
+        }, ctx), userId, doc, fields, args[1], args[2]);
         if (r === false) abort = true;
       });
     });
@@ -63,7 +66,8 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
           transform: getTransform(doc),
           previous: prev.docs && prev.docs[doc._id],
           affected: affected,
-          err: err
+          err: err,
+          args: args
         }, ctx), userId, doc, fields, prev.mutator, prev.options);
       });
     });
