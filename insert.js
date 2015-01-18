@@ -1,4 +1,4 @@
-CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspects, getTransform, args) {
+CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);
@@ -9,12 +9,14 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
   // args[1] : callback
 
   // before
-  _.each(aspects.before, function (o) {
-    var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
-    if (r === false) abort = true;
-  });
+  if (!suppressAspects) {
+    _.each(aspects.before, function (o) {
+      var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
+      if (r === false) abort = true;
+    });
 
-  if (abort) return false;
+    if (abort) return false;
+  }
 
   function after(id, err) {
     var doc = args[0];
@@ -22,10 +24,12 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
       doc = EJSON.clone(args[0]);
       doc._id = id;
     }
-    var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx);
-    _.each(aspects.after, function (o) {
-      o.aspect.call(lctx, userId, doc);
-    });
+    if (!suppressAspects) {
+      var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx);
+      _.each(aspects.after, function (o) {
+        o.aspect.call(lctx, userId, doc);
+      });
+    }
     return id;
   }
 

@@ -111,8 +111,16 @@ _.each([null, "direct_collection_test"], function (ctype) {
 
     collection.direct.remove({_id: "test"});
 
-
     test.equal(hookCount, hookCountTarget);
   });
-
 });
+
+if (Meteor.isServer) {
+    Tinytest.add("direct - Meteor.users.direct.insert should return _id, not an object", function (test) {
+
+      Meteor.users.remove("directinserttestid");
+
+      var result = Meteor.users.direct.insert({_id: "directinserttestid", test: 1});
+      test.isFalse(_.isObject(result));
+    });
+}
