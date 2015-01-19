@@ -31,7 +31,7 @@ Package.onUse(function (api, where) {
     "minimongo"
   ]);
 
-  api.use("accounts-base", ["client", "server"], { weak: true });
+  api.use(["accounts-base"], ["client", "server"], { weak: true });
 
   api.addFiles([
     "collection-hooks.js",
@@ -58,6 +58,11 @@ Package.onTest(function (api) {
     "accounts-password",
     "tinytest",
     "test-helpers"
+  ]);
+
+  api.use([
+    "cfs:standard-packages",
+    "cfs:filesystem"
   ]);
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
@@ -95,6 +100,7 @@ Package.onTest(function (api) {
   api.addFiles("tests/optional_previous.js");
   api.addFiles("tests/compat.js");
   api.addFiles("tests/hooks_in_loop.js");
+  api.addFiles("tests/collectionfs.js");
 
   // NOTE: not supporting fetch for the time being.
   // NOTE: fetch can only work server-side because find's "fields" option is
