@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.7.9
+
+* Add tests to verify hook functionality against CollectionFS (https://github.com/matb33/meteor-collection-hooks/issues/84)
+
 ## v0.7.8
 
 * Fix instances of direct calls returning raw data instead of the massaged versions (such as insert returning an object instead of _id) (https://github.com/matb33/meteor-collection-hooks/issues/86, https://github.com/matb33/meteor-collection-hooks/issues/73)
