@@ -113,6 +113,22 @@ _.each([null, "direct_collection_test"], function (ctype) {
 
     test.equal(hookCount, hookCountTarget);
   });
+
+  Tinytest.add("direct - update and remove should allow removing by _id string (collection type " + ctype + ")", function (test) {
+    var collection = new Collection(ctype, {connection: null});
+
+    function hasCountAndTestValue(count, value) {
+      var cursor = collection.direct.find({_id: "test", test: value});
+      test.equal(cursor.count(), count);
+    }
+
+    collection.direct.insert({_id: "test", test: 1});
+    hasCountAndTestValue(1, 1);
+    collection.direct.update("test", {$set: {test: 2}});
+    hasCountAndTestValue(1, 2);
+    collection.direct.remove("test");
+    hasCountAndTestValue(0, 2);
+  });
 });
 
 if (Meteor.isServer) {
