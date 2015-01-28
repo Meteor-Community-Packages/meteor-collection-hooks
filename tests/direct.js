@@ -113,7 +113,9 @@ _.each([null, "direct_collection_test"], function (ctype) {
 
     test.equal(hookCount, hookCountTarget);
   });
+});
 
+_.each([null, "direct_collection_test_stringid"], function (ctype) {
   Tinytest.add("direct - update and remove should allow removing by _id string (collection type " + ctype + ")", function (test) {
     var collection = new Collection(ctype, {connection: null});
 
