@@ -12,31 +12,6 @@ var directOp = function (func) {
   return directEnv.withValue(true, func);
 };
 
-function getUserId() {
-  var userId;
-
-  if (Meteor.isClient) {
-    Tracker.nonreactive(function () {
-      userId = Meteor.userId && Meteor.userId();
-    });
-  }
-
-  if (Meteor.isServer) {
-    try {
-      // Will throw an error unless within method call.
-      // Attempt to recover gracefully by catching:
-      userId = Meteor.userId && Meteor.userId();
-    } catch (e) {}
-
-    if (!userId) {
-      // Get the userId if we are in a publish function.
-      userId = publishUserId.get();
-    }
-  }
-
-  return userId;
-}
-
 CollectionHooks = {
   defaults: {
     before: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
@@ -97,7 +72,7 @@ CollectionHooks.extendCollectionInstance = function (self) {
 
     collection[method] = function () {
       return advice.call(this,
-        getUserId(),
+        CollectionHooks.getUserId(),
         _super,
         self,
         self._hookAspects[method] || {},
@@ -112,6 +87,31 @@ CollectionHooks.extendCollectionInstance = function (self) {
     };
   });
 };
+
+CollectionHooks.getUserId = function() {
+  var userId;
+
+  if (Meteor.isClient) {
+    Tracker.nonreactive(function () {
+      userId = Meteor.userId && Meteor.userId();
+    });
+  }
+
+  if (Meteor.isServer) {
+    try {
+      // Will throw an error unless within method call.
+      // Attempt to recover gracefully by catching:
+      userId = Meteor.userId && Meteor.userId();
+    } catch (e) {}
+
+    if (!userId) {
+      // Get the userId if we are in a publish function.
+      userId = publishUserId.get();
+    }
+  }
+
+  return userId;
+}
 
 CollectionHooks.defineAdvice = function (method, advice) {
   advices[method] = advice;
