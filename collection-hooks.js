@@ -90,6 +90,10 @@ CollectionHooks.extendCollectionInstance = function (self) {
     Meteor._ensure(self, "direct", method);
     self.direct[method] = function () {
       var args = arguments;
+      // console.log("----")
+      // console.log("args[0]", JSON.stringify(args[0]))
+      // if (method === "update" || method === "remove") args[0] = Mongo.Collection._rewriteSelector(args[0]);
+      // console.log("args[0]", JSON.stringify(args[0]))
       return directOp(function () {
         return collection[method].apply(collection, args);
       });
