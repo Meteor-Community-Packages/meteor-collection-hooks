@@ -32,7 +32,7 @@ Package.onUse(function (api, where) {
   ]);
 
   api.use([
-    "lai:collection-extensions@0.1.0"
+    "lai:collection-extensions@0.1.1"
   ]);
 
   api.use(["accounts-base"], ["client", "server"], { weak: true });
