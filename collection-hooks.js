@@ -175,34 +175,9 @@ CollectionHooks.reassignPrototype = function (instance, constr) {
   }
 };
 
-CollectionHooks.wrapCollection = function (ns, as) {
-  if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection;
-  if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null);
-
-  var constructor = as._CollectionConstructor;
-  var proto = as._CollectionPrototype;
-
-  ns.Collection = function () {
-    var ret = constructor.apply(this, arguments);
-    CollectionHooks.extendCollectionInstance(this);
-    return ret;
-  };
-
-  ns.Collection.prototype = proto;
-
-  for (var prop in constructor) {
-    if (constructor.hasOwnProperty(prop)) {
-      ns.Collection[prop] = constructor[prop];
-    }
-  }
-};
-
-if (typeof Mongo !== "undefined") {
-  CollectionHooks.wrapCollection(Meteor, Mongo);
-  CollectionHooks.wrapCollection(Mongo, Mongo);
-} else {
-  CollectionHooks.wrapCollection(Meteor, Meteor);
-}
+Meteor.addCollectionExtension(function () {
+  CollectionHooks.extendCollectionInstance(this);
+});
 
 if (Meteor.isServer) {
   var _publish = Meteor.publish;
