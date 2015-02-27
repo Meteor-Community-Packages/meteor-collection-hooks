@@ -45,7 +45,7 @@ CollectionHooks = {
   }
 };
 
-CollectionHooks.extendCollectionInstance = function (self) {
+CollectionHooks.extendCollectionInstance = function (self, constructor) {
   var collection = Meteor.isClient ? self : self._collection;
 
   // Offer a public API to allow the user to define aspects
@@ -90,16 +90,16 @@ CollectionHooks.extendCollectionInstance = function (self) {
     Meteor._ensure(self, "direct", method);
     self.direct[method] = function () {
       var args = arguments;
-      // console.log("----")
-      // console.log("args[0]", JSON.stringify(args[0]))
-      // if (method === "update" || method === "remove") args[0] = Mongo.Collection._rewriteSelector(args[0]);
-      // console.log("args[0]", JSON.stringify(args[0]))
       return directOp(function () {
-        return collection[method].apply(collection, args);
+        return constructor.prototype[method].apply(self, args);
       });
     };
 
     collection[method] = function () {
+      if (directEnv.get() === true) {
+        return _super.apply(collection, arguments);
+      }
+
       return advice.call(this,
         getUserId(),
         _super,
@@ -111,7 +111,7 @@ CollectionHooks.extendCollectionInstance = function (self) {
                   : function (d) { return d || doc; };
         },
         _.toArray(arguments),
-        directEnv.get() === true
+        false
       );
     };
   });
@@ -188,7 +188,7 @@ CollectionHooks.wrapCollection = function (ns, as) {
 
   ns.Collection = function () {
     var ret = constructor.apply(this, arguments);
-    CollectionHooks.extendCollectionInstance(this);
+    CollectionHooks.extendCollectionInstance(this, constructor);
     return ret;
   };
 

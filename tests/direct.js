@@ -115,10 +115,11 @@ _.each([null, "direct_collection_test"], function (ctype) {
   });
 });
 
-_.each([{}, {connection: null}], function (conntype) {
+_.each([{}, {connection: null}], function (conntype, i) {
   _.each([null, "direct_collection_test_stringid"], function (ctype) {
-    Tinytest.addAsync("direct - update and remove should allow removing by _id string (collection type " + ctype + ", connection type " + JSON.stringify(conntype) + ")", function (test, next) {
-      var collection = new Collection(ctype, conntype);
+    var cname = ctype && (ctype + i);
+    Tinytest.add("direct - update and remove should allow removing by _id string (" + cname + ", " + JSON.stringify(conntype) + ")", function (test) {
+      var collection = new Collection(cname, conntype);
 
       // Full permissions on collection
       collection.allow({
@@ -132,27 +133,13 @@ _.each([{}, {connection: null}], function (conntype) {
         test.equal(cursor.count(), count);
       }
 
-      InsecureLogin.ready(function () {
-        console.log("1")
-        collection.direct.remove({_id: "testid"}, function () {
-          return next();
-        console.log("2")
-          collection.direct.insert({_id: "testid", test: 1}, function () {
-        console.log("3")
-            hasCountAndTestValue(1, 1);
-            collection.direct.update("testid", {$set: {test: 2}}, function () {
-        console.log("4")
-              hasCountAndTestValue(1, 2);
-              collection.direct.remove("testid", function () {
-        console.log("5")
-                hasCountAndTestValue(0, 2);
-                next();
-        console.log("NEXT")
-              });
-            });
-          });
-        });
-      });
+      collection.direct.remove({_id: "testid"});
+      collection.direct.insert({_id: "testid", test: 1});
+      hasCountAndTestValue(1, 1);
+      collection.direct.update("testid", {$set: {test: 2}});
+      hasCountAndTestValue(1, 2);
+      collection.direct.remove("testid");
+      hasCountAndTestValue(0, 2);
     });
   });
 });
