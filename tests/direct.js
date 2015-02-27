@@ -115,21 +115,32 @@ _.each([null, "direct_collection_test"], function (ctype) {
   });
 });
 
-_.each([null, "direct_collection_test_stringid"], function (ctype) {
-  Tinytest.add("direct - update and remove should allow removing by _id string (collection type " + ctype + ")", function (test) {
-    var collection = new Collection(ctype, {connection: null});
+_.each([{}, {connection: null}], function (conntype, i) {
+  _.each([null, "direct_collection_test_stringid"], function (ctype) {
+    var cname = ctype && (ctype + i);
+    Tinytest.add("direct - update and remove should allow removing by _id string (" + cname + ", " + JSON.stringify(conntype) + ")", function (test) {
+      var collection = new Collection(cname, conntype);
 
-    function hasCountAndTestValue(count, value) {
-      var cursor = collection.direct.find({_id: "test", test: value});
-      test.equal(cursor.count(), count);
-    }
+      // Full permissions on collection
+      collection.allow({
+        insert: function () { return true; },
+        update: function () { return true; },
+        remove: function () { return true; }
+      });
 
-    collection.direct.insert({_id: "test", test: 1});
-    hasCountAndTestValue(1, 1);
-    collection.direct.update("test", {$set: {test: 2}});
-    hasCountAndTestValue(1, 2);
-    collection.direct.remove("test");
-    hasCountAndTestValue(0, 2);
+      function hasCountAndTestValue(count, value) {
+        var cursor = collection.direct.find({_id: "testid", test: value});
+        test.equal(cursor.count(), count);
+      }
+
+      collection.direct.remove({_id: "testid"});
+      collection.direct.insert({_id: "testid", test: 1});
+      hasCountAndTestValue(1, 1);
+      collection.direct.update("testid", {$set: {test: 2}});
+      hasCountAndTestValue(1, 2);
+      collection.direct.remove("testid");
+      hasCountAndTestValue(0, 2);
+    });
   });
 });
 

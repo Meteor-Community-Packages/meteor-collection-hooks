@@ -45,7 +45,7 @@ CollectionHooks = {
   }
 };
 
-CollectionHooks.extendCollectionInstance = function (self) {
+CollectionHooks.extendCollectionInstance = function (self, constructor) {
   var collection = Meteor.isClient ? self : self._collection;
 
   // Offer a public API to allow the user to define aspects
@@ -91,11 +91,15 @@ CollectionHooks.extendCollectionInstance = function (self) {
     self.direct[method] = function () {
       var args = arguments;
       return directOp(function () {
-        return collection[method].apply(collection, args);
+        return constructor.prototype[method].apply(self, args);
       });
     };
 
     collection[method] = function () {
+      if (directEnv.get() === true) {
+        return _super.apply(collection, arguments);
+      }
+
       return advice.call(this,
         getUserId(),
         _super,
@@ -107,7 +111,7 @@ CollectionHooks.extendCollectionInstance = function (self) {
                   : function (d) { return d || doc; };
         },
         _.toArray(arguments),
-        directEnv.get() === true
+        false
       );
     };
   });
@@ -161,22 +165,8 @@ CollectionHooks.getDocs = function (collection, selector, options) {
   return collection.find(selector, findOptions);
 };
 
-CollectionHooks.reassignPrototype = function (instance, constr) {
-  var hasSetPrototypeOf = typeof Object.setPrototypeOf === "function";
-
-  if (!constr) constr = typeof Mongo !== "undefined" ? Mongo.Collection : Meteor.Collection;
-
-  // __proto__ is not available in < IE11
-  // Note: Assigning a prototype dynamically has performance implications
-  if (hasSetPrototypeOf) {
-    Object.setPrototypeOf(instance, constr.prototype);
-  } else if (instance.__proto__) {
-    instance.__proto__ = constr.prototype;
-  }
-};
-
 Meteor.addCollectionExtension(function () {
-  CollectionHooks.extendCollectionInstance(this);
+  CollectionHooks.extendCollectionInstance(this, (typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection));
 });
 
 if (Meteor.isServer) {
