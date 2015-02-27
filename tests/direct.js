@@ -4,8 +4,7 @@ _.each([null, "direct_collection_test"], function (ctype) {
 
   Tinytest.add("direct - hooks should not be fired when using .direct (collection type " + ctype + ")", function (test) {
     // console.log("-------", ctype)
-
-    var collection = new Collection(ctype, {connection: null});
+    var collection = new Collection(ctype + test.id, {connection: null});
     var hookCount = 0;
 
     // The server will make a call to find when findOne is called, which adds 2 extra counts
@@ -119,7 +118,7 @@ _.each([{}, {connection: null}], function (conntype, i) {
   _.each([null, "direct_collection_test_stringid"], function (ctype) {
     var cname = ctype && (ctype + i);
     Tinytest.add("direct - update and remove should allow removing by _id string (" + cname + ", " + JSON.stringify(conntype) + ")", function (test) {
-      var collection = new Collection(cname, conntype);
+      var collection = new Collection(cname + test.id, conntype);
 
       // Full permissions on collection
       collection.allow({
