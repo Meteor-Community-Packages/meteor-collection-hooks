@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.7.11
+
+* Fix update and insert by string _id (https://github.com/matb33/meteor-collection-hooks/issues/89 and likely https://github.com/matb33/meteor-collection-hooks/issues/90)
+
 ## v0.7.10
 
 * Add tests to verify direct update and insert by string _id (https://github.com/matb33/meteor-collection-hooks/issues/89)
