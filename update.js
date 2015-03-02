@@ -18,7 +18,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
 
   if (!suppressAspects) {
     if (aspects.before || aspects.after) {
-      fields = getFields(args[1]);
+      fields = CollectionHooks.getFields(args[1]);
       docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
       docIds = _.map(docs, function (doc) { return doc._id; });
     }
@@ -49,7 +49,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
 
   function after(affected, err) {
     if (!suppressAspects) {
-      var fields = getFields(args[1]);
+      var fields = CollectionHooks.getFields(args[1]);
       var docs = CollectionHooks.getDocs.call(self, collection, {_id: {$in: docIds}}, args[2]).fetch();
 
       _.each(aspects.after, function (o) {
@@ -77,58 +77,3 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
     return affected;
   }
 });
-
-// This function contains a snippet of code pulled and modified from:
-// ~/.meteor/packages/mongo-livedata/collection.js:632-668
-// It's contained in these utility functions to make updates easier for us in
-// case this code changes.
-var getFields = function (mutator) {
-  // compute modified fields
-  var fields = [];
-  _.each(mutator, function (params, op) {
-    _.each(_.keys(params), function (field) {
-      // treat dotted fields as if they are replacing their
-      // top-level part
-      if (field.indexOf('.') !== -1)
-        field = field.substring(0, field.indexOf('.'));
-
-      // record the field we are trying to change
-      if (!_.contains(fields, field))
-        fields.push(field);
-    });
-  });
-
-  return fields;
-};
-
-// This function contains a snippet of code pulled and modified from:
-// ~/.meteor/packages/mongo-livedata/collection.js
-// It's contained in these utility functions to make updates easier for us in
-// case this code changes.
-var getFields = function (mutator) {
-  // compute modified fields
-  var fields = [];
-
-  _.each(mutator, function (params, op) {
-    //====ADDED START=======================
-    if (_.contains(["$set", "$unset", "$inc", "$push", "$pull", "$pop", "$rename", "$pullAll", "$addToSet", "$bit"], op)) {
-    //====ADDED END=========================
-      _.each(_.keys(params), function (field) {
-        // treat dotted fields as if they are replacing their
-        // top-level part
-        if (field.indexOf('.') !== -1)
-          field = field.substring(0, field.indexOf('.'));
-
-        // record the field we are trying to change
-        if (!_.contains(fields, field))
-          fields.push(field);
-      });
-    //====ADDED START=======================
-    } else {
-      fields.push(op);
-    }
-    //====ADDED END=========================
-  });
-
-  return fields;
-};

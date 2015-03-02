@@ -38,6 +38,7 @@ Package.onUse(function (api, where) {
     "insert.js",
     "update.js",
     "remove.js",
+    "upsert.js",
     "find.js",
     "findone.js"
   ]);
@@ -97,6 +98,7 @@ Package.onTest(function (api) {
   api.addFiles("tests/optional_previous.js");
   api.addFiles("tests/compat.js");
   api.addFiles("tests/hooks_in_loop.js");
+  api.addFiles("tests/upsert.js");
 
   if (!isTravisCI) {
     api.use([

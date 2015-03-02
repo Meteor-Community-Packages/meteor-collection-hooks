@@ -39,7 +39,7 @@ function getUserId() {
 
 CollectionHooks = {
   defaults: {
-    before: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
+    before: { insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {}},
     after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
     all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
   }
@@ -52,6 +52,8 @@ CollectionHooks.extendCollectionInstance = function (self, constructor) {
   // Example: collection.before.insert(func);
   _.each(["before", "after"], function (pointcut) {
     _.each(advices, function (advice, method) {
+      if (advice === "upsert" && pointcut === "after") return;
+
       Meteor._ensure(self, pointcut, method);
       Meteor._ensure(self, "_hookAspects", method);
 
@@ -84,7 +86,7 @@ CollectionHooks.extendCollectionInstance = function (self, constructor) {
 
   // Wrap mutator methods, letting the defined advice do the work
   _.each(advices, function (advice, method) {
-    // Store a reference to the mutator method in a publicly reachable location
+    // Store a reference to the original mutator method
     var _super = collection[method];
 
     Meteor._ensure(self, "direct", method);
@@ -104,7 +106,11 @@ CollectionHooks.extendCollectionInstance = function (self, constructor) {
         getUserId(),
         _super,
         self,
-        self._hookAspects[method] || {},
+        method === "upsert" ? {
+          insert: self._hookAspects.insert || {},
+          update: self._hookAspects.update || {},
+          upsert: self._hookAspects.upsert || {}
+        } : self._hookAspects[method] || {},
         function (doc) {
           return  _.isFunction(self._transform)
                   ? function (d) { return self._transform(d || doc); }
@@ -163,6 +169,38 @@ CollectionHooks.getDocs = function (collection, selector, options) {
   // Unlike validators, we iterate over multiple docs, so use
   // find instead of findOne:
   return collection.find(selector, findOptions);
+};
+
+// This function contains a snippet of code pulled and modified from:
+// ~/.meteor/packages/mongo-livedata/collection.js
+// It's contained in these utility functions to make updates easier for us in
+// case this code changes.
+CollectionHooks.getFields = function (mutator) {
+  // compute modified fields
+  var fields = [];
+
+  _.each(mutator, function (params, op) {
+    //====ADDED START=======================
+    if (_.contains(["$set", "$unset", "$inc", "$push", "$pull", "$pop", "$rename", "$pullAll", "$addToSet", "$bit"], op)) {
+    //====ADDED END=========================
+      _.each(_.keys(params), function (field) {
+        // treat dotted fields as if they are replacing their
+        // top-level part
+        if (field.indexOf('.') !== -1)
+          field = field.substring(0, field.indexOf('.'));
+
+        // record the field we are trying to change
+        if (!_.contains(fields, field))
+          fields.push(field);
+      });
+    //====ADDED START=======================
+    } else {
+      fields.push(op);
+    }
+    //====ADDED END=========================
+  });
+
+  return fields;
 };
 
 CollectionHooks.reassignPrototype = function (instance, constr) {
