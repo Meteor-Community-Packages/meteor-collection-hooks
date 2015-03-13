@@ -1,4 +1,4 @@
-CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspects, getTransform, args) {
+CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);
@@ -10,29 +10,28 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspec
   // args[1] : callback
 
   try {
-    if (aspects.before || aspects.after) {
-      docs = CollectionHooks.getDocs.call(self, collection, args[0]).fetch();
-    }
+    if (!suppressAspects) {
+      if (aspects.before || aspects.after) {
+        docs = CollectionHooks.getDocs.call(self, collection, args[0]).fetch();
+      }
 
-    // copy originals for convenience for the "after" pointcut
-    if (aspects.after) {
-      _.each(docs, function (doc) {
-        prev.push(EJSON.clone(doc));
+      // copy originals for convenience for the "after" pointcut
+      if (aspects.after) {
+        _.each(docs, function (doc) {
+          prev.push(EJSON.clone(doc));
+        });
+      }
+
+      // before
+      _.each(aspects.before, function (o) {
+        _.each(docs, function (doc) {
+          var r = o.aspect.call(_.extend({transform: getTransform(doc), args: args}, ctx), userId, doc);
+          if (r === false) abort = true;
+        });
       });
+
+      if (abort) return false;
     }
-
-    // before
-    _.each(aspects.before, function (o) {
-      _.each(docs, function (doc) {
-        var r = o.aspect.call(_.extend({
-          transform: getTransform(doc),
-          args: args
-        }, ctx), userId, doc);
-        if (r === false) abort = true;
-      });
-    });
-
-    if (abort) return false;
   } catch (e) {
     if (async) {
       return callback.call(this, e);
@@ -42,11 +41,13 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspec
   }
 
   function after(err) {
-    _.each(aspects.after, function (o) {
-      _.each(prev, function (doc) {
-        o.aspect.call(_.extend({transform: getTransform(doc), err: err, args: args}, ctx), userId, doc);
+    if (!suppressAspects) {
+      _.each(aspects.after, function (o) {
+        _.each(prev, function (doc) {
+          o.aspect.call(_.extend({transform: getTransform(doc), err: err, args: args}, ctx), userId, doc);
+        });
       });
-    });
+    }
   }
 
   if (async) {

@@ -140,7 +140,7 @@ if (Meteor.isClient) {
         });
       };
 
-      return Meteor._wrapAsync(wrapper); // Don't run this function, just wrap it
+      return Meteor.wrapAsync(wrapper); // Don't run this function, just wrap it
     };
   }
 

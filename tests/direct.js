@@ -111,8 +111,45 @@ _.each([null, "direct_collection_test"], function (ctype) {
 
     collection.direct.remove({_id: "test"});
 
-
     test.equal(hookCount, hookCountTarget);
   });
-
 });
+
+_.each([{}, {connection: null}], function (conntype, i) {
+  _.each([null, "direct_collection_test_stringid"], function (ctype) {
+    var cname = ctype && (ctype + i);
+    Tinytest.add("direct - update and remove should allow removing by _id string (" + cname + ", " + JSON.stringify(conntype) + ")", function (test) {
+      var collection = new Collection(cname, conntype);
+
+      // Full permissions on collection
+      collection.allow({
+        insert: function () { return true; },
+        update: function () { return true; },
+        remove: function () { return true; }
+      });
+
+      function hasCountAndTestValue(count, value) {
+        var cursor = collection.direct.find({_id: "testid", test: value});
+        test.equal(cursor.count(), count);
+      }
+
+      collection.direct.remove({_id: "testid"});
+      collection.direct.insert({_id: "testid", test: 1});
+      hasCountAndTestValue(1, 1);
+      collection.direct.update("testid", {$set: {test: 2}});
+      hasCountAndTestValue(1, 2);
+      collection.direct.remove("testid");
+      hasCountAndTestValue(0, 2);
+    });
+  });
+});
+
+if (Meteor.isServer) {
+    Tinytest.add("direct - Meteor.users.direct.insert should return _id, not an object", function (test) {
+
+      Meteor.users.remove("directinserttestid");
+
+      var result = Meteor.users.direct.insert({_id: "directinserttestid", test: 1});
+      test.isFalse(_.isObject(result));
+    });
+}

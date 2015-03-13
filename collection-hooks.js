@@ -5,8 +5,7 @@
 
 var advices = {};
 var Tracker = Package.tracker && Package.tracker.Tracker || Package.deps.Deps;
-// XXX this only used on the server; should it really be here?
-var publishUserId = new Meteor.EnvironmentVariable();
+var publishUserId = Meteor.isServer && new Meteor.EnvironmentVariable();
 
 var directEnv = new Meteor.EnvironmentVariable();
 var directOp = function (func) {
@@ -46,7 +45,7 @@ CollectionHooks = {
   }
 };
 
-CollectionHooks.extendCollectionInstance = function (self) {
+CollectionHooks.extendCollectionInstance = function (self, constructor) {
   var collection = Meteor.isClient ? self : self._collection;
 
   // Offer a public API to allow the user to define aspects
@@ -90,9 +89,9 @@ CollectionHooks.extendCollectionInstance = function (self) {
 
     Meteor._ensure(self, "direct", method);
     self.direct[method] = function () {
-      var args = _.toArray(arguments);
+      var args = arguments;
       return directOp(function () {
-        return _super.apply(collection, args);
+        return constructor.prototype[method].apply(self, args);
       });
     };
 
@@ -111,7 +110,8 @@ CollectionHooks.extendCollectionInstance = function (self) {
                   ? function (d) { return self._transform(d || doc); }
                   : function (d) { return d || doc; };
         },
-        _.toArray(arguments)
+        _.toArray(arguments),
+        false
       );
     };
   });
@@ -188,7 +188,7 @@ CollectionHooks.wrapCollection = function (ns, as) {
 
   ns.Collection = function () {
     var ret = constructor.apply(this, arguments);
-    CollectionHooks.extendCollectionInstance(this);
+    CollectionHooks.extendCollectionInstance(this, constructor);
     return ret;
   };
 
@@ -214,7 +214,7 @@ if (Meteor.isServer) {
     return _publish.call(this, name, function () {
       // This function is called repeatedly in publications
       var ctx = this, args = arguments;
-      return publishUserId.withValue(ctx && ctx.userId, function() {
+      return publishUserId.withValue(ctx && ctx.userId, function () {
         return func.apply(ctx, args);
       });
     });

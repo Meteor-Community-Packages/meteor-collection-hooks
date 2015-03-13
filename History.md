@@ -1,5 +1,26 @@
 ## vNEXT
 
+## v0.7.11
+
+* Fix update and insert by string _id (https://github.com/matb33/meteor-collection-hooks/issues/89 and likely https://github.com/matb33/meteor-collection-hooks/issues/90)
+
+## v0.7.10
+
+* Add tests to verify direct update and insert by string _id (https://github.com/matb33/meteor-collection-hooks/issues/89)
+* Set api.versionsFrom to 1.0.3
+
+## v0.7.9
+
+* Add tests to verify hook functionality against CollectionFS (https://github.com/matb33/meteor-collection-hooks/issues/84)
+
+## v0.7.8
+
+* Fix instances of direct calls returning raw data instead of the massaged versions (such as insert returning an object instead of _id) (https://github.com/matb33/meteor-collection-hooks/issues/86, https://github.com/matb33/meteor-collection-hooks/issues/73)
+
+## v0.7.7
+
+* Remove bind polyfill (https://github.com/matb33/meteor-collection-hooks/issues/77)
+
 ## v0.7.6
 
 * Use versionsFrom 0.9.1
