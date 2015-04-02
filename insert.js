@@ -16,7 +16,10 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
         var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
         if (r === false) abort = true;
       });
-      if (abort) return false;
+      if (abort) {
+        console.warn('Hook returned false - cancelling insert', args);
+        return false;
+      }
     }
   } catch (e) {
     if (async) {

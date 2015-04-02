@@ -30,7 +30,10 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspec
         });
       });
 
-      if (abort) return false;
+      if (abort) {
+        console.warn('Hook returned false - cancelling remove', args);
+        return false;
+      }
     }
   } catch (e) {
     if (async) {

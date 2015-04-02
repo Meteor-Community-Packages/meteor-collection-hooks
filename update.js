@@ -45,7 +45,10 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
         });
       });
 
-      if (abort) return false;
+      if (abort) {
+        console.warn('Hook returned false - cancelling update', args);
+        return false;
+      }
     }
   } catch (e) {
     if (async) {
