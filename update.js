@@ -3,7 +3,7 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);
   var async = _.isFunction(callback);
-  var docs, docsIds, fields, abort, prev = {};
+  var docs, docIds, fields, abort, prev = {};
   var collection = _.has(self, "_collection") ? self._collection : self;
 
   // args[0] : selector

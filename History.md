@@ -1,5 +1,14 @@
 ## vNEXT
 
+## v0.7.13
+
+* Move getUserId utility function to globally accessible CollectionHooks.getUserId
+
+## v0.7.12
+
+* Fix typo in update advice, where the local variable docIds was declared as docsIds and thus docIds was being leaked into global scope, causing weird side-effects as experienced in https://github.com/matb33/meteor-collection-hooks/issues/109#issuecomment-95243659
+* Add MIT license file
+
 ## v0.7.11
 
 * Fix update and insert by string _id (https://github.com/matb33/meteor-collection-hooks/issues/89 and likely https://github.com/matb33/meteor-collection-hooks/issues/90)
