@@ -3,7 +3,7 @@ CollectionHooks.defineAdvice("upsert", function (userId, _super, instance, aspec
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);
   var async = _.isFunction(callback);
-  var docs, docsIds, fields, abort, prev = {};
+  var docs, docIds, fields, abort, prev = {};
   var collection = _.has(self, "_collection") ? self._collection : self;
 
   // args[0] : selector
@@ -37,14 +37,14 @@ CollectionHooks.defineAdvice("upsert", function (userId, _super, instance, aspec
     }
 
     // before
-    _.each(aspectGroup.upsert.before, function (o) {
-      _.each(docs, function (doc) {
-        var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2]);
+    if (!suppressAspects) {
+      _.each(aspectGroup.upsert.before, function (o) {
+        var r = o.aspect.call(ctx, userId, args[0], args[1], args[2]);
         if (r === false) abort = true;
       });
-    });
 
-    if (abort) return false;
+      if (abort) return false;
+    }
   }
 
   function afterUpdate(affected, err) {
@@ -82,22 +82,29 @@ CollectionHooks.defineAdvice("upsert", function (userId, _super, instance, aspec
 
   if (async) {
     args[args.length - 1] = function (err, ret) {
-      console.log("-------- RET ASYNC", ret)
-      if (args[2].insertedId) {
-        afterInsert(ret && ret[0] && ret[0]._id || ret, err, err);
+      if (ret.insertedId) {
+        afterInsert(ret.insertedId, err);
       } else {
-        afterUpdate(ret, err);
+        afterUpdate(ret.numberAffected, err);
       }
-      return callback.apply(this, arguments);
+
+      return CollectionHooks.hookedOp(function () {
+        return callback.call(this, err, ret);
+      });
     };
-    return _super.apply(this, args);
+
+    return CollectionHooks.directOp(function () {
+      return _super.apply(self, args);
+    });
   } else {
-    var ret = _super.apply(self, args);
-    console.log("-------- RET SYNC", ret)
-    if (args[2].insertedId) {
-      return afterInsert(ret && ret[0] && ret[0]._id || ret)
+    var ret = CollectionHooks.directOp(function () {
+      return _super.apply(self, args);
+    });
+
+    if (ret.insertedId) {
+      return afterInsert(ret.insertedId);
     } else {
-      afterUpdate(ret);
+      afterUpdate(ret.numberAffected);
       return ret;
     }
   }
