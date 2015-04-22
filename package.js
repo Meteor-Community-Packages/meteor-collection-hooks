@@ -12,7 +12,7 @@ Package.onUse(function (api, where) {
   api.addFiles = api.addFiles || api.add_files;     // backwards-compat
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
-    api.versionsFrom("1.0.3");
+    api.versionsFrom("1.1.0.2");
 
     api.use([
       "mongo",
