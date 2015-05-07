@@ -12,7 +12,15 @@ var directOp = function (func) {
   return directEnv.withValue(true, func);
 };
 
-function getUserId() {
+CollectionHooks = {
+  defaults: {
+    before: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
+    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
+    all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
+  }
+};
+
+CollectionHooks.getUserId = function () {
   var userId;
 
   if (Meteor.isClient) {
@@ -35,14 +43,6 @@ function getUserId() {
   }
 
   return userId;
-}
-
-CollectionHooks = {
-  defaults: {
-    before: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
-    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
-    all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
-  }
 };
 
 CollectionHooks.extendCollectionInstance = function (self, constructor) {
@@ -101,7 +101,7 @@ CollectionHooks.extendCollectionInstance = function (self, constructor) {
       }
 
       return advice.call(this,
-        getUserId(),
+        CollectionHooks.getUserId(),
         _super,
         self,
         self._hookAspects[method] || {},
