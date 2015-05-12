@@ -143,7 +143,7 @@ instance).
 defined.
 
 ```javascript
-test.after.remove: function (userId, doc) {
+test.after.remove(function (userId, doc) {
   // ...
 });
 ```
@@ -157,7 +157,7 @@ Fired before a find query.
 Gives you an opportunity to adjust selector/options on-the-fly.
 
 ```javascript
-test.before.find: function (userId, selector, options) {
+test.before.find(function (userId, selector, options) {
   // ...
 });
 ```
@@ -172,7 +172,7 @@ Gives you an opportunity to act on a given find query. The cursor resulting from
 the query is provided as the last argument for convenience.
 
 ```javascript
-test.after.find: function (userId, selector, options, cursor) {
+test.after.find(function (userId, selector, options, cursor) {
   // ...
 });
 ```
@@ -186,7 +186,7 @@ Fired before a findOne query.
 Gives you an opportunity to adjust selector/options on-the-fly.
 
 ```javascript
-test.before.findOne: function (userId, selector, options) {
+test.before.findOne(function (userId, selector, options) {
   // ...
 });
 ```
@@ -201,7 +201,7 @@ Gives you an opportunity to act on a given findOne query. The document resulting
 from the query is provided as the last argument for convenience.
 
 ```javascript
-test.after.findOne: function (userId, selector, options, doc) {
+test.after.findOne(function (userId, selector, options, doc) {
   // ...
 });
 ```
