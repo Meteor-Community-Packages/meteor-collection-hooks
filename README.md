@@ -306,3 +306,4 @@ grab the transformed user with `findOne`.
 - Tarang Patel ([Tarangp](https://github.com/Tarangp))
 - Nathan Strauser ([nate-strauser](https://github.com/nate-strauser))
 - Hubert OG ([subhog](https://github.com/subhog))
+- Richard Lai ([rclai](https://github.com/rclai))
