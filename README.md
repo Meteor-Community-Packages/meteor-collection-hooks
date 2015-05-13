@@ -290,6 +290,10 @@ particular userId.
 `find` and `findOne`, then you won't be able to use `this.transform()`. Instead,
 grab the transformed user with `findOne`.
 
+- If your hook is defined on common code, it will run 2 times, one time
+on the server and one time on the client. If you want it to run just once,
+please make sure to put it either on the `client` or `server` directory.
+
 --------------------------------------------------------------------------------
 
 ## Maintainers
