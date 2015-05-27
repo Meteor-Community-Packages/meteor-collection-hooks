@@ -6,16 +6,27 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
   var abort, ret;
 
   // args[0] : doc
-  // args[1] : callback
+  // args[1] : options (optional)
+  // args[2] : callback
 
-  // before
-  if (!suppressAspects) {
-    _.each(aspects.before, function (o) {
-      var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
-      if (r === false) abort = true;
-    });
-
-    if (abort) return false;
+  try {
+    // before
+    if (!suppressAspects) {
+      _.each(aspects.before, function (o) {
+        var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
+        if (r === false) abort = true;
+      });
+      if (abort) {
+        console.warn('Hook returned false - cancelling insert', args);
+        return false;
+      }
+    }
+  } catch (e) {
+    if (async) {
+      return callback.call(this, e);
+    } else {
+      throw e;
+    }
   }
 
   function after(id, err) {
@@ -25,7 +36,7 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
       doc._id = id;
     }
     if (!suppressAspects) {
-      var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx);
+      var lctx = _.extend({transform: getTransform(doc), _id: id, err: err, args: args}, ctx);
       _.each(aspects.after, function (o) {
         o.aspect.call(lctx, userId, doc);
       });

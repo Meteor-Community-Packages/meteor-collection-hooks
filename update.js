@@ -16,35 +16,46 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
     args[2] = {};
   }
 
-  if (!suppressAspects) {
-    if (aspects.before || aspects.after) {
-      fields = getFields(args[1]);
-      docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
-      docIds = _.map(docs, function (doc) { return doc._id; });
-    }
+  try {
+    if (!suppressAspects) {
+      if (aspects.before || aspects.after) {
+        fields = getFields(args[1]);
+        docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch();
+        docIds = _.map(docs, function (doc) { return doc._id; });
+      }
 
-    // copy originals for convenience for the "after" pointcut
-    if (aspects.after) {
-      if (_.some(aspects.after, function (o) { return o.options.fetchPrevious !== false; }) &&
-          CollectionHooks.extendOptions(instance.hookOptions, {}, "after", "update").fetchPrevious !== false) {
-        prev.mutator = EJSON.clone(args[1]);
-        prev.options = EJSON.clone(args[2]);
-        prev.docs = {};
+      // copy originals for convenience for the "after" pointcut
+      if (aspects.after) {
+        if (_.some(aspects.after, function (o) { return o.options.fetchPrevious !== false; }) &&
+            CollectionHooks.extendOptions(instance.hookOptions, {}, "after", "update").fetchPrevious !== false) {
+          prev.mutator = EJSON.clone(args[1]);
+          prev.options = EJSON.clone(args[2]);
+          prev.docs = {};
+          _.each(docs, function (doc) {
+            prev.docs[doc._id] = EJSON.clone(doc);
+          });
+        }
+      }
+
+      // before
+      _.each(aspects.before, function (o) {
         _.each(docs, function (doc) {
-          prev.docs[doc._id] = EJSON.clone(doc);
+          var r = o.aspect.call(_.extend({transform: getTransform(doc), args: args}, ctx), userId, doc, fields, args[1], args[2]);
+          if (r === false) abort = true;
         });
+      });
+
+      if (abort) {
+        console.warn('Hook returned false - cancelling update', args);
+        return false;
       }
     }
-
-    // before
-    _.each(aspects.before, function (o) {
-      _.each(docs, function (doc) {
-        var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2]);
-        if (r === false) abort = true;
-      });
-    });
-
-    if (abort) return false;
+  } catch (e) {
+    if (async) {
+      return callback.call(this, e);
+    } else {
+      throw e;
+    }
   }
 
   function after(affected, err) {
@@ -58,7 +69,8 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
             transform: getTransform(doc),
             previous: prev.docs && prev.docs[doc._id],
             affected: affected,
-            err: err
+            err: err,
+            args: args
           }, ctx), userId, doc, fields, prev.mutator, prev.options);
         });
       });

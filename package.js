@@ -98,6 +98,8 @@ Package.onTest(function (api) {
   api.addFiles("tests/compat.js");
   api.addFiles("tests/hooks_in_loop.js");
 
+  api.addFiles("tests/errors.js");
+
   if (!isTravisCI) {
     api.use([
       "cfs:standard-packages",
