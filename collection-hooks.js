@@ -165,48 +165,9 @@ CollectionHooks.getDocs = function (collection, selector, options) {
   return collection.find(selector, findOptions);
 };
 
-CollectionHooks.reassignPrototype = function (instance, constr) {
-  var hasSetPrototypeOf = typeof Object.setPrototypeOf === "function";
-
-  if (!constr) constr = typeof Mongo !== "undefined" ? Mongo.Collection : Meteor.Collection;
-
-  // __proto__ is not available in < IE11
-  // Note: Assigning a prototype dynamically has performance implications
-  if (hasSetPrototypeOf) {
-    Object.setPrototypeOf(instance, constr.prototype);
-  } else if (instance.__proto__) {
-    instance.__proto__ = constr.prototype;
-  }
-};
-
-CollectionHooks.wrapCollection = function (ns, as) {
-  if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection;
-  if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null);
-
-  var constructor = as._CollectionConstructor;
-  var proto = as._CollectionPrototype;
-
-  ns.Collection = function () {
-    var ret = constructor.apply(this, arguments);
-    CollectionHooks.extendCollectionInstance(this, constructor);
-    return ret;
-  };
-
-  ns.Collection.prototype = proto;
-
-  for (var prop in constructor) {
-    if (constructor.hasOwnProperty(prop)) {
-      ns.Collection[prop] = constructor[prop];
-    }
-  }
-};
-
-if (typeof Mongo !== "undefined") {
-  CollectionHooks.wrapCollection(Meteor, Mongo);
-  CollectionHooks.wrapCollection(Mongo, Mongo);
-} else {
-  CollectionHooks.wrapCollection(Meteor, Meteor);
-}
+Meteor.addCollectionExtension(function () {
+  CollectionHooks.extendCollectionInstance(this, (typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection));
+});
 
 if (Meteor.isServer) {
   var _publish = Meteor.publish;

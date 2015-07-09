@@ -31,6 +31,10 @@ Package.onUse(function (api, where) {
     "minimongo"
   ]);
 
+  api.use([
+    "lai:collection-extensions@0.1.3"
+  ]);
+
   api.use(["accounts-base"], ["client", "server"], { weak: true });
 
   api.addFiles([
