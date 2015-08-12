@@ -104,11 +104,21 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance(sel
         return _super.apply(collection, arguments);
       }
 
+      // NOTE: should we decide to force `update` with `{upsert:true}` to use
+      // the `upsert` hooks, this is what will accomplish it. It's important to
+      // realize that Meteor won't distinguish between an `update` and an
+      // `insert` though, so we'll end up with `after.update` getting called
+      // even on an `insert`. That's why we've chosen to disable this for now.
+      // if (method === "update" && _.isObject(arguments[2]) && arguments[2].upsert) {
+      //   method = "upsert";
+      //   advice = CollectionHooks.getAdvice(method);
+      // }
+
       return advice.call(this,
         CollectionHooks.getUserId(),
         _super,
         self,
-        (method === "upsert" || method === "update") ? {
+        method === "upsert" ? {
           insert: self._hookAspects.insert || {},
           update: self._hookAspects.update || {},
           upsert: self._hookAspects.upsert || {}

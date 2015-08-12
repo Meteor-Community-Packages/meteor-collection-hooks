@@ -1,9 +1,9 @@
-CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
+CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this;
   var ctx = {context: self, _super: _super, args: args};
   var callback = _.last(args);
   var async = _.isFunction(callback);
-  var docs, docIds, fields, abort, prev = {}, isUpsert, aspects = {};
+  var docs, docIds, fields, abort, prev = {};
   var collection = _.has(self, "_collection") ? self._collection : self;
 
   // args[0] : selector
@@ -14,12 +14,6 @@ CollectionHooks.defineAdvice("update", function (userId, _super, instance, aspec
   if (_.isFunction(args[2])) {
     callback = args[2];
     args[2] = {};
-  }
-
-  if (args[2] && args[2].upsert) {
-    return CollectionHooks.getAdvice("upsert").apply(this, arguments);
-  } else {
-    aspects = aspectGroup.update;
   }
 
   if (!suppressAspects) {
