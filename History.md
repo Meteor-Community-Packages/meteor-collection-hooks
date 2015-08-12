@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.7.14
+
+* Setting fetchPrevious to false should not prevent cloning options and modifier for use in after update hooks, fixes https://github.com/matb33/meteor-collection-hooks/issues/97 and https://github.com/matb33/meteor-collection-hooks/issues/138
+
 ## v0.7.13
 
 * Move getUserId utility function to globally accessible CollectionHooks.getUserId
