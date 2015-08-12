@@ -49,4 +49,29 @@ Tinytest.addAsync("upsert - hooks should all fire the appropriate number of time
   });
 });
 
+Tinytest.addAsync("upsert - calling update with upsert:true should call before.upsert instead of before.update", function (test, next) {
+  var collection = new Collection(null);
+  var counts = {
+    before: {
+      update: 0,
+      upsert: 0
+    }
+  };
+
+  collection.before.update(function () { counts.before.update++; });
+  collection.before.upsert(function () { counts.before.upsert++; });
+
+  InsecureLogin.ready(function () {
+    collection.remove({test: true}, function (err) {
+      if (err) throw err;
+      collection.update({test: true}, {test: true, step: "insert"}, {upsert: true}, function (err, obj) {
+        if (err) throw err;
+        test.equal(counts.before.update, 0);
+        test.equal(counts.before.upsert, 1);
+        next();
+      });
+    });
+  });
+});
+
 // TODO: we should also test the synchronous version of upsert hooks

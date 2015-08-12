@@ -108,7 +108,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance(sel
         CollectionHooks.getUserId(),
         _super,
         self,
-        method === "upsert" ? {
+        (method === "upsert" || method === "update") ? {
           insert: self._hookAspects.insert || {},
           update: self._hookAspects.update || {},
           upsert: self._hookAspects.upsert || {}
@@ -127,6 +127,10 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance(sel
 
 CollectionHooks.defineAdvice = function defineAdvice(method, advice) {
   advices[method] = advice;
+};
+
+CollectionHooks.getAdvice = function getAdvice(method) {
+  return advices[method];
 };
 
 CollectionHooks.initOptions = function initOptions(options, pointcut, method) {
