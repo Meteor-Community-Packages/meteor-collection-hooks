@@ -1,5 +1,7 @@
 ## vNEXT
 
+* When creating a sub-class of Mongo.Collection, the constructor of the sub-class will now be able to inherit from the wrapped constructor
+
 ## v0.7.14
 
 * Setting fetchPrevious to false should not prevent cloning options and modifier for use in after update hooks, fixes https://github.com/matb33/meteor-collection-hooks/issues/97 and https://github.com/matb33/meteor-collection-hooks/issues/138
