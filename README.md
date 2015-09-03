@@ -77,6 +77,30 @@ test.before.remove(function (userId, doc) {
 
 --------------------------------------------------------------------------------
 
+### .before.upsert(userId, doc, fieldNames, modifier, options)
+
+Fired before the doc is upserted.
+
+Allows you to to change the `modifier` as needed, or run additional
+functionality.
+
+- `this.transform()` obtains transformed version of document, if a transform was
+defined.
+
+```javascript
+test.before.upsert(function (userId, doc, fieldNames, modifier, options) {
+  modifier.$set = modifier.$set || {};
+  modifier.$set.modifiedAt = Date.now();
+});
+```
+
+Note that calling `upsert` will always fire `.before.upsert` hooks, but will
+call either `.after.insert` or `.after.update` hooks depending on the outcome of
+the `upsert` operation. There is no such thing as a `.after.upsert` hook at this
+time.
+
+--------------------------------------------------------------------------------
+
 ### .after.insert(userId, doc)
 
 Fired after the doc was inserted.

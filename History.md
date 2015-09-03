@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.8.0
+
+* Add support for `upsert` hooks. This is potentiallly a *breaking change* for those relying on `before.update` for `upsert`, as the behavior has changed to fire `before.upsert` instead, and either `after.insert` or `after.update` depending on the outcome of the upsert operation
+
 ## v0.7.15
 
 * When creating a sub-class of Mongo.Collection, the constructor of the sub-class will now be able to inherit from the wrapped constructor

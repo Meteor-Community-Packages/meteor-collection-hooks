@@ -66,9 +66,9 @@ CollectionHooks.defineAdvice("upsert", function (userId, _super, instance, aspec
   }
 
   function afterInsert(id, err) {
-    var doc = args[0];
+    var doc = LocalCollection._removeDollarOperators(args[1]);
     if (id) {
-      doc = EJSON.clone(args[0]);
+      doc = EJSON.clone(doc);
       doc._id = id;
     }
     if (!suppressAspects) {
@@ -77,7 +77,6 @@ CollectionHooks.defineAdvice("upsert", function (userId, _super, instance, aspec
         o.aspect.call(lctx, userId, doc);
       });
     }
-    return id;
   }
 
   if (async) {
@@ -102,10 +101,11 @@ CollectionHooks.defineAdvice("upsert", function (userId, _super, instance, aspec
     });
 
     if (ret.insertedId) {
-      return afterInsert(ret.insertedId);
+      afterInsert(ret.insertedId);
     } else {
       afterUpdate(ret.numberAffected);
-      return ret;
     }
+
+    return ret;
   }
 });
