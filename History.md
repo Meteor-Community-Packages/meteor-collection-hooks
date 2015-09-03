@@ -1,5 +1,7 @@
 ## vNEXT
 
+* Provide helper CollectionHooks.modify that gives the developer server access to the typically client-only LocalCollection._modify
+
 ## v0.8.0
 
 * Add support for `upsert` hooks. This is potentiallly a *breaking change* for those relying on `before.update` for `upsert`, as the behavior has changed to fire `before.upsert` instead, and either `after.insert` or `after.update` depending on the outcome of the upsert operation

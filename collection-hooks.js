@@ -256,6 +256,8 @@ CollectionHooks.wrapCollection = function wrapCollection(ns, as) {
   }
 };
 
+CollectionHooks.modify = LocalCollection._modify;
+
 if (typeof Mongo !== "undefined") {
   CollectionHooks.wrapCollection(Meteor, Mongo);
   CollectionHooks.wrapCollection(Mongo, Mongo);
