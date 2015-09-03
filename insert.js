@@ -10,12 +10,17 @@ CollectionHooks.defineAdvice("insert", function (userId, _super, instance, aspec
 
   // before
   if (!suppressAspects) {
-    _.each(aspects.before, function (o) {
-      var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
-      if (r === false) abort = true;
-    });
+    try {
+      _.each(aspects.before, function (o) {
+        var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0]);
+        if (r === false) abort = true;
+      });
 
-    if (abort) return false;
+      if (abort) return false;
+    } catch (e) {
+      if (async) return callback.call(self, e);
+      throw e;
+    }
   }
 
   function after(id, err) {

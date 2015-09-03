@@ -81,7 +81,7 @@ test.before.remove(function (userId, doc) {
 
 Fired after the doc was inserted.
 
-Allows you to to run post-insert tasks, such as sending notifications
+Allows you to run post-insert tasks, such as sending notifications
 of new document insertions.
 
 - `this.transform()` obtains transformed version of document, if a transform was
@@ -307,3 +307,5 @@ grab the transformed user with `findOne`.
 - Nathan Strauser ([nate-strauser](https://github.com/nate-strauser))
 - Hubert OG ([subhog](https://github.com/subhog))
 - Richard Lai ([rclai](https://github.com/rclai))
+- Sahebjot Singh ([raunaqrox](https://github.com/raunaqrox))
+- Aram Kocharyan ([aramk](https://github.com/aramk))
