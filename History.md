@@ -1,6 +1,9 @@
 ## vNEXT
 
+## v0.7.15
+
 * When creating a sub-class of Mongo.Collection, the constructor of the sub-class will now be able to inherit from the wrapped constructor
+* Throwing an error in an async before hook will pass the error to the callback as the first argument
 
 ## v0.7.14
 

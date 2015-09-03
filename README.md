@@ -308,3 +308,4 @@ grab the transformed user with `findOne`.
 - Hubert OG ([subhog](https://github.com/subhog))
 - Richard Lai ([rclai](https://github.com/rclai))
 - Sahebjot Singh ([raunaqrox](https://github.com/raunaqrox))
+- Aram Kocharyan ([aramk](https://github.com/aramk))

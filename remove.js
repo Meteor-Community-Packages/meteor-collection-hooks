@@ -10,26 +10,31 @@ CollectionHooks.defineAdvice("remove", function (userId, _super, instance, aspec
   // args[1] : callback
 
   if (!suppressAspects) {
-    if (aspects.before || aspects.after) {
-      docs = CollectionHooks.getDocs.call(self, collection, args[0]).fetch();
-    }
+    try {
+      if (aspects.before || aspects.after) {
+        docs = CollectionHooks.getDocs.call(self, collection, args[0]).fetch();
+      }
 
-    // copy originals for convenience for the "after" pointcut
-    if (aspects.after) {
-      _.each(docs, function (doc) {
-        prev.push(EJSON.clone(doc));
+      // copy originals for convenience for the "after" pointcut
+      if (aspects.after) {
+        _.each(docs, function (doc) {
+          prev.push(EJSON.clone(doc));
+        });
+      }
+
+      // before
+      _.each(aspects.before, function (o) {
+        _.each(docs, function (doc) {
+          var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
+          if (r === false) abort = true;
+        });
       });
+
+      if (abort) return false;
+    } catch (e) {
+      if (async) return callback.call(self, e);
+      throw e;
     }
-
-    // before
-    _.each(aspects.before, function (o) {
-      _.each(docs, function (doc) {
-        var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc);
-        if (r === false) abort = true;
-      });
-    });
-
-    if (abort) return false;
   }
 
   function after(err) {
