@@ -88,7 +88,7 @@ functionality.
 defined.
 
 ```javascript
-test.before.upsert(function (userId, doc, fieldNames, modifier, options) {
+test.before.upsert(function (userId, selector, modifier, options) {
   modifier.$set = modifier.$set || {};
   modifier.$set.modifiedAt = Date.now();
 });
