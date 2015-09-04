@@ -77,7 +77,7 @@ test.before.remove(function (userId, doc) {
 
 --------------------------------------------------------------------------------
 
-### .before.upsert(userId, doc, fieldNames, modifier, options)
+### .before.upsert(userId, selector, modifier, options)
 
 Fired before the doc is upserted.
 
