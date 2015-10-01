@@ -314,6 +314,10 @@ particular userId.
 `find` and `findOne`, then you won't be able to use `this.transform()`. Instead,
 grab the transformed user with `findOne`.
 
+- When adding a hook, a handler object is returned with these methods:
+  - `remove()`: will remove that particular hook;
+  - `replace(callback, options)`: will replace the hook callback and options.
+
 --------------------------------------------------------------------------------
 
 ## Maintainers
