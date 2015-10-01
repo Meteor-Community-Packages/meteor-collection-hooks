@@ -91,3 +91,34 @@ if (Meteor.isServer) {
     test.equal(counts.after.upsert, 0, "after.upsert should be 0");
   });
 }
+
+Tinytest.addAsync("issue #156 - upsert after.insert should have a correct doc using $set", function (test, next) {
+  var collection = new Collection(null);
+
+  collection.after.insert(function (userId, doc) {
+    test.isNotUndefined(doc, "doc should not be undefined");
+    test.isNotUndefined(doc._id, "doc should have an _id property");
+    test.isNotUndefined(doc.test, "doc should have a test property");
+    test.equal(doc.step, "insert-async", "doc should have a step property equal to insert-async");
+    next();
+  });
+
+  collection.remove({test: true});
+  collection.upsert({test: true}, {$set: {test: true, step: "insert-async"}});
+});
+
+if (Meteor.isServer) {
+  Tinytest.add("issue #156 - upsert after.insert should have a correct doc using $set in synchronous environment", function (test) {
+    var collection = new Collection(null);
+
+    collection.after.insert(function (userId, doc) {
+      test.isNotUndefined(doc, "doc should not be undefined");
+      test.isNotUndefined(doc._id, "doc should have an _id property");
+      test.isNotUndefined(doc.test, "doc should have a test property");
+      test.equal(doc.step, "insert-sync", "doc should have a step property equal to insert-sync");
+    });
+
+    collection.remove({test: true});
+    collection.upsert({test: true}, {$set: {test: true, step: "insert-sync"}});
+  });
+}

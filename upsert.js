@@ -66,12 +66,8 @@ CollectionHooks.defineAdvice("upsert", function (userId, _super, instance, aspec
   }
 
   function afterInsert(id, err) {
-    var doc = LocalCollection._removeDollarOperators(args[1]);
-    if (id) {
-      doc = EJSON.clone(doc);
-      doc._id = id;
-    }
     if (!suppressAspects) {
+      var doc = CollectionHooks.getDocs.call(self, collection, {_id: id}, args[0], {}).fetch()[0]; // 3rd argument passes empty object which causes magic logic to imply limit:1
       var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx);
       _.each(aspectGroup.insert.after, function (o) {
         o.aspect.call(lctx, userId, doc);
