@@ -3,7 +3,7 @@
 ## v0.8.1
 
 * Provide helper CollectionHooks.modify that gives the developer server access to the typically client-only LocalCollection._modify
-* Fix doc being undefined in after.insert triggered by an upsert, when using $set, fixes https://github.com/matb33/meteor-collection-hooks/issues/156
+* Fix doc having only _id property in after.insert triggered by an upsert when using $set, fixes https://github.com/matb33/meteor-collection-hooks/issues/156
 
 ## v0.8.0
 
