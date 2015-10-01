@@ -318,6 +318,12 @@ grab the transformed user with `findOne`.
   - `remove()`: will remove that particular hook;
   - `replace(callback, options)`: will replace the hook callback and options.
 
+- If your hook is defined in common code (both server and client), it will run
+twice: once on the server and once on the client. If your intention is for the
+hook to run only once, make sure the hook is defined somewhere where only either
+the client or the server reads it. *When in doubt, define your hooks on the
+server.*
+
 --------------------------------------------------------------------------------
 
 ## Maintainers
