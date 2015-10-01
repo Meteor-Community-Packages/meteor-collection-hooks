@@ -344,3 +344,5 @@ server.*
 - Sahebjot Singh ([raunaqrox](https://github.com/raunaqrox))
 - Aram Kocharyan ([aramk](https://github.com/aramk))
 - Pierre Ozoux ([pierreozoux](https://github.com/pierreozoux))
+- Tom Coleman ([tmeasday](https://github.com/tmeasday))
+- Eric Jackson ([repjackson](https://github.com/repjackson))
