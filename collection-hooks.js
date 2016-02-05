@@ -184,7 +184,9 @@ CollectionHooks.getDocs = function getDocs(collection, selector, options) {
 
   // Unlike validators, we iterate over multiple docs, so use
   // find instead of findOne:
-  return collection.find(selector, findOptions);
+  return CollectionHooks.directOp(function () {
+    return collection.find(selector, findOptions);
+  });
 };
 
 // This function contains a snippet of code pulled and modified from:

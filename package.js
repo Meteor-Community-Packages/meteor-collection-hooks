@@ -1,8 +1,8 @@
 Package.describe({
-  name: "matb33:collection-hooks",
+  name: "znewsham:collection-hooks",
   summary: "Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne",
   version: "0.8.1",
-  git: "https://github.com/matb33/meteor-collection-hooks.git"
+  git: "https://github.com/znewsham/meteor-collection-hooks.git"
 });
 
 Package.onUse = Package.onUse || Package.on_use;    // backwards-compat
@@ -55,7 +55,7 @@ Package.onTest(function (api) {
   api.addFiles = api.addFiles || api.add_files;     // backwards-compat
 
   api.use([
-    "matb33:collection-hooks",
+    "znewsham:collection-hooks",
     "underscore",
     "accounts-base",
     "accounts-password",
