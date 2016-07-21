@@ -1,40 +1,42 @@
-var Collection = typeof Mongo !== "undefined" && typeof Mongo.Collection !== "undefined" ? Mongo.Collection : Meteor.Collection;
+/* global Tinytest Meteor Mongo InsecureLogin */
 
-Tinytest.addAsync("findone - selector should have extra property", function (test, next) {
-  var collection = new Collection(null);
+var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+
+Tinytest.addAsync('findone - selector should have extra property', function (test, next) {
+  var collection = new Collection(null)
 
   collection.before.findOne(function (userId, selector, options) {
     if (options && options.test) {
-      delete selector.bogus_value;
-      selector.before_findone = true;
+      delete selector.bogus_value
+      selector.before_findone = true
     }
-  });
+  })
 
   InsecureLogin.ready(function () {
     collection.insert({start_value: true, before_findone: true}, function (err, id) {
-      if (err) throw err;
-      test.notEqual(collection.findOne({start_value: true, bogus_value: true}, {test: 1}), undefined);
-      next();
-    });
-  });
-});
+      if (err) throw err
+      test.notEqual(collection.findOne({start_value: true, bogus_value: true}, {test: 1}), undefined)
+      next()
+    })
+  })
+})
 
-Tinytest.addAsync("findone - tmp variable should have property added after the find", function (test, next) {
-  var collection = new Collection(null);
-  var tmp = {};
+Tinytest.addAsync('findone - tmp variable should have property added after the find', function (test, next) {
+  var collection = new Collection(null)
+  var tmp = {}
 
   collection.after.findOne(function (userId, selector, options) {
     if (options && options.test) {
-      tmp.after_findone = true;
+      tmp.after_findone = true
     }
-  });
+  })
 
   InsecureLogin.ready(function () {
     collection.insert({start_value: true}, function (err, id) {
-      if (err) throw err;
-      collection.findOne({start_value: true}, {test: 1});
-      test.equal(tmp.after_findone, true);
-      next();
-    });
-  });
-});
+      if (err) throw err
+      collection.findOne({start_value: true}, {test: 1})
+      test.equal(tmp.after_findone, true)
+      next()
+    })
+  })
+})
