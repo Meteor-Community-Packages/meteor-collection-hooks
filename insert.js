@@ -28,6 +28,11 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
   function after (id, err) {
     var doc = args[0]
     if (id) {
+      // In some cases (namely Meteor.users on Meteor 1.4+), the _id property
+      // is a raw mongo _id object. We need to extract the _id from this object
+      if (_.isObject(id) && id.ops) {
+        id = id.ops && id.ops[0] && id.ops[0]._id
+      }
       doc = EJSON.clone(args[0])
       doc._id = id
     }

@@ -51,7 +51,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     }
   }
 
-  function afterUpdate(affected, err) {
+  function afterUpdate (affected, err) {
     if (!suppressAspects) {
       var fields = CollectionHooks.getFields(args[1])
       var docs = CollectionHooks.getDocs.call(self, collection, {_id: {$in: docIds}}, args[2]).fetch()
@@ -69,7 +69,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     }
   }
 
-  function afterInsert(id, err) {
+  function afterInsert (id, err) {
     if (!suppressAspects) {
       var doc = CollectionHooks.getDocs.call(self, collection, {_id: id}, args[0], {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
       var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx)
@@ -81,10 +81,11 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   if (async) {
     args[args.length - 1] = function (err, ret) {
-      if (ret.insertedId) {
-        afterInsert(ret.insertedId, err)
+      if (err || ret.insertedId) {
+        // Send any errors to afterInsert
+        afterInsert(ret && ret.insertedId, err)
       } else {
-        afterUpdate(ret.numberAffected, err)
+        afterUpdate(ret && ret.numberAffected, err) // Note that err can never reach here
       }
 
       return CollectionHooks.hookedOp(function () {
@@ -100,10 +101,10 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
       return _super.apply(self, args)
     })
 
-    if (ret.insertedId) {
-      afterInsert(ret.insertedId)
+    if (ret && ret.insertedId) {
+      afterInsert(ret && ret.insertedId)
     } else {
-      afterUpdate(ret.numberAffected)
+      afterUpdate(ret && ret.numberAffected)
     }
 
     return ret

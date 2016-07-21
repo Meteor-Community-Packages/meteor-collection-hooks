@@ -3,7 +3,7 @@
 Package.describe({
   name: 'matb33:collection-hooks',
   summary: 'Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne',
-  version: '0.8.3',
+  version: '0.8.2',
   git: 'https://github.com/matb33/meteor-collection-hooks.git'
 })
 
@@ -33,7 +33,7 @@ Package.onUse(function (api, where) {
     'minimongo'
   ])
 
-  api.use(['accounts-base'], ['client', 'server'], { weak: true })
+  api.use(['accounts-base'], ['client', 'server'], {weak: true})
 
   api.addFiles([
     'collection-hooks.js',
@@ -103,7 +103,7 @@ Package.onTest(function (api) {
   api.addFiles('tests/hooks_in_loop.js')
   api.addFiles('tests/upsert.js')
   api.addFiles('tests/trycatch.js')
-  api.addFiles('tests/new_doc_signature_meteor_1_4.js')
+  api.addFiles('tests/meteor_1_4_id_object.js')
 
   // NOTE: not testing against CollectionFS anymore, getting weird warning:
   // https://github.com/CollectionFS/Meteor-CollectionFS/issues/688

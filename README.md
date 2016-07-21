@@ -324,6 +324,9 @@ hook to run only once, make sure the hook is defined somewhere where only either
 the client or the server reads it. *When in doubt, define your hooks on the
 server.*
 
+- Both `update` and `remove` internally make use of `find`, so be aware that
+`find`/`findOne` hooks can fire for those methods.
+
 --------------------------------------------------------------------------------
 
 ## Maintainers
