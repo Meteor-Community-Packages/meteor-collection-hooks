@@ -1,5 +1,11 @@
 ## vNEXT
 
+## v0.8.2
+
+* If an async upsert operation returns an error, funnel it to the after.insert hook, fixes https://github.com/matb33/meteor-collection-hooks/issues/185
+* Add a note in the README concerning the use of `find` in `update` and `remove`, closes https://github.com/matb33/meteor-collection-hooks/issues/191
+* Handle mongo object _id (with result, ops, etc) in after insert by extracting the _id from ops, fixes https://github.com/meteor/meteor/issues/7409
+
 ## v0.8.1
 
 * Provide helper CollectionHooks.modify that gives the developer server access to the typically client-only LocalCollection._modify
