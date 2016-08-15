@@ -31,7 +31,12 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
       // In some cases (namely Meteor.users on Meteor 1.4+), the _id property
       // is a raw mongo _id object. We need to extract the _id from this object
       if (_.isObject(id) && id.ops) {
-        id = id.ops && id.ops[0] && id.ops[0]._id
+        // If _str then collection is using Mongo.ObjectID as ids
+        if (doc._id._str) {
+          id = new Mongo.ObjectID(doc._id._str.toString());
+        } else {
+          id = id.ops && id.ops[0] && id.ops[0]._id
+        }
       }
       doc = EJSON.clone(args[0])
       doc._id = id
