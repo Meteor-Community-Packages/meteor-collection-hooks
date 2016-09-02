@@ -310,6 +310,8 @@ in some circumstances. For example, if an `update` is fired from the server
 with no user context, the server certainly won't be able to provide any
 particular userId.
 
+- You can define a `defaultUserId` in case you want to pass an userId to the hooks but there is no context. For instance if you are executing and API endpoint where the `userId` is derived from a token. Just assign the userId to `CollectionHooks.defaultUserId`. It will be overriden by the userId of the context if it exists.
+
 - If, like me, you transform `Meteor.users` through a [round-about way](https://github.com/matb33/meteor-collection-hooks/issues/15#issuecomment-25809919) involving
 `find` and `findOne`, then you won't be able to use `this.transform()`. Instead,
 grab the transformed user with `findOne`.
