@@ -25,8 +25,9 @@ CollectionHooks = {
   }
 }
 
+
 CollectionHooks.getUserId = function getUserId () {
-  var userId
+  var userId = CollectionHooks.defaultUserId;
 
   if (Meteor.isClient) {
     Tracker.nonreactive(function () {
