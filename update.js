@@ -24,14 +24,14 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
 
   if (!suppressAspects) {
     try {
-      if (aspects.before || aspects.after) {
+      if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
         fields = CollectionHooks.getFields(args[1])
         docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch()
         docIds = _.map(docs, function (doc) { return doc._id })
       }
 
       // copy originals for convenience for the 'after' pointcut
-      if (aspects.after) {
+      if (!_.isEmpty(aspects.after)) {
         prev.mutator = EJSON.clone(args[1])
         prev.options = EJSON.clone(args[2])
         if (
