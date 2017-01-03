@@ -201,7 +201,7 @@ CollectionHooks.getFields = function getFields (mutator) {
 
   _.each(mutator, function (params, op) {
     // ====ADDED START=======================
-    if (_.contains(['$set', '$unset', '$inc', '$push', '$pull', '$pop', '$rename', '$pullAll', '$addToSet', '$bit'], op)) {
+    if (_.contains(['$set', '$max', '$min', '$currentDate', '$unset', '$inc', '$push', '$pull', '$pop', '$rename', '$pullAll', '$addToSet', '$bit'], op)) {
     // ====ADDED END=========================
       _.each(_.keys(params), function (field) {
         // treat dotted fields as if they are replacing their
