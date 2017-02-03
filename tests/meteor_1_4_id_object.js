@@ -1,19 +1,18 @@
-/* global Tinytest Meteor _ */
+/* global Tinytest Meteor _ Mongo */
 
 var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
 var collection = Meteor.users
-var collection1 = new Collection('test_insert_mongoid_collection1', {idGeneration: 'MONGO'});
+var collection1 = new Collection('test_insert_mongoid_collection1', {idGeneration: 'MONGO'})
 
 if (Meteor.isServer) {
   collection.allow({
     insert: function () { return true },
     update: function () { return true },
     remove: function () { return true }
-  });
+  })
   collection1.allow({
     insert: function () { return true }
   })
-
 }
 
 Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with object _id with ops property in Meteor 1.4', function (test, next) {
@@ -37,18 +36,16 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
   })
 })
 
-
 Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with Mongo.ObjectID _id with _str property in Meteor 1.4', function (test, next) {
   var key = Date.now()
 
   var aspect1 = collection1.after.insert(function (nil, doc) {
     if (doc && doc.key && doc.key === key) {
-      var foundDoc = null;
+      var foundDoc = null
       try {
-        foundDoc = collection1.direct.findOne({_id: doc._id});
-      }
-      catch (exception) {}
-      test.isNotNull(foundDoc);
+        foundDoc = collection1.direct.findOne({_id: doc._id})
+      } catch (exception) {}
+      test.isNotNull(foundDoc)
     }
   })
 
