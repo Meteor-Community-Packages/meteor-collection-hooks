@@ -11,7 +11,8 @@ if (Meteor.isServer) {
     remove: function () { return true }
   })
   collection1.allow({
-    insert: function () { return true }
+    insert: function () { return true },
+    remove: function () { return true }
   })
 }
 
