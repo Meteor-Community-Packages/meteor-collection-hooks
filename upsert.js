@@ -100,7 +100,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     })
 
     if (ret && ret.insertedId) {
-      afterInsert(ret && ret.insertedId)
+      afterInsert(ret.insertedId)
     } else {
       afterUpdate(ret && ret.numberAffected)
     }
