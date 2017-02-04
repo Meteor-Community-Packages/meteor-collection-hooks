@@ -41,14 +41,12 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     }
 
     // before
-    if (!suppressAspects) {
-      _.each(aspectGroup.upsert.before, function (o) {
-        var r = o.aspect.call(ctx, userId, args[0], args[1], args[2])
-        if (r === false) abort = true
-      })
+    _.each(aspectGroup.upsert.before, function (o) {
+      var r = o.aspect.call(ctx, userId, args[0], args[1], args[2])
+      if (r === false) abort = true
+    })
 
-      if (abort) return false
-    }
+    if (abort) return false
   }
 
   function afterUpdate (affected, err) {
