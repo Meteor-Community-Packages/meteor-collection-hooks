@@ -62,8 +62,10 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
 
   function after (affected, err) {
     if (!suppressAspects) {
-      var fields = CollectionHooks.getFields(args[1])
-      var docs = CollectionHooks.getDocs.call(self, collection, {_id: {$in: docIds}}, args[2]).fetch()
+      if (!_.isEmpty(aspects.after)) {
+        var fields = CollectionHooks.getFields(args[1])
+        var docs = CollectionHooks.getDocs.call(self, collection, {_id: {$in: docIds}}, args[2]).fetch()
+      }
 
       _.each(aspects.after, function (o) {
         _.each(docs, function (doc) {

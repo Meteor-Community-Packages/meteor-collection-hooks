@@ -15,12 +15,12 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
 
   if (!suppressAspects) {
     try {
-      if (aspects.before || aspects.after) {
+      if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
         docs = CollectionHooks.getDocs.call(self, collection, args[0]).fetch()
       }
 
       // copy originals for convenience for the 'after' pointcut
-      if (aspects.after) {
+      if (!_.isEmpty(aspects.after)) {
         _.each(docs, function (doc) {
           prev.push(EJSON.clone(doc))
         })
