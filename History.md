@@ -2,6 +2,7 @@
 
 * Fix Meteor.publish override, the previous override resulted in false positives of autopublish warning
 * Use spacejam for headless testing, will make headless testing work locally
+* Add support for the new modifiers $max, $min and $currentDate.
 * No longer fetch documents unnecessarily when no hooks are defined.
 
 ## v0.8.3
