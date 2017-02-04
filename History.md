@@ -1,5 +1,7 @@
 ## vNEXT
 
+* No longer fetch documents unnecessarily when no hooks are defined.
+
 ## v0.8.3
 
 * If an async upsert operation returns an error, funnel it to the after.insert hook, fixes https://github.com/matb33/meteor-collection-hooks/issues/185
