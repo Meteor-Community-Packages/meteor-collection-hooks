@@ -8,6 +8,9 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
   // args[0] : selector
   // args[1] : options
 
+  args[0] = instance._getFindSelector(args)
+  args[1] = instance._getFindOptions(args)
+
   // before
   if (!suppressAspects) {
     _.each(aspects.before, function (o) {
