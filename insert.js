@@ -1,4 +1,4 @@
-/* global CollectionHooks _ EJSON */
+/* global CollectionHooks _ EJSON Mongo */
 
 CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
@@ -33,7 +33,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
       if (_.isObject(id) && id.ops) {
         // If _str then collection is using Mongo.ObjectID as ids
         if (doc._id._str) {
-          id = new Mongo.ObjectID(doc._id._str.toString());
+          id = new Mongo.ObjectID(doc._id._str.toString())
         } else {
           id = id.ops && id.ops[0] && id.ops[0]._id
         }
