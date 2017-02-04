@@ -2,6 +2,17 @@
 
 var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
 
+Tinytest.addAsync('findone - selector should be {} when called without arguments', function (test, next) {
+  var collection = new Collection(null)
+
+  collection.before.findOne(function (userId, selector, options) {
+    test.equal(selector, {})
+    next()
+  })
+
+  collection.findOne()
+})
+
 Tinytest.addAsync('findone - selector should have extra property', function (test, next) {
   var collection = new Collection(null)
 
