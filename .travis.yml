@@ -1,10 +1,13 @@
-sudo: required
+sudo: false
 language: node_js
 node_js:
-  - "0.10"
+  - "4"
 
 before_install:
-  - "curl -L https://git.io/ejPSng | /bin/sh"
+  - "wget https://raw.github.com/arunoda/travis-ci-meteor-packages/master/start_test.js"
+  - "wget https://raw.github.com/arunoda/travis-ci-meteor-packages/master/phantom_runner.js"
+  - "curl https://install.meteor.com/ | sh"
+  - export PATH=$PATH:$HOME/.meteor
 
 env:
   - CXX=g++-4.8
