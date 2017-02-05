@@ -41,8 +41,15 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
     // before
     _.each(aspectGroup.upsert.before, function (o) {
-      var r = o.aspect.call(ctx, userId, args[0], args[1], args[2])
-      if (r === false) abort = true
+      if (!_.isEmpty(docs)) {
+        _.each(docs, function (doc) {
+          var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, args[0], args[1], args[2])
+          if (r === false) abort = true
+        })
+      } else {
+        var r = o.aspect.call(ctx, userId, args[0], args[1], args[2])
+        if (r === false) abort = true
+      }
     })
 
     if (abort) return { numberAffected: 0 }
