@@ -272,15 +272,15 @@ if (typeof Mongo !== 'undefined') {
 
 if (Meteor.isServer) {
   var _publish = Meteor.publish
-  Meteor.publish = function (name, func) {
+  Meteor.publish = function (name, handler, options) {
     return _publish.call(this, name, function () {
       // This function is called repeatedly in publications
       var ctx = this
       var args = arguments
       return publishUserId.withValue(ctx && ctx.userId, function () {
-        return func.apply(ctx, args)
+        return handler.apply(ctx, args)
       })
-    })
+    }, options)
   }
 
   // Make the above available for packages with hooks that want to determine
