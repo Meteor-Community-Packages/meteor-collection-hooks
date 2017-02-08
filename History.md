@@ -1,5 +1,6 @@
 ## vNEXT
 
+* Use spacejam for headless testing, will make headless testing work locally
 * No longer fetch documents unnecessarily when no hooks are defined.
 
 ## v0.8.3
