@@ -1,5 +1,6 @@
 ## vNEXT
 
+* Fix unsafe `selector` in `before.find` and `before.findOne` when called without arguments. This is potentially a *breaking change* for those who are relying on the current behavior of `selector` in `before.find` and `before.findOne`
 * Add support for update/upsert hooks to run on a different selector based on custom options when used together with a find hook that manipulates the selector based on custom options
 * Fix Meteor.publish override, the previous override resulted in false positives of autopublish warning
 * Use spacejam for headless testing, will make headless testing work locally
