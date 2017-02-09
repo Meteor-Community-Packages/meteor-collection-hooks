@@ -3,8 +3,8 @@
 * Add support for update/upsert hooks to run on a different selector based on custom options when used together with a find hook that manipulates the selector based on custom options
 * Fix Meteor.publish override, the previous override resulted in false positives of autopublish warning
 * Use spacejam for headless testing, will make headless testing work locally
-* Add support for the new modifiers $max, $min and $currentDate.
-* No longer fetch documents unnecessarily when no hooks are defined.
+* Add support for the new modifiers $max, $min and $currentDate
+* No longer fetch documents when no hooks are defined
 
 ## v0.8.3
 
@@ -19,7 +19,7 @@
 
 ## v0.8.0
 
-* Add support for `upsert` hooks. This is potentiallly a *breaking change* for those relying on `before.update` for `upsert`, as the behavior has changed to fire `before.upsert` instead, and either `after.insert` or `after.update` depending on the outcome of the upsert operation
+* Add support for `upsert` hooks. This is potentially a *breaking change* for those relying on `before.update` for `upsert`, as the behavior has changed to fire `before.upsert` instead, and either `after.insert` or `after.update` depending on the outcome of the upsert operation
 
 ## v0.7.15
 
