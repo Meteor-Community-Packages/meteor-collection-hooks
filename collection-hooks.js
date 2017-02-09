@@ -183,6 +183,8 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
     if (!options.multi) {
       findOptions.limit = 1
     }
+
+    _.extend(findOptions, _.omit(options, 'multi', 'upsert'))
   }
 
   // Unlike validators, we iterate over multiple docs, so use
