@@ -11,7 +11,7 @@ _.each([null, 'direct_collection_test'], function (ctype) {
 
     // The server will make a call to find when findOne is called, which adds 2 extra counts
     // Update will make calls to find with options forwarded, which adds 4 extra counts
-    var hookCountTarget = Meteor.isServer ? 16 : 10
+    var hookCountTarget = Meteor.isServer ? 16 : 14
 
     // Full permissions on collection
     collection.allow({

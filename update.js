@@ -10,7 +10,6 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
   var fields
   var abort
   var prev = {}
-  var collection = _.has(self, '_collection') ? self._collection : self
 
   // args[0] : selector
   // args[1] : mutator
@@ -26,7 +25,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
     try {
       if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
         fields = CollectionHooks.getFields(args[1])
-        docs = CollectionHooks.getDocs.call(self, collection, args[0], args[2]).fetch()
+        docs = CollectionHooks.getDocs.call(self, instance, args[0], args[2]).fetch()
         docIds = _.map(docs, function (doc) { return doc._id })
       }
 
@@ -64,7 +63,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
     if (!suppressAspects) {
       if (!_.isEmpty(aspects.after)) {
         var fields = CollectionHooks.getFields(args[1])
-        var docs = CollectionHooks.getDocs.call(self, collection, {_id: {$in: docIds}}, args[2]).fetch()
+        var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
       }
 
       _.each(aspects.after, function (o) {

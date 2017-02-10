@@ -8,7 +8,6 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
   var docs
   var abort
   var prev = []
-  var collection = _.has(self, '_collection') ? self._collection : self
 
   // args[0] : selector
   // args[1] : callback
@@ -16,7 +15,7 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
   if (!suppressAspects) {
     try {
       if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
-        docs = CollectionHooks.getDocs.call(self, collection, args[0]).fetch()
+        docs = CollectionHooks.getDocs.call(self, instance, args[0]).fetch()
       }
 
       // copy originals for convenience for the 'after' pointcut
