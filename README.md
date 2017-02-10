@@ -329,6 +329,8 @@ server.*
 - Both `update` and `remove` internally make use of `find`, so be aware that
 `find`/`findOne` hooks can fire for those methods.
 
+- `find´ hooks are also fired when fetching documents for `update`, `upsert` and `remove` hooks.
+
 --------------------------------------------------------------------------------
 
 ## Maintainers
