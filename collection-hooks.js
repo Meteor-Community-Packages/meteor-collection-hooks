@@ -199,10 +199,27 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
 CollectionHooks.getFields = function getFields (mutator) {
   // compute modified fields
   var fields = []
+  // ====ADDED START=======================
+  var operators = [
+    '$addToSet',
+    '$bit',
+    '$currentDate',
+    '$inc',
+    '$max',
+    '$min',
+    '$pop',
+    '$pull',
+    '$pullAll',
+    '$push',
+    '$rename',
+    '$set',
+    '$unset'
+  ]
+  // ====ADDED END=========================
 
   _.each(mutator, function (params, op) {
     // ====ADDED START=======================
-    if (_.contains(['$set', '$max', '$min', '$currentDate', '$unset', '$inc', '$push', '$pull', '$pop', '$rename', '$pullAll', '$addToSet', '$bit'], op)) {
+    if (_.contains(operators, op)) {
     // ====ADDED END=========================
       _.each(_.keys(params), function (field) {
         // treat dotted fields as if they are replacing their
