@@ -1,5 +1,6 @@
 ## vNEXT
 
+* Align return values with original methods when a hook returns `false`
 * Always run `find` hooks when fetching documents for `update`, `upsert` and `remove` hooks
 * Fix unsafe `selector` in `before.find` and `before.findOne` when called without arguments. This is potentially a *breaking change* for those who are relying on the current behavior of `selector` in `before.find` and `before.findOne`
 * Add support for update/upsert hooks to run on a different selector based on custom options when used together with a find hook that manipulates the selector based on custom options
