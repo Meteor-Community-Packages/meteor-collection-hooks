@@ -85,7 +85,7 @@ Allows you to to change the `modifier` as needed, or run additional
 functionality.
 
 - `this.transform()` obtains transformed version of document, if a transform was
-defined.
+defined and the selector matches any documents.
 
 ```javascript
 test.before.upsert(function (userId, selector, modifier, options) {
