@@ -337,6 +337,7 @@ server.*
 
 - Mathieu Bouchard ([matb33](https://github.com/matb33))
 - Andrew Mao ([mizzao](https://github.com/mizzao))
+- Simon Fridlund ([zimme](https://github.com/zimme))
 
 ## Contributors
 
