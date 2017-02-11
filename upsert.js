@@ -83,9 +83,9 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   if (async) {
     args[args.length - 1] = function (err, ret) {
-      if (err || ret.insertedId) {
+      if (err || ret && ret.insertedId) {
         // Send any errors to afterInsert
-        afterInsert(ret && ret.insertedId, err)
+        afterInsert(ret.insertedId, err)
       } else {
         afterUpdate(ret && ret.numberAffected, err) // Note that err can never reach here
       }
