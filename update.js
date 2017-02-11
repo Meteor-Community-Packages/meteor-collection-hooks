@@ -52,7 +52,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
         })
       })
 
-      if (abort) return false
+      if (abort) return 0
     } catch (e) {
       if (async) return callback.call(self, e)
       throw e

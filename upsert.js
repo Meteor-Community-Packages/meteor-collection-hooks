@@ -45,7 +45,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
       if (r === false) abort = true
     })
 
-    if (abort) return false
+    if (abort) return { numberAffected: 0 }
   }
 
   function afterUpdate (affected, err) {

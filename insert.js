@@ -18,7 +18,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
         if (r === false) abort = true
       })
 
-      if (abort) return false
+      if (abort) return
     } catch (e) {
       if (async) return callback.call(self, e)
       throw e

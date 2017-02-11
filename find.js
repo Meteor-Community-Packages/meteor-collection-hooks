@@ -18,7 +18,7 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
       if (r === false) abort = true
     })
 
-    if (abort) return false
+    if (abort) return instance.find(undefined)
   }
 
   function after (cursor) {

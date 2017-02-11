@@ -18,7 +18,7 @@ CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspe
       if (r === false) abort = true
     })
 
-    if (abort) return false
+    if (abort) return
   }
 
   function after (doc) {
