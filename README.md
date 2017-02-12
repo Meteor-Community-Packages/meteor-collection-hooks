@@ -84,9 +84,6 @@ Fired before the doc is upserted.
 Allows you to to change the `modifier` as needed, or run additional
 functionality.
 
-- `this.transform()` obtains transformed version of document, if a transform was
-defined.
-
 ```javascript
 test.before.upsert(function (userId, selector, modifier, options) {
   modifier.$set = modifier.$set || {};
