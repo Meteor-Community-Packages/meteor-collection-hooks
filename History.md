@@ -1,6 +1,5 @@
 ## vNEXT
 
-* Support `this.transform()` in before upsert hooks when the selector matches any documents
 * Align return values with original methods when a hook returns `false`
 * Always run `find` hooks when fetching documents for `update`, `upsert` and `remove` hooks
 * Fix unsafe `selector` in `before.find` and `before.findOne` when called without arguments. This is potentially a *breaking change* for those who are relying on the current behavior of `selector` in `before.find` and `before.findOne`
