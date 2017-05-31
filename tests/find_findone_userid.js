@@ -111,8 +111,6 @@ if (Meteor.isServer) {
         test.equal(afterFindOneWithinPublish, true)
       })
     }
-
-    return
   })
 }
 

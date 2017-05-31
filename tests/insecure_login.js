@@ -1,5 +1,5 @@
 /* global Meteor Accounts InsecureLogin _ */
-/* eslint-disable no-native-reassign */
+/* eslint-disable no-native-reassign, no-global-assign */
 
 InsecureLogin = {
   queue: [],

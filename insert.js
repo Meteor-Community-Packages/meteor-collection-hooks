@@ -52,12 +52,12 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
 
   if (async) {
     args[args.length - 1] = function (err, obj) {
-      after(obj && obj[0] && obj[0]._id || obj, err)
+      after((obj && obj[0] && obj[0]._id) || obj, err)
       return callback.apply(this, arguments)
     }
     return _super.apply(self, args)
   } else {
     ret = _super.apply(self, args)
-    return after(ret && ret[0] && ret[0]._id || ret)
+    return after((ret && ret[0] && ret[0]._id) || ret)
   }
 })

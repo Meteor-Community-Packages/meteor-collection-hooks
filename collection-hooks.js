@@ -1,5 +1,5 @@
 /* global Package Meteor Mongo LocalCollection CollectionHooks _ EJSON */
-/* eslint-disable no-proto, no-native-reassign */
+/* eslint-disable no-proto, no-native-reassign, no-global-assign */
 
 // Relevant AOP terminology:
 // Aspect: User code that runs before/after (hook)
@@ -7,7 +7,7 @@
 // Pointcut: before/after
 
 var advices = {}
-var Tracker = Package.tracker && Package.tracker.Tracker || Package.deps.Deps
+var Tracker = (Package.tracker && Package.tracker.Tracker) || Package.deps.Deps
 var publishUserId = Meteor.isServer && new Meteor.EnvironmentVariable()
 
 CollectionHooks = {

@@ -60,4 +60,3 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
     next()
   })
 })
-
