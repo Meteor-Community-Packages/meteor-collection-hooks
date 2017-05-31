@@ -26,7 +26,7 @@ CollectionHooks = {
 }
 
 CollectionHooks.getUserId = function getUserId () {
-  var userId = CollectionHooks.defaultUserId
+  var userId
 
   if (Meteor.isClient) {
     Tracker.nonreactive(function () {
@@ -41,10 +41,14 @@ CollectionHooks.getUserId = function getUserId () {
       userId = Meteor.userId && Meteor.userId()
     } catch (e) {}
 
-    if (!userId) {
+    if (userId == null) {
       // Get the userId if we are in a publish function.
       userId = publishUserId.get()
     }
+  }
+
+  if (userId == null) {
+    userId = CollectionHooks.defaultUserId
   }
 
   return userId
