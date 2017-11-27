@@ -269,7 +269,7 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   var proto = as._CollectionPrototype
 
   ns.Collection = function () {
-    var ret = constructor.apply(this, arguments)
+    var ret = new constructor(arguments)
     CollectionHooks.extendCollectionInstance(this, constructor)
     return ret
   }
