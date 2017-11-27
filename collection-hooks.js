@@ -263,7 +263,7 @@ CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr
 
 CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
-  if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
+  if (!as._CollectionPrototype) as._CollectionPrototype = new (as.Collection)(null)
 
   var constructor = as._CollectionConstructor
   var proto = as._CollectionPrototype
