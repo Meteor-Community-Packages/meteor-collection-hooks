@@ -265,7 +265,7 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
   if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
 
-  var constructor = as._CollectionConstructor
+  var constructor = ns._NewCollectionContructor || as._CollectionConstructor
   var proto = as._CollectionPrototype
 
   ns.Collection = function () {
@@ -273,6 +273,7 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
     CollectionHooks.extendCollectionInstance(this, constructor)
     return ret
   }
+  ns._NewCollectionContructor = ns.Collection
 
   ns.Collection.prototype = proto
   ns.Collection.prototype.constructor = ns.Collection
@@ -282,6 +283,8 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
       ns.Collection[prop] = constructor[prop]
     }
   }
+
+  ns.Collection.apply = Function.prototype.apply;
 }
 
 CollectionHooks.modify = LocalCollection._modify
