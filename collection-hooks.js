@@ -273,6 +273,7 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
     CollectionHooks.extendCollectionInstance(this, constructor)
     return ret
   }
+  // Retain a reference to the new constructor to allow further wrapping.
   ns._NewCollectionContructor = ns.Collection
 
   ns.Collection.prototype = proto
@@ -284,6 +285,8 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
     }
   }
 
+  // Meteor overrides the apply method which is copied from the constructor in the loop above. Replace it with the
+  // default method which we need if we were to further wrap ns.Collection.
   ns.Collection.apply = Function.prototype.apply;
 }
 
