@@ -28,7 +28,6 @@ Package.onUse(function (api, where) {
   }
 
   api.use([
-    'underscore',
     'ejson',
     'minimongo',
     'ecmascript'
