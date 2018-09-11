@@ -1,10 +1,12 @@
 /* global CollectionHooks _ EJSON Mongo */
+var isFunction = require('lodash/isFunction')
+var isObject = require('lodash/isObject')
 
 CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
   var ctx = {context: self, _super: _super, args: args}
-  var callback = _.last(args)
-  var async = _.isFunction(callback)
+  var callback = args[args.length - 1]
+  var async = isFunction(callback)
   var abort, ret
 
   // args[0] : doc
@@ -13,8 +15,8 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
   // before
   if (!suppressAspects) {
     try {
-      _.each(aspects.before, function (o) {
-        var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0])
+      aspects.before.forEach(function (o) {
+        var r = o.aspect.call({transform: getTransform(args[0]), ...ctx}, userId, args[0])
         if (r === false) abort = true
       })
 
@@ -30,7 +32,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
     if (id) {
       // In some cases (namely Meteor.users on Meteor 1.4+), the _id property
       // is a raw mongo _id object. We need to extract the _id from this object
-      if (_.isObject(id) && id.ops) {
+      if (isObject(id) && id.ops) {
         // If _str then collection is using Mongo.ObjectID as ids
         if (doc._id._str) {
           id = new Mongo.ObjectID(doc._id._str.toString())
@@ -42,8 +44,8 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
       doc._id = id
     }
     if (!suppressAspects) {
-      var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx)
-      _.each(aspects.after, function (o) {
+      var lctx = {transform: getTransform(doc), _id: id, err: err, ...ctx}
+      aspects.after.forEach(function (o) {
         o.aspect.call(lctx, userId, doc)
       })
     }

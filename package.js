@@ -30,7 +30,8 @@ Package.onUse(function (api, where) {
   api.use([
     'underscore',
     'ejson',
-    'minimongo'
+    'minimongo',
+    'ecmascript'
   ])
 
   api.use(['accounts-base'], ['client', 'server'], {weak: true})
@@ -121,3 +122,7 @@ Package.onTest(function (api) {
   // limited to only working on the server
   // api.addFiles('tests/fetch.js', 'server')
 })
+
+Npm.depends({
+  'lodash': '4.17.10'
+});
