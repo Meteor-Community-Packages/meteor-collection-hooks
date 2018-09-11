@@ -62,7 +62,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   ['before', 'after'].forEach(function (pointcut) {
-    Object.values(advices).forEach(function (advice, method) {
+    Object.entries(advices).forEach(function ([method, advice]) {
       if (advice === 'upsert' && pointcut === 'after') return
 
       Meteor._ensure(self, pointcut, method)
@@ -96,7 +96,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
   self.hookOptions = EJSON.clone(CollectionHooks.defaults)
 
   // Wrap mutator methods, letting the defined advice do the work
-  Object.values(advices).forEach(function (advice, method) {
+  Object.entries(advices).forEach(function ([method, advice]) {
     var collection = Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
@@ -221,7 +221,7 @@ CollectionHooks.getFields = function getFields (mutator) {
   ]
   // ====ADDED END=========================
 
-  mutator.forEach(function (params, op) {
+  Object.entries(mutator).forEach(function ([op, params]) {
     // ====ADDED START=======================
     if (operators.includes(op)) {
     // ====ADDED END=========================
