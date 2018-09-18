@@ -67,7 +67,8 @@ Package.onTest(function (api) {
     'accounts-base',
     'accounts-password',
     'tinytest',
-    'test-helpers'
+    'test-helpers',
+    "ecmascript"
   ])
 
   api.addFiles('tests/insecure_login.js')
