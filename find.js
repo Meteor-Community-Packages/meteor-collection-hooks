@@ -13,7 +13,7 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
 
   // before
   if (!suppressAspects) {
-    _.each(aspects.before, function (o) {
+    aspects.before.forEach(function (o) {
       var r = o.aspect.call(ctx, userId, args[0], args[1])
       if (r === false) abort = true
     })
@@ -23,7 +23,7 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
 
   function after (cursor) {
     if (!suppressAspects) {
-      _.each(aspects.after, function (o) {
+      aspects.after.forEach(function (o) {
         o.aspect.call(ctx, userId, args[0], args[1], cursor)
       })
     }

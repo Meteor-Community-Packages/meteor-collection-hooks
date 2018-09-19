@@ -1,10 +1,9 @@
 /* global CollectionHooks _ EJSON */
-
 CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
   var ctx = {context: self, _super: _super, args: args}
-  var callback = _.last(args)
-  var async = _.isFunction(callback)
+  var callback = args[args.length - 1]
+  var async = typeof callback === 'function'
   var docs
   var abort
   var prev = []
@@ -20,15 +19,15 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
 
       // copy originals for convenience for the 'after' pointcut
       if (!_.isEmpty(aspects.after)) {
-        _.each(docs, function (doc) {
+        docs.forEach(function (doc) {
           prev.push(EJSON.clone(doc))
         })
       }
 
       // before
-      _.each(aspects.before, function (o) {
-        _.each(docs, function (doc) {
-          var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc)
+      aspects.before.forEach(function (o) {
+        docs.forEach(function (doc) {
+          var r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc)
           if (r === false) abort = true
         })
       })
@@ -42,9 +41,9 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
 
   function after (err) {
     if (!suppressAspects) {
-      _.each(aspects.after, function (o) {
-        _.each(prev, function (doc) {
-          o.aspect.call(_.extend({transform: getTransform(doc), err: err}, ctx), userId, doc)
+      aspects.after.forEach(function (o) {
+        prev.forEach(function (doc) {
+          o.aspect.call({transform: getTransform(doc), err: err, ...ctx}, userId, doc)
         })
       })
     }

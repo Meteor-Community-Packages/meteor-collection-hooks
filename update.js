@@ -3,8 +3,8 @@
 CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
   var ctx = {context: self, _super: _super, args: args}
-  var callback = _.last(args)
-  var async = _.isFunction(callback)
+  var callback = args[args.length - 1]
+  var async = typeof callback === 'function'
   var docs
   var docIds
   var fields
@@ -16,7 +16,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
   // args[2] : options (optional)
   // args[3] : callback
 
-  if (_.isFunction(args[2])) {
+  if (typeof args[2] === 'function') {
     callback = args[2]
     args[2] = {}
   }
@@ -26,7 +26,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
       if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
         fields = CollectionHooks.getFields(args[1])
         docs = CollectionHooks.getDocs.call(self, instance, args[0], args[2]).fetch()
-        docIds = _.map(docs, function (doc) { return doc._id })
+        docIds = docs.map(function (doc) { return doc._id })
       }
 
       // copy originals for convenience for the 'after' pointcut
@@ -34,20 +34,20 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
         prev.mutator = EJSON.clone(args[1])
         prev.options = EJSON.clone(args[2])
         if (
-          _.some(aspects.after, function (o) { return o.options.fetchPrevious !== false }) &&
+          aspects.after.some(function (o) { return o.options.fetchPrevious !== false }) &&
           CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false
         ) {
           prev.docs = {}
-          _.each(docs, function (doc) {
+          docs.forEach(function (doc) {
             prev.docs[doc._id] = EJSON.clone(doc)
           })
         }
       }
 
       // before
-      _.each(aspects.before, function (o) {
-        _.each(docs, function (doc) {
-          var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2])
+      aspects.before.forEach(function (o) {
+        docs.forEach(function (doc) {
+          var r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc, fields, args[1], args[2])
           if (r === false) abort = true
         })
       })
@@ -66,14 +66,15 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
         var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
       }
 
-      _.each(aspects.after, function (o) {
-        _.each(docs, function (doc) {
-          o.aspect.call(_.extend({
+      aspects.after.forEach(function (o) {
+        docs.forEach(function (doc) {
+          o.aspect.call({
             transform: getTransform(doc),
             previous: prev.docs && prev.docs[doc._id],
             affected: affected,
-            err: err
-          }, ctx), userId, doc, fields, prev.mutator, prev.options)
+            err: err,
+            ...ctx
+          }, userId, doc, fields, prev.mutator, prev.options)
         })
       })
     }

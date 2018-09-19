@@ -28,9 +28,10 @@ Package.onUse(function (api, where) {
   }
 
   api.use([
-    'underscore',
     'ejson',
-    'minimongo'
+    'minimongo',
+    'ecmascript',
+    'underscore'
   ])
 
   api.use(['accounts-base'], ['client', 'server'], {weak: true})
@@ -67,7 +68,8 @@ Package.onTest(function (api) {
     'accounts-base',
     'accounts-password',
     'tinytest',
-    'test-helpers'
+    'test-helpers',
+    "ecmascript"
   ])
 
   api.addFiles('tests/insecure_login.js')

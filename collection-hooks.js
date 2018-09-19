@@ -5,7 +5,6 @@
 // Aspect: User code that runs before/after (hook)
 // Advice: Wrapper code that knows when to call user code (aspects)
 // Pointcut: before/after
-
 var advices = {}
 var Tracker = (Package.tracker && Package.tracker.Tracker) || Package.deps.Deps
 var publishUserId = Meteor.isServer && new Meteor.EnvironmentVariable()
@@ -57,8 +56,8 @@ CollectionHooks.getUserId = function getUserId () {
 CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
-  _.each(['before', 'after'], function (pointcut) {
-    _.each(advices, function (advice, method) {
+  ['before', 'after'].forEach(function (pointcut) {
+    Object.entries(advices).forEach(function ([method, advice]) {
       if (advice === 'upsert' && pointcut === 'after') return
 
       Meteor._ensure(self, pointcut, method)
@@ -92,7 +91,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
   self.hookOptions = EJSON.clone(CollectionHooks.defaults)
 
   // Wrap mutator methods, letting the defined advice do the work
-  _.each(advices, function (advice, method) {
+  Object.entries(advices).forEach(function ([method, advice]) {
     var collection = Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
@@ -132,12 +131,12 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         } : self._hookAspects[method] || {},
         function (doc) {
           return (
-            _.isFunction(self._transform)
+            typeof self._transform === 'function'
             ? function (d) { return self._transform(d || doc) }
             : function (d) { return d || doc }
           )
         },
-        _.toArray(arguments),
+        Object.values(arguments),
         false
       )
     }
@@ -157,11 +156,7 @@ CollectionHooks.initOptions = function initOptions (options, pointcut, method) {
 }
 
 CollectionHooks.extendOptions = function extendOptions (source, options, pointcut, method) {
-  options = _.extend(options || {}, source.all.all)
-  options = _.extend(options, source[pointcut].all)
-  options = _.extend(options, source.all[method])
-  options = _.extend(options, source[pointcut][method])
-  return options
+  return {...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method]}
 }
 
 CollectionHooks.getDocs = function getDocs (collection, selector, options) {
@@ -187,8 +182,8 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
     if (!options.multi) {
       findOptions.limit = 1
     }
-
-    _.extend(findOptions, _.omit(options, 'multi', 'upsert'))
+    const {multi, upsert, ...rest} = options
+    findOptions = {...findOptions, ...rest}
   }
 
   // Unlike validators, we iterate over multiple docs, so use
@@ -221,11 +216,11 @@ CollectionHooks.getFields = function getFields (mutator) {
   ]
   // ====ADDED END=========================
 
-  _.each(mutator, function (params, op) {
+  Object.entries(mutator).forEach(function ([op, params]) {
     // ====ADDED START=======================
-    if (_.contains(operators, op)) {
+    if (operators.includes(op)) {
     // ====ADDED END=========================
-      _.each(_.keys(params), function (field) {
+      Object.keys(params).forEach(function (field) {
         // treat dotted fields as if they are replacing their
         // top-level part
         if (field.indexOf('.') !== -1) {
@@ -233,7 +228,7 @@ CollectionHooks.getFields = function getFields (mutator) {
         }
 
         // record the field we are trying to change
-        if (!_.contains(fields, field)) {
+        if (!fields.includes(field)) {
           fields.push(field)
         }
       })
