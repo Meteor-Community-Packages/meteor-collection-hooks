@@ -1,12 +1,9 @@
 /* global CollectionHooks _ EJSON */
-var isFunction = require('lodash/isFunction')
-var isEmpty = require('lodash/isEmpty')
-
 CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
   var ctx = {context: self, _super: _super, args: args}
   var callback = args[args.length - 1]
-  var async = isFunction(callback)
+  var async = typeof callback === 'function'
   var docs
   var abort
   var prev = []
@@ -16,12 +13,12 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
 
   if (!suppressAspects) {
     try {
-      if (!isEmpty(aspects.before) || !isEmpty(aspects.after)) {
+      if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
         docs = CollectionHooks.getDocs.call(self, instance, args[0]).fetch()
       }
 
       // copy originals for convenience for the 'after' pointcut
-      if (!isEmpty(aspects.after)) {
+      if (!_.isEmpty(aspects.after)) {
         docs.forEach(function (doc) {
           prev.push(EJSON.clone(doc))
         })

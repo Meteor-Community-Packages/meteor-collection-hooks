@@ -5,11 +5,6 @@
 // Aspect: User code that runs before/after (hook)
 // Advice: Wrapper code that knows when to call user code (aspects)
 // Pointcut: before/after
-var isFunction = require('lodash/isFunction')
-var toArray = require('lodash/toArray')
-var omit = require('lodash/omit')
-
-
 var advices = {}
 var Tracker = (Package.tracker && Package.tracker.Tracker) || Package.deps.Deps
 var publishUserId = Meteor.isServer && new Meteor.EnvironmentVariable()
@@ -136,12 +131,12 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         } : self._hookAspects[method] || {},
         function (doc) {
           return (
-            isFunction(self._transform)
+            typeof self._transform === 'function'
             ? function (d) { return self._transform(d || doc) }
             : function (d) { return d || doc }
           )
         },
-        toArray(arguments),
+        Object.values(arguments),
         false
       )
     }
@@ -187,8 +182,8 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
     if (!options.multi) {
       findOptions.limit = 1
     }
-
-   findOptions = {...findOptions, ...omit(options, 'multi', 'upsert')}
+    const {multi, upsert, ...rest} = options
+    findOptions = {...findOptions, ...rest}
   }
 
   // Unlike validators, we iterate over multiple docs, so use

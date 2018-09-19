@@ -1,12 +1,10 @@
 /* global CollectionHooks _ EJSON Mongo */
-var isFunction = require('lodash/isFunction')
-var isObject = require('lodash/isObject')
 
 CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
   var ctx = {context: self, _super: _super, args: args}
   var callback = args[args.length - 1]
-  var async = isFunction(callback)
+  var async = typeof callback === 'function'
   var abort, ret
 
   // args[0] : doc
@@ -32,7 +30,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
     if (id) {
       // In some cases (namely Meteor.users on Meteor 1.4+), the _id property
       // is a raw mongo _id object. We need to extract the _id from this object
-      if (isObject(id) && id.ops) {
+      if (typeof id === 'object' && id.ops) {
         // If _str then collection is using Mongo.ObjectID as ids
         if (doc._id._str) {
           id = new Mongo.ObjectID(doc._id._str.toString())

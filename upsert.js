@@ -1,12 +1,9 @@
 /* global CollectionHooks _ EJSON */
-var isFunction = require('lodash/isFunction')
-var isEmpty = require('lodash/isEmpty')
-
 CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
   var self = this
   var ctx = {context: self, _super: _super, args: args}
   var callback = args[args.length - 1]
-  var async = isFunction(callback)
+  var async = typeof callback === 'function'
   var docs
   var docIds
   var abort
@@ -17,19 +14,19 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
   // args[2] : options (optional)
   // args[3] : callback
 
-  if (isFunction(args[2])) {
+  if (typeof args[2] === 'function') {
     callback = args[2]
     args[2] = {}
   }
 
   if (!suppressAspects) {
-    if (!isEmpty(aspectGroup.upsert.before)) {
+    if (!_.isEmpty(aspectGroup.upsert.before)) {
       docs = CollectionHooks.getDocs.call(self, instance, args[0], args[2]).fetch()
       docIds = docs.map(function (doc) { return doc._id })
     }
 
     // copy originals for convenience for the 'after' pointcut
-    if (!isEmpty(aspectGroup.update.after)) {
+    if (!_.isEmpty(aspectGroup.update.after)) {
       if (aspectGroup.update.after.some(function (o) { return o.options.fetchPrevious !== false }) &&
           CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
         prev.mutator = EJSON.clone(args[1])
@@ -52,7 +49,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   function afterUpdate (affected, err) {
     if (!suppressAspects) {
-      if (!isEmpty(aspectGroup.update.after)) {
+      if (!_.isEmpty(aspectGroup.update.after)) {
         var fields = CollectionHooks.getFields(args[1])
         var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
       }
@@ -72,7 +69,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   function afterInsert (id, err) {
     if (!suppressAspects) {
-      if (!isEmpty(aspectGroup.insert.after)) {
+      if (!_.isEmpty(aspectGroup.insert.after)) {
         var doc = CollectionHooks.getDocs.call(self, instance, {_id: id}, args[0], {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
         var lctx = {transform: getTransform(doc), _id: id, err: err, ...ctx}
       }

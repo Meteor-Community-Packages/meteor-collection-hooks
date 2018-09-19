@@ -1,6 +1,3 @@
-// hack taken from https://github.com/meteor/meteor/issues/9235#issuecomment-337257104
-// without the require lodash won't end up in the test bundle and the tests would fail
-require('lodash/package.json')
 /* global Meteor Accounts InsecureLogin _ */
 /* eslint-disable no-native-reassign, no-global-assign */
 

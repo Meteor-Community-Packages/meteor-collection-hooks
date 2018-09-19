@@ -1,12 +1,10 @@
 /* global CollectionHooks _ EJSON */
-var isFunction = require('lodash/isFunction')
-var isEmpty = require('lodash/isEmpty')
 
 CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
   var ctx = {context: self, _super: _super, args: args}
   var callback = args[args.length - 1]
-  var async = isFunction(callback)
+  var async = typeof callback === 'function'
   var docs
   var docIds
   var fields
@@ -18,21 +16,21 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
   // args[2] : options (optional)
   // args[3] : callback
 
-  if (isFunction(args[2])) {
+  if (typeof args[2] === 'function') {
     callback = args[2]
     args[2] = {}
   }
 
   if (!suppressAspects) {
     try {
-      if (!isEmpty(aspects.before) || !isEmpty(aspects.after)) {
+      if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
         fields = CollectionHooks.getFields(args[1])
         docs = CollectionHooks.getDocs.call(self, instance, args[0], args[2]).fetch()
         docIds = docs.map(function (doc) { return doc._id })
       }
 
       // copy originals for convenience for the 'after' pointcut
-      if (!isEmpty(aspects.after)) {
+      if (!_.isEmpty(aspects.after)) {
         prev.mutator = EJSON.clone(args[1])
         prev.options = EJSON.clone(args[2])
         if (
@@ -63,7 +61,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
 
   function after (affected, err) {
     if (!suppressAspects) {
-      if (!isEmpty(aspects.after)) {
+      if (!_.isEmpty(aspects.after)) {
         var fields = CollectionHooks.getFields(args[1])
         var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
       }
