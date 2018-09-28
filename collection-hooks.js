@@ -1,3 +1,8 @@
+import { Meteor } from 'meteor/meteor';
+import { Mongo } from 'meteor/mongo';
+import { EJSON } from 'meteor/ejson';
+import { LocalCollection } from 'meteor/minimongo';
+
 /* global Package Meteor Mongo LocalCollection CollectionHooks _ EJSON */
 /* eslint-disable no-proto, no-native-reassign, no-global-assign */
 
@@ -5,52 +10,21 @@
 // Aspect: User code that runs before/after (hook)
 // Advice: Wrapper code that knows when to call user code (aspects)
 // Pointcut: before/after
-var advices = {}
-var Tracker = (Package.tracker && Package.tracker.Tracker) || Package.deps.Deps
-var publishUserId = Meteor.isServer && new Meteor.EnvironmentVariable()
+const advices = {}
 
-CollectionHooks = {
+export const CollectionHooks = {
   defaults: {
     before: {insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {}},
     after: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
     all: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
   },
   directEnv: new Meteor.EnvironmentVariable(),
-  directOp: function directOp (func) {
+  directOp(func) {
     return this.directEnv.withValue(true, func)
   },
-  hookedOp: function hookedOp (func) {
+  hookedOp(func) {
     return this.directEnv.withValue(false, func)
   }
-}
-
-CollectionHooks.getUserId = function getUserId () {
-  var userId
-
-  if (Meteor.isClient) {
-    Tracker.nonreactive(function () {
-      userId = Meteor.userId && Meteor.userId()
-    })
-  }
-
-  if (Meteor.isServer) {
-    try {
-      // Will throw an error unless within method call.
-      // Attempt to recover gracefully by catching:
-      userId = Meteor.userId && Meteor.userId()
-    } catch (e) {}
-
-    if (userId == null) {
-      // Get the userId if we are in a publish function.
-      userId = publishUserId.get()
-    }
-  }
-
-  if (userId == null) {
-    userId = CollectionHooks.defaultUserId
-  }
-
-  return userId
 }
 
 CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
@@ -65,19 +39,19 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
       self._hookAspects[method][pointcut] = []
       self[pointcut][method] = function (aspect, options) {
-        var len = self._hookAspects[method][pointcut].push({
-          aspect: aspect,
+        const len = self._hookAspects[method][pointcut].push({
+          aspect,
           options: CollectionHooks.initOptions(options, pointcut, method)
         })
 
         return {
-          replace: function (aspect, options) {
+          replace(aspect, options) {
             self._hookAspects[method][pointcut].splice(len - 1, 1, {
               aspect: aspect,
               options: CollectionHooks.initOptions(options, pointcut, method)
             })
           },
-          remove: function () {
+          remove() {
             self._hookAspects[method][pointcut].splice(len - 1, 1)
           }
         }
@@ -92,22 +66,21 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
   // Wrap mutator methods, letting the defined advice do the work
   Object.entries(advices).forEach(function ([method, advice]) {
-    var collection = Meteor.isClient || method === 'upsert' ? self : self._collection
+    const collection = Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
-    var _super = collection[method]
+    const _super = collection[method]
 
     Meteor._ensure(self, 'direct', method)
-    self.direct[method] = function () {
-      var args = arguments
+    self.direct[method] = function (...args) {
       return CollectionHooks.directOp(function () {
         return constructor.prototype[method].apply(self, args)
       })
     }
 
-    collection[method] = function () {
+    collection[method] = function (...args) {
       if (CollectionHooks.directEnv.get() === true) {
-        return _super.apply(collection, arguments)
+        return _super.apply(collection, args)
       }
 
       // NOTE: should we decide to force `update` with `{upsert:true}` to use
@@ -115,7 +88,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
       // realize that Meteor won't distinguish between an `update` and an
       // `insert` though, so we'll end up with `after.update` getting called
       // even on an `insert`. That's why we've chosen to disable this for now.
-      // if (method === "update" && _.isObject(arguments[2]) && arguments[2].upsert) {
+      // if (method === "update" && Object(args[2]) === args[2] && args[2].upsert) {
       //   method = "upsert";
       //   advice = CollectionHooks.getAdvice(method);
       // }
@@ -136,37 +109,33 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
             : function (d) { return d || doc }
           )
         },
-        Object.values(arguments),
+        args,
         false
       )
     }
   })
 }
 
-CollectionHooks.defineAdvice = function defineAdvice (method, advice) {
+CollectionHooks.defineAdvice = (method, advice) => {
   advices[method] = advice
 }
 
-CollectionHooks.getAdvice = function getAdvice (method) {
-  return advices[method]
-}
+CollectionHooks.getAdvice = method => advices[method];
 
-CollectionHooks.initOptions = function initOptions (options, pointcut, method) {
-  return CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method)
-}
+CollectionHooks.initOptions = (options, pointcut, method) => 
+  CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method);
 
-CollectionHooks.extendOptions = function extendOptions (source, options, pointcut, method) {
-  return {...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method]}
-}
+CollectionHooks.extendOptions = (source, options, pointcut, method) =>
+  ({...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method]});
 
 CollectionHooks.getDocs = function getDocs (collection, selector, options) {
-  var findOptions = {transform: null, reactive: false} // added reactive: false
+  const findOptions = {transform: null, reactive: false} // added reactive: false
 
   /*
   // No "fetch" support at this time.
   if (!this._validators.fetchAllFields) {
     findOptions.fields = {};
-    _.each(this._validators.fetch, function(fieldName) {
+    this._validators.fetch.forEach(function(fieldName) {
       findOptions.fields[fieldName] = 1;
     });
   }
@@ -182,8 +151,8 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
     if (!options.multi) {
       findOptions.limit = 1
     }
-    const {multi, upsert, ...rest} = options
-    findOptions = {...findOptions, ...rest}
+    const { multi, upsert, ...rest } = options
+    Object.assign(findOptions, rest);
   }
 
   // Unlike validators, we iterate over multiple docs, so use
@@ -197,9 +166,9 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
 // case this code changes.
 CollectionHooks.getFields = function getFields (mutator) {
   // compute modified fields
-  var fields = []
+  const fields = []
   // ====ADDED START=======================
-  var operators = [
+  const operators = [
     '$addToSet',
     '$bit',
     '$currentDate',
@@ -243,9 +212,8 @@ CollectionHooks.getFields = function getFields (mutator) {
 }
 
 CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr) {
-  var hasSetPrototypeOf = typeof Object.setPrototypeOf === 'function'
-
-  if (!constr) constr = typeof Mongo !== 'undefined' ? Mongo.Collection : Meteor.Collection
+  const hasSetPrototypeOf = typeof Object.setPrototypeOf === 'function'
+  constr = constr || Mongo.Collection
 
   // __proto__ is not available in < IE11
   // Note: Assigning a prototype dynamically has performance implications
@@ -260,11 +228,11 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
   if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
 
-  var constructor = as._CollectionConstructor
-  var proto = as._CollectionPrototype
+  const constructor = as._CollectionConstructor
+  const proto = as._CollectionPrototype
 
-  ns.Collection = function () {
-    var ret = constructor.apply(this, arguments)
+  ns.Collection = function (...args) {
+    const ret = constructor.apply(this, args)
     CollectionHooks.extendCollectionInstance(this, constructor)
     return ret
   }
@@ -272,10 +240,8 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   ns.Collection.prototype = proto
   ns.Collection.prototype.constructor = ns.Collection
 
-  for (var prop in constructor) {
-    if (constructor.hasOwnProperty(prop)) {
-      ns.Collection[prop] = constructor[prop]
-    }
+  for (let prop of Object.keys(constructor)) {
+    ns.Collection[prop] = constructor[prop]
   }
 }
 
@@ -288,22 +254,3 @@ if (typeof Mongo !== 'undefined') {
   CollectionHooks.wrapCollection(Meteor, Meteor)
 }
 
-if (Meteor.isServer) {
-  var _publish = Meteor.publish
-  Meteor.publish = function (name, handler, options) {
-    return _publish.call(this, name, function () {
-      // This function is called repeatedly in publications
-      var ctx = this
-      var args = arguments
-      return publishUserId.withValue(ctx && ctx.userId, function () {
-        return handler.apply(ctx, args)
-      })
-    }, options)
-  }
-
-  // Make the above available for packages with hooks that want to determine
-  // whether they are running inside a publish function or not.
-  CollectionHooks.isWithinPublish = function isWithinPublish () {
-    return publishUserId.get() !== undefined
-  }
-}

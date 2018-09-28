@@ -1,44 +1,41 @@
-/* global CollectionHooks _ EJSON */
+import { EJSON } from 'meteor/ejson';
+import { CollectionHooks } from './collection-hooks';
+
+const isEmpty = a => !Array.isArray(a) || !a.length;
 
 CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  var self = this
-  var ctx = {context: self, _super: _super, args: args}
-  var callback = args[args.length - 1]
-  var async = typeof callback === 'function'
-  var docs
-  var docIds
-  var fields
-  var abort
-  var prev = {}
 
-  // args[0] : selector
-  // args[1] : mutator
-  // args[2] : options (optional)
-  // args[3] : callback
-
-  if (typeof args[2] === 'function') {
-    callback = args[2]
-    args[2] = {}
+  const ctx = {context: this, _super, args}
+  let [selector, mutator, options, callback] = args;
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
   }
+  const async = typeof callback === 'function'
+  let docs
+  let docIds
+  let fields
+  let abort
+  const prev = {}
 
   if (!suppressAspects) {
     try {
-      if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
-        fields = CollectionHooks.getFields(args[1])
-        docs = CollectionHooks.getDocs.call(self, instance, args[0], args[2]).fetch()
-        docIds = docs.map(function (doc) { return doc._id })
+      if (!isEmpty(aspects.before) || !isEmpty(aspects.after)) {
+        fields = CollectionHooks.getFields(mutator)
+        docs = CollectionHooks.getDocs.call(this, instance, selector, options).fetch()
+        docIds = docs.map(doc => doc._id)
       }
 
       // copy originals for convenience for the 'after' pointcut
-      if (!_.isEmpty(aspects.after)) {
-        prev.mutator = EJSON.clone(args[1])
-        prev.options = EJSON.clone(args[2])
+      if (!isEmpty(aspects.after)) {
+        prev.mutator = EJSON.clone(mutator)
+        prev.options = EJSON.clone(options)
         if (
-          aspects.after.some(function (o) { return o.options.fetchPrevious !== false }) &&
+          aspects.after.some(o => o.options.fetchPrevious !== false) &&
           CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false
         ) {
           prev.docs = {}
-          docs.forEach(function (doc) {
+          docs.forEach((doc) => {
             prev.docs[doc._id] = EJSON.clone(doc)
           })
         }
@@ -47,32 +44,30 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
       // before
       aspects.before.forEach(function (o) {
         docs.forEach(function (doc) {
-          var r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc, fields, args[1], args[2])
+          const r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc, fields, mutator, options)
           if (r === false) abort = true
         })
       })
 
       if (abort) return 0
     } catch (e) {
-      if (async) return callback.call(self, e)
+      if (async) return callback.call(this, e)
       throw e
     }
   }
 
-  function after (affected, err) {
-    if (!suppressAspects) {
-      if (!_.isEmpty(aspects.after)) {
-        var fields = CollectionHooks.getFields(args[1])
-        var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
-      }
+  const after = (affected, err) => {
+    if (!suppressAspects && !isEmpty(aspects.after)) {
+      const fields = CollectionHooks.getFields(mutator)
+      const docs = CollectionHooks.getDocs.call(this, instance, {_id: {$in: docIds}}, options).fetch()
 
-      aspects.after.forEach(function (o) {
-        docs.forEach(function (doc) {
+      aspects.after.forEach((o) => {
+        docs.forEach((doc) => {
           o.aspect.call({
             transform: getTransform(doc),
             previous: prev.docs && prev.docs[doc._id],
-            affected: affected,
-            err: err,
+            affected,
+            err,
             ...ctx
           }, userId, doc, fields, prev.mutator, prev.options)
         })
@@ -81,13 +76,13 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
   }
 
   if (async) {
-    args[args.length - 1] = function (err, affected) {
+    const wrappedCallback = function (err, affected, ...args) {
       after(affected, err)
-      return callback.apply(this, arguments)
+      return callback.call(this, err, affected, ...args)
     }
-    return _super.apply(this, args)
+    return _super.call(this, selector, mutator, options, wrappedCallback)
   } else {
-    var affected = _super.apply(self, args)
+    const affected = _super.call(this, selector, mutator, options, callback)
     after(affected)
     return affected
   }
