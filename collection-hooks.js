@@ -12,20 +12,20 @@ var publishUserId = Meteor.isServer && new Meteor.EnvironmentVariable()
 
 CollectionHooks = {
   defaults: {
-    before: {insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {}},
-    after: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
-    all: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
+    before: { insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {} },
+    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} },
+    all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
-  directOp: function directOp (func) {
+  directOp: function directOp(func) {
     return this.directEnv.withValue(true, func)
   },
-  hookedOp: function hookedOp (func) {
+  hookedOp: function hookedOp(func) {
     return this.directEnv.withValue(false, func)
   }
 }
 
-CollectionHooks.getUserId = function getUserId () {
+CollectionHooks.getUserId = function getUserId() {
   var userId
 
   if (Meteor.isClient) {
@@ -39,7 +39,7 @@ CollectionHooks.getUserId = function getUserId () {
       // Will throw an error unless within method call.
       // Attempt to recover gracefully by catching:
       userId = Meteor.userId && Meteor.userId()
-    } catch (e) {}
+    } catch (e) { }
 
     if (userId == null) {
       // Get the userId if we are in a publish function.
@@ -54,7 +54,7 @@ CollectionHooks.getUserId = function getUserId () {
   return userId
 }
 
-CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
+CollectionHooks.extendCollectionInstance = function extendCollectionInstance(self, constructor) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   _.each(['before', 'after'], function (pointcut) {
@@ -133,8 +133,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         function (doc) {
           return (
             _.isFunction(self._transform)
-            ? function (d) { return self._transform(d || doc) }
-            : function (d) { return d || doc }
+              ? function (d) { return self._transform(d || doc) }
+              : function (d) { return d || doc }
           )
         },
         _.toArray(arguments),
@@ -144,19 +144,19 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
   })
 }
 
-CollectionHooks.defineAdvice = function defineAdvice (method, advice) {
+CollectionHooks.defineAdvice = function defineAdvice(method, advice) {
   advices[method] = advice
 }
 
-CollectionHooks.getAdvice = function getAdvice (method) {
+CollectionHooks.getAdvice = function getAdvice(method) {
   return advices[method]
 }
 
-CollectionHooks.initOptions = function initOptions (options, pointcut, method) {
+CollectionHooks.initOptions = function initOptions(options, pointcut, method) {
   return CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method)
 }
 
-CollectionHooks.extendOptions = function extendOptions (source, options, pointcut, method) {
+CollectionHooks.extendOptions = function extendOptions(source, options, pointcut, method) {
   options = _.extend(options || {}, source.all.all)
   options = _.extend(options, source[pointcut].all)
   options = _.extend(options, source.all[method])
@@ -164,8 +164,8 @@ CollectionHooks.extendOptions = function extendOptions (source, options, pointcu
   return options
 }
 
-CollectionHooks.getDocs = function getDocs (collection, selector, options) {
-  var findOptions = {transform: null, reactive: false} // added reactive: false
+CollectionHooks.getDocs = function getDocs(collection, selector, options) {
+  var findOptions = { transform: null, reactive: false } // added reactive: false
 
   /*
   // No "fetch" support at this time.
@@ -196,11 +196,22 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
   return collection.find(selector, findOptions)
 }
 
+// This function normalizes the selector (converting it to an Object)
+CollectionHooks.normalizeSelector = function (selector) {
+  if (typeof selector === 'string' || selector.constructor === Mongo.ObjectID) {
+    return {
+      _id: selector
+    }
+  } else {
+    return selector
+  }
+}
+
 // This function contains a snippet of code pulled and modified from:
 // ~/.meteor/packages/mongo-livedata/collection.js
 // It's contained in these utility functions to make updates easier for us in
 // case this code changes.
-CollectionHooks.getFields = function getFields (mutator) {
+CollectionHooks.getFields = function getFields(mutator) {
   // compute modified fields
   var fields = []
   // ====ADDED START=======================
@@ -224,7 +235,7 @@ CollectionHooks.getFields = function getFields (mutator) {
   _.each(mutator, function (params, op) {
     // ====ADDED START=======================
     if (_.contains(operators, op)) {
-    // ====ADDED END=========================
+      // ====ADDED END=========================
       _.each(_.keys(params), function (field) {
         // treat dotted fields as if they are replacing their
         // top-level part
@@ -247,7 +258,7 @@ CollectionHooks.getFields = function getFields (mutator) {
   return fields
 }
 
-CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr) {
+CollectionHooks.reassignPrototype = function reassignPrototype(instance, constr) {
   var hasSetPrototypeOf = typeof Object.setPrototypeOf === 'function'
 
   if (!constr) constr = typeof Mongo !== 'undefined' ? Mongo.Collection : Meteor.Collection
@@ -261,7 +272,7 @@ CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr
   }
 }
 
-CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
+CollectionHooks.wrapCollection = function wrapCollection(ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
   if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
 
@@ -308,7 +319,7 @@ if (Meteor.isServer) {
 
   // Make the above available for packages with hooks that want to determine
   // whether they are running inside a publish function or not.
-  CollectionHooks.isWithinPublish = function isWithinPublish () {
+  CollectionHooks.isWithinPublish = function isWithinPublish() {
     return publishUserId.get() !== undefined
   }
 }
