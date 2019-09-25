@@ -198,7 +198,7 @@ CollectionHooks.getDocs = function getDocs(collection, selector, options) {
 
 // This function normalizes the selector (converting it to an Object)
 CollectionHooks.normalizeSelector = function (selector) {
-  if (typeof selector === 'string' || selector.constructor === Mongo.ObjectID) {
+  if (typeof selector === 'string' || (selector && selector.constructor === Mongo.ObjectID)) {
     return {
       _id: selector
     }
