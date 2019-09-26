@@ -102,8 +102,6 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     })
   } else {
     var ret = CollectionHooks.directOp(function () {
-      console.log(args)
-
       return _super.apply(self, args)
     })
 
