@@ -4,7 +4,7 @@ Package.describe({
   name: 'matb33:collection-hooks',
   summary: 'Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne',
   version: '0.9.0-rc.4',
-  git: 'https://github.com/matb33/meteor-collection-hooks.git'
+  git: 'https://github.com/Meteor-Community-Packages/meteor-collection-hooks'
 })
 
 Package.onUse = Package.onUse || Package.on_use // backwards-compat
