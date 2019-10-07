@@ -2,7 +2,7 @@
 
 var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
 var collection = Meteor.users
-var collection1 = new Collection('test_insert_mongoid_collection1', {idGeneration: 'MONGO'})
+var collection1 = new Collection('test_insert_mongoid_collection1', { idGeneration: 'MONGO' })
 
 if (Meteor.isServer) {
   collection.allow({
@@ -26,11 +26,11 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
     }
   })
 
-  collection.insert({key: key}, function (err, id) {
+  collection.insert({ key: key }, function (err, id) {
     if (err) throw err
 
     // clean-up
-    collection.remove({_id: id})
+    collection.remove({ _id: id })
     aspect1.remove()
 
     next()
@@ -44,17 +44,17 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
     if (doc && doc.key && doc.key === key) {
       var foundDoc = null
       try {
-        foundDoc = collection1.direct.findOne({_id: doc._id})
+        foundDoc = collection1.direct.findOne({ _id: doc._id })
       } catch (exception) {}
       test.isNotNull(foundDoc)
     }
   })
 
-  collection1.insert({key: key}, function (err, id) {
+  collection1.insert({ key: key }, function (err, id) {
     if (err) throw err
 
     // clean-up
-    collection1.remove({_id: id})
+    collection1.remove({ _id: id })
     aspect1.remove()
 
     next()

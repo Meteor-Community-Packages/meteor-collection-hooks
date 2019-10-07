@@ -20,7 +20,7 @@ Tinytest.addAsync('general - local collection documents should only have fetched
       fetch: fields
     })
 
-    collection.update({_id: id}, {$set: {update_value: true}})
+    collection.update({ _id: id }, { $set: { update_value: true } })
   }
 
   InsecureLogin.ready(function () {

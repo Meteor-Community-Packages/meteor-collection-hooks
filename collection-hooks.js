@@ -12,9 +12,9 @@ var publishUserId = Meteor.isServer && new Meteor.EnvironmentVariable()
 
 CollectionHooks = {
   defaults: {
-    before: {insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {}},
-    after: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
-    all: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
+    before: { insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {} },
+    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} },
+    all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
   directOp: function directOp (func) {
@@ -133,8 +133,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         function (doc) {
           return (
             _.isFunction(self._transform)
-            ? function (d) { return self._transform(d || doc) }
-            : function (d) { return d || doc }
+              ? function (d) { return self._transform(d || doc) }
+              : function (d) { return d || doc }
           )
         },
         _.toArray(arguments),
@@ -165,7 +165,7 @@ CollectionHooks.extendOptions = function extendOptions (source, options, pointcu
 }
 
 CollectionHooks.getDocs = function getDocs (collection, selector, options) {
-  var findOptions = {transform: null, reactive: false} // added reactive: false
+  var findOptions = { transform: null, reactive: false } // added reactive: false
 
   /*
   // No "fetch" support at this time.

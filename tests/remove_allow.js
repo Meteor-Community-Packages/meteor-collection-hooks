@@ -34,17 +34,17 @@ if (Meteor.isClient) {
     InsecureLogin.ready(function () {
       Meteor.call('test_remove_allow_reset_collection', function (nil, result) {
         function start (id1, id2) {
-          collection.remove({_id: id1}, function (err1) {
-            collection.remove({_id: id2}, function (err2) {
-              test.equal(collection.find({start_value: true}).count(), 1, 'only one document should remain')
+          collection.remove({ _id: id1 }, function (err1) {
+            collection.remove({ _id: id2 }, function (err2) {
+              test.equal(collection.find({ start_value: true }).count(), 1, 'only one document should remain')
               next()
             })
           })
         }
 
         // Insert two documents
-        collection.insert({start_value: true, allowed: true}, function (err1, id1) {
-          collection.insert({start_value: true, allowed: false}, function (err2, id2) {
+        collection.insert({ start_value: true, allowed: true }, function (err1, id1) {
+          collection.insert({ start_value: true, allowed: false }, function (err2, id2) {
             start(id1, id2)
           })
         })

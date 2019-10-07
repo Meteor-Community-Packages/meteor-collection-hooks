@@ -2,7 +2,7 @@
 
 CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
-  var ctx = {context: self, _super: _super, args: args}
+  var ctx = { context: self, _super: _super, args: args }
   var ret, abort
 
   // args[0] : selector

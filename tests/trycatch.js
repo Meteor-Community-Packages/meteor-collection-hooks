@@ -12,10 +12,10 @@ Tinytest.addAsync('try-catch - should call error callback on insert hook excepti
 
   InsecureLogin.ready(function () {
     test.throws(function () {
-      collection.insert({test: 1})
+      collection.insert({ test: 1 })
     }, msg)
 
-    collection.insert({test: 1}, function (err, id) {
+    collection.insert({ test: 1 }, function (err, id) {
       test.equal(err && err.message, msg)
       next()
     })
@@ -31,12 +31,12 @@ Tinytest.addAsync('try-catch - should call error callback on update hook excepti
   })
 
   InsecureLogin.ready(function () {
-    collection.insert({test: 1}, function (nil, id) {
+    collection.insert({ test: 1 }, function (nil, id) {
       test.throws(function () {
-        collection.update(id, {test: 2})
+        collection.update(id, { test: 2 })
       }, msg)
 
-      collection.update(id, {test: 3}, function (err) {
+      collection.update(id, { test: 3 }, function (err) {
         test.equal(err && err.message, msg)
         next()
       })
@@ -53,7 +53,7 @@ Tinytest.addAsync('try-catch - should call error callback on remove hook excepti
   })
 
   InsecureLogin.ready(function () {
-    collection.insert({test: 1}, function (nil, id) {
+    collection.insert({ test: 1 }, function (nil, id) {
       test.throws(function () {
         collection.remove(id)
       }, msg)

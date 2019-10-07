@@ -6,6 +6,7 @@
     "start": "meteor test-packages ./",
     "start-1_4_beta_14": "meteor test-packages ./ --release 1.4-beta.14",
     "tools:lint": "./node_modules/eslint/bin/eslint.js *.js tests",
+    "tools:lintfix": "./node_modules/eslint/bin/eslint.js *.js tests --fix",
     "publish": "meteor publish",
     "test": "spacejam test-packages ./"
   },

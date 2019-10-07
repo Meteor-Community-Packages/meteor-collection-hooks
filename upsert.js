@@ -2,7 +2,7 @@
 
 CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
   var self = this
-  var ctx = {context: self, _super: _super, args: args}
+  var ctx = { context: self, _super: _super, args: args }
   var callback = _.last(args)
   var async = _.isFunction(callback)
   var docs
@@ -52,7 +52,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     if (!suppressAspects) {
       if (!_.isEmpty(aspectGroup.update.after)) {
         var fields = CollectionHooks.getFields(args[1])
-        var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
+        var docs = CollectionHooks.getDocs.call(self, instance, { _id: { $in: docIds } }, args[2]).fetch()
       }
 
       _.each(aspectGroup.update.after, function (o) {
@@ -71,8 +71,8 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
   function afterInsert (id, err) {
     if (!suppressAspects) {
       if (!_.isEmpty(aspectGroup.insert.after)) {
-        var doc = CollectionHooks.getDocs.call(self, instance, {_id: id}, args[0], {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
-        var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx)
+        var doc = CollectionHooks.getDocs.call(self, instance, { _id: id }, args[0], {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
+        var lctx = _.extend({ transform: getTransform(doc), _id: id, err: err }, ctx)
       }
 
       _.each(aspectGroup.insert.after, function (o) {

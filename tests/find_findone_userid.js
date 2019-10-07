@@ -80,8 +80,8 @@ if (Meteor.isServer) {
     publishContext = this
 
     // Trigger hooks
-    collection.find({}, {test: 1})
-    collection.findOne({}, {test: 1})
+    collection.find({}, { test: 1 })
+    collection.findOne({}, { test: 1 })
 
     if (!serverTestsAdded) {
       serverTestsAdded = true
@@ -156,22 +156,22 @@ if (Meteor.isClient) {
 
     // Ideally, this function should wrap the test functions.
     Tinytest.add('find - userId available to before find hook', withLogin(function (test) {
-      collection.find({}, {test: 1})
+      collection.find({}, { test: 1 })
       test.notEqual(beforeFindUserId, null)
     }))
 
     Tinytest.add('find - userId available to after find hook', withLogin(function (test) {
-      collection.find({}, {test: 1})
+      collection.find({}, { test: 1 })
       test.notEqual(afterFindUserId, null)
     }))
 
     Tinytest.add('findone - userId available to before findOne hook', withLogin(function (test) {
-      collection.findOne({}, {test: 1})
+      collection.findOne({}, { test: 1 })
       test.notEqual(beforeFindOneUserId, null)
     }))
 
     Tinytest.add('findone - userId available to after findOne hook', withLogin(function (test) {
-      collection.findOne({}, {test: 1})
+      collection.findOne({}, { test: 1 })
       test.notEqual(afterFindOneUserId, null)
     }))
 

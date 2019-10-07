@@ -12,13 +12,13 @@ if (Meteor.isServer) {
       collection1.before.update(function (userId, doc, fieldNames, modifier) {
         // There should be no userId because the update was initiated
         // on the server -- there's no correlation to any specific user
-        tmp.userId = userId  // HACK: can't test here directly otherwise refreshing test stops execution here
+        tmp.userId = userId // HACK: can't test here directly otherwise refreshing test stops execution here
         modifier.$set.before_update_value = true
       })
 
-      collection1.update({start_value: true}, {$set: {update_value: true}}, {multi: true}, function (err) {
+      collection1.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
         if (err) throw err
-        test.equal(collection1.find({start_value: true, update_value: true, before_update_value: true}).count(), 2)
+        test.equal(collection1.find({ start_value: true, update_value: true, before_update_value: true }).count(), 2)
         test.equal(tmp.userId, undefined)
         next()
       })
@@ -27,8 +27,8 @@ if (Meteor.isServer) {
     collection1.remove({})
 
     // Add two documents
-    collection1.insert({start_value: true}, function () {
-      collection1.insert({start_value: true}, function () {
+    collection1.insert({ start_value: true }, function () {
+      collection1.insert({ start_value: true }, function () {
         start()
       })
     })
@@ -86,16 +86,16 @@ if (Meteor.isClient) {
         n()
       })
 
-      collection2.update({_id: id}, {$set: {update_value: true}}, function (err) {
+      collection2.update({ _id: id }, { $set: { update_value: true } }, function (err) {
         if (err) throw err
-        test.equal(collection2.find({start_value: true, client_value: true, server_value: true}).count(), 1)
+        test.equal(collection2.find({ start_value: true, client_value: true, server_value: true }).count(), 1)
         n()
       })
     }
 
     InsecureLogin.ready(function () {
       Meteor.call('test_update_reset_collection2', function (nil, result) {
-        collection2.insert({start_value: true}, start)
+        collection2.insert({ start_value: true }, start)
       })
     })
   })

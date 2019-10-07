@@ -22,17 +22,17 @@ Tinytest.addAsync('update - local collection documents should have extra propert
       modifier.$set.before_update_value = true
     })
 
-    collection.update({start_value: true}, {$set: {update_value: true}}, {multi: true}, function (err) {
+    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
       if (err) throw err
-      test.equal(collection.find({start_value: true, update_value: true, before_update_value: true}).count(), 2)
+      test.equal(collection.find({ start_value: true, update_value: true, before_update_value: true }).count(), 2)
       next()
     })
   }
 
   InsecureLogin.ready(function () {
     // Add two documents
-    collection.insert({start_value: true}, function () {
-      collection.insert({start_value: true}, function () {
+    collection.insert({ start_value: true }, function () {
+      collection.insert({ start_value: true }, function () {
         start()
       })
     })
@@ -64,13 +64,13 @@ Tinytest.addAsync('update - local collection should fire after-update hook', fun
       n()
     })
 
-    collection.update({start_value: true}, {$set: {update_value: true}}, {multi: true})
+    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true })
   }
 
   InsecureLogin.ready(function () {
     // Add two documents
-    collection.insert({start_value: true}, function () {
-      collection.insert({start_value: true}, function () {
+    collection.insert({ start_value: true }, function () {
+      collection.insert({ start_value: true }, function () {
         start()
       })
     })
@@ -85,15 +85,15 @@ Tinytest.addAsync('update - local collection should fire before-update hook with
       modifier.$set.before_update_value = true
     })
 
-    collection.update({start_value: true}, {$set: {update_value: true}}, function (err) {
+    collection.update({ start_value: true }, { $set: { update_value: true } }, function (err) {
       if (err) throw err
-      test.equal(collection.find({start_value: true, update_value: true, before_update_value: true}).count(), 1)
+      test.equal(collection.find({ start_value: true, update_value: true, before_update_value: true }).count(), 1)
       next()
     })
   }
 
   InsecureLogin.ready(function () {
-    collection.insert({start_value: true}, start)
+    collection.insert({ start_value: true }, start)
   })
 })
 
@@ -107,13 +107,13 @@ Tinytest.addAsync('update - local collection should fire after-update hook witho
       n()
     })
 
-    collection.update({start_value: true}, {$set: {update_value: true}}, function (err) {
+    collection.update({ start_value: true }, { $set: { update_value: true } }, function (err) {
       if (err) throw err
       n()
     })
   }
 
   InsecureLogin.ready(function () {
-    collection.insert({start_value: true}, start)
+    collection.insert({ start_value: true }, start)
   })
 })
