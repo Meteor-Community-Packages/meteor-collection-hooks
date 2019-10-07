@@ -22,7 +22,7 @@ InsecureLogin = {
 
 if (Meteor.isClient) {
   Accounts.callLoginMethod({
-    methodArguments: [{username: 'InsecureLogin'}],
+    methodArguments: [{ username: 'InsecureLogin' }],
     userCallback: function (err) {
       if (err) throw err
       console.info('Insecure login successful!')
@@ -36,19 +36,19 @@ if (Meteor.isClient) {
 if (Meteor.isServer) {
   // Meteor.users.remove({'username': 'InsecureLogin'})
 
-  if (!Meteor.users.find({'username': 'InsecureLogin'}).count()) {
+  if (!Meteor.users.find({ username: 'InsecureLogin' }).count()) {
     Accounts.createUser({
       username: 'InsecureLogin',
       email: 'test@test.com',
       password: 'password',
-      profile: {name: 'InsecureLogin'}
+      profile: { name: 'InsecureLogin' }
     })
   }
 
   Accounts.registerLoginHandler(function (options) {
     if (!options.username) return
 
-    var user = Meteor.users.findOne({'username': options.username})
+    var user = Meteor.users.findOne({ username: options.username })
     if (!user) return
 
     return {

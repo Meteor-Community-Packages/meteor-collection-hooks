@@ -2,7 +2,7 @@
 
 CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
-  var ctx = {context: self, _super: _super, args: args}
+  var ctx = { context: self, _super: _super, args: args }
   var callback = _.last(args)
   var async = _.isFunction(callback)
   var abort, ret
@@ -14,7 +14,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
   if (!suppressAspects) {
     try {
       _.each(aspects.before, function (o) {
-        var r = o.aspect.call(_.extend({transform: getTransform(args[0])}, ctx), userId, args[0])
+        var r = o.aspect.call(_.extend({ transform: getTransform(args[0]) }, ctx), userId, args[0])
         if (r === false) abort = true
       })
 
@@ -42,7 +42,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
       doc._id = id
     }
     if (!suppressAspects) {
-      var lctx = _.extend({transform: getTransform(doc), _id: id, err: err}, ctx)
+      var lctx = _.extend({ transform: getTransform(doc), _id: id, err: err }, ctx)
       _.each(aspects.after, function (o) {
         o.aspect.call(lctx, userId, doc)
       })

@@ -13,14 +13,14 @@ if (Meteor.isServer) {
       collection1.before.remove(function (userId, doc) {
         // There should be no userId because the remove was initiated
         // on the server -- there's no correlation to any specific user
-        tmp.userId = userId  // HACK: can't test here directly otherwise refreshing test stops execution here
-        tmp.doc_start_value = doc.start_value  // HACK: can't test here directly otherwise refreshing test stops execution here
+        tmp.userId = userId // HACK: can't test here directly otherwise refreshing test stops execution here
+        tmp.doc_start_value = doc.start_value // HACK: can't test here directly otherwise refreshing test stops execution here
         external = true
       })
 
-      collection1.remove({_id: id}, function (err) {
+      collection1.remove({ _id: id }, function (err) {
         if (err) throw err
-        test.equal(collection1.find({start_value: true}).count(), 0)
+        test.equal(collection1.find({ start_value: true }).count(), 0)
         test.equal(external, true)
         test.equal(tmp.userId, undefined)
         test.equal(tmp.doc_start_value, true)
@@ -29,7 +29,7 @@ if (Meteor.isServer) {
     }
 
     collection1.remove({})
-    collection1.insert({start_value: true}, start)
+    collection1.insert({ start_value: true }, start)
   })
 }
 
@@ -117,16 +117,16 @@ if (Meteor.isClient) {
         n()
       })
 
-      collection2.remove({_id: id}, function (err) {
+      collection2.remove({ _id: id }, function (err) {
         if (err) throw err
-        test.equal(collection2.find({start_value: true}).count(), 0)
+        test.equal(collection2.find({ start_value: true }).count(), 0)
         n()
       })
     }
 
     InsecureLogin.ready(function () {
       Meteor.call('test_remove_reset_collection2', function (nil, result) {
-        collection2.insert({start_value: true}, start)
+        collection2.insert({ start_value: true }, start)
       })
     })
   })

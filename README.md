@@ -328,6 +328,11 @@ server.*
 
 - `find` hooks are also fired when fetching documents for `update`, `upsert` and `remove` hooks.
 
+- If using the `direct` version to bypass a hook, any mongo operations done within nested 
+callbacks of the `direct` operation will also by default run as `direct`. You can use the following
+line in a nested callback before the operation to unset the `direct` setting: 
+`CollectionHooks.directEnv = new Meteor.EnvironmentVariable(false)`
+
 --------------------------------------------------------------------------------
 
 ## Maintainers

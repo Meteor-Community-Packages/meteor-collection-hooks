@@ -21,16 +21,16 @@ Tinytest.addAsync('remove - local collection document should affect external var
       external = 1
     })
 
-    collection.remove({_id: id}, function (err) {
+    collection.remove({ _id: id }, function (err) {
       if (err) throw err
-      test.equal(collection.find({start_value: true}).count(), 0)
+      test.equal(collection.find({ start_value: true }).count(), 0)
       test.equal(external, 1)
       next()
     })
   }
 
   InsecureLogin.ready(function () {
-    collection.insert({start_value: true}, start)
+    collection.insert({ start_value: true }, start)
   })
 })
 
@@ -64,14 +64,14 @@ Tinytest.addAsync('remove - local collection should fire after-remove hook and a
       n()
     })
 
-    collection.remove({_id: id}, function (err) {
+    collection.remove({ _id: id }, function (err) {
       if (err) throw err
-      test.equal(collection.find({start_value: true}).count(), 0)
+      test.equal(collection.find({ start_value: true }).count(), 0)
       n()
     })
   }
 
   InsecureLogin.ready(function () {
-    collection.insert({start_value: true}, start)
+    collection.insert({ start_value: true }, start)
   })
 })

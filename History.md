@@ -1,4 +1,4 @@
-## vNEXT
+## v0.9.0
 
 * Align return values with original methods when a hook returns `false`
 * Always run `find` hooks when fetching documents for `update`, `upsert` and `remove` hooks

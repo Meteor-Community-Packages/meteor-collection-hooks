@@ -14,7 +14,7 @@ Tinytest.addAsync('users - find hooks should be capable of being used on special
   })
 
   InsecureLogin.ready(function () {
-    var selector = {test: 1}
+    var selector = { test: 1 }
     Meteor.users.find(selector)
     test.equal(_.has(selector, 'a'), true)
     test.equal(_.has(selector, 'b'), true)
@@ -55,7 +55,7 @@ Tinytest.addAsync('users - find hooks should be capable of being used on wrapped
   })
 
   InsecureLogin.ready(function () {
-    var selector = {test: 1}
+    var selector = { test: 1 }
     Meteor.users.find(selector)
     test.equal(_.has(selector, 'a'), true)
     test.equal(_.has(selector, 'b'), true)

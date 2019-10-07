@@ -37,9 +37,9 @@ if (Meteor.isClient) {
 
     InsecureLogin.ready(function () {
       Meteor.call('test_insert_allow_reset_collection', function (nil, result) {
-        collection.insert({start_value: true, allowed: false}, function (err1, id1) {
-          collection.insert({start_value: true, allowed: true}, function (err2, id2) {
-            test.equal(collection.find({start_value: true, client_value: true, server_value: true}).count(), 1)
+        collection.insert({ start_value: true, allowed: false }, function (err1, id1) {
+          collection.insert({ start_value: true, allowed: true }, function (err2, id2) {
+            test.equal(collection.find({ start_value: true, client_value: true, server_value: true }).count(), 1)
             next()
           })
         })

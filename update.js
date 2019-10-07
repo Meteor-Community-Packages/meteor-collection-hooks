@@ -2,7 +2,7 @@
 
 CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   var self = this
-  var ctx = {context: self, _super: _super, args: args}
+  var ctx = { context: self, _super: _super, args: args }
   var callback = _.last(args)
   var async = _.isFunction(callback)
   var docs
@@ -47,7 +47,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
       // before
       _.each(aspects.before, function (o) {
         _.each(docs, function (doc) {
-          var r = o.aspect.call(_.extend({transform: getTransform(doc)}, ctx), userId, doc, fields, args[1], args[2])
+          var r = o.aspect.call(_.extend({ transform: getTransform(doc) }, ctx), userId, doc, fields, args[1], args[2])
           if (r === false) abort = true
         })
       })
@@ -63,7 +63,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
     if (!suppressAspects) {
       if (!_.isEmpty(aspects.after)) {
         var fields = CollectionHooks.getFields(args[1])
-        var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
+        var docs = CollectionHooks.getDocs.call(self, instance, { _id: { $in: docIds } }, args[2]).fetch()
       }
 
       _.each(aspects.after, function (o) {

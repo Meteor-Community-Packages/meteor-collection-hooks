@@ -23,21 +23,21 @@ Tinytest.addAsync('update - server collection documents should have extra proper
 
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
     if (_.contains(fieldNames, 'test')) {
-      collection.update({_id: doc._id}, {$set: {after_update_value: true}})
+      collection.update({ _id: doc._id }, { $set: { after_update_value: true } })
     }
   })
 
-  collection.insert({not_an_id: 'testing'}, function (err, id1) {
+  collection.insert({ not_an_id: 'testing' }, function (err, id1) {
     if (err) throw err
-    collection.insert({not_an_id: 'testing'}, function (err, id2) {
+    collection.insert({ not_an_id: 'testing' }, function (err, id2) {
       if (err) throw err
-      collection.insert({not_an_id: 'testing'}, function (err, id3) {
+      collection.insert({ not_an_id: 'testing' }, function (err, id3) {
         if (err) throw err
-        collection.update({not_an_id: 'testing'}, {$set: {not_an_id: 'newvalue', test: true}}, {multi: true})
+        collection.update({ not_an_id: 'testing' }, { $set: { not_an_id: 'newvalue', test: true } }, { multi: true })
 
         // retry a few times because the after.update's call to update doesn't block
         retry(function () {
-          return collection.find({not_an_id: 'newvalue', before_update_value: true, after_update_value: true}).count()
+          return collection.find({ not_an_id: 'newvalue', before_update_value: true, after_update_value: true }).count()
         }, function (r) {
           return r > 0
         }, function (r) {

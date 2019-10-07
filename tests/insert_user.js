@@ -16,10 +16,10 @@ Tinytest.addAsync('insert - Meteor.users collection document should have extra p
     }
   })
 
-  collection.insert({start_value: true, test: 1}, function (err, id) {
+  collection.insert({ start_value: true, test: 1 }, function (err, id) {
     if (err) throw err
-    test.notEqual(collection.find({start_value: true, before_insert_value: true}).count(), 0)
-    collection.remove({_id: id})
+    test.notEqual(collection.find({ start_value: true, before_insert_value: true }).count(), 0)
+    collection.remove({ _id: id })
     aspect1.remove()
     aspect2.remove()
     next()

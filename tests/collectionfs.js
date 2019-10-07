@@ -2,7 +2,7 @@
 
 var fsCollection = new FS.Collection('testfiles', {
   stores: [
-    new FS.Store.FileSystem('testfiles', {path: '/tmp'})
+    new FS.Store.FileSystem('testfiles', { path: '/tmp' })
   ]
 })
 
@@ -62,7 +62,7 @@ Tinytest.addAsync('CollectionFS - ensure insert, update, remove hooks work prope
   }
 
   function _update (id, callback) {
-    fsCollection.files.update(id, {$set: {'metadata.test': 1}}, function (err) {
+    fsCollection.files.update(id, { $set: { 'metadata.test': 1 } }, function (err) {
       if (err) throw err
       callback(err)
     })

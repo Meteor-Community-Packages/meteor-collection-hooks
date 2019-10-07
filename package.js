@@ -7,11 +7,11 @@ Package.describe({
   git: 'https://github.com/matb33/meteor-collection-hooks.git'
 })
 
-Package.onUse = Package.onUse || Package.on_use    // backwards-compat
+Package.onUse = Package.onUse || Package.on_use // backwards-compat
 Package.onTest = Package.onTest || Package.on_test // backwards-compat
 
 Package.onUse(function (api, where) {
-  api.addFiles = api.addFiles || api.add_files     // backwards-compat
+  api.addFiles = api.addFiles || api.add_files // backwards-compat
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
     api.versionsFrom('1.3.5.1')
@@ -33,7 +33,7 @@ Package.onUse(function (api, where) {
     'minimongo'
   ])
 
-  api.use(['accounts-base'], ['client', 'server'], {weak: true})
+  api.use(['accounts-base'], ['client', 'server'], { weak: true })
 
   api.addFiles([
     'collection-hooks.js',
@@ -54,7 +54,7 @@ Package.onUse(function (api, where) {
 Package.onTest(function (api) {
   // var isTravisCI = process && process.env && process.env.TRAVIS
 
-  api.addFiles = api.addFiles || api.add_files     // backwards-compat
+  api.addFiles = api.addFiles || api.add_files // backwards-compat
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
     api.versionsFrom('1.3.5.1')

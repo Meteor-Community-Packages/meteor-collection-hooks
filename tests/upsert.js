@@ -30,11 +30,11 @@ Tinytest.addAsync('upsert - hooks should all fire the appropriate number of time
   collection.after.upsert(function () { counts.after.upsert++ })
 
   InsecureLogin.ready(function () {
-    collection.remove({test: true}, function (err) {
+    collection.remove({ test: true }, function (err) {
       if (err) throw err
-      collection.upsert({test: true}, {test: true, step: 'insert'}, function (err, obj) {
+      collection.upsert({ test: true }, { test: true, step: 'insert' }, function (err, obj) {
         if (err) throw err
-        collection.upsert(obj.insertedId, {test: true, step: 'update'}, function (err) {
+        collection.upsert(obj.insertedId, { test: true, step: 'update' }, function (err) {
           if (err) throw err
           test.equal(counts.before.insert, 0, 'before.insert should be 0')
           test.equal(counts.before.update, 0, 'before.update should be 0')
@@ -79,9 +79,9 @@ if (Meteor.isServer) {
     collection.after.remove(function () { counts.after.remove++ })
     collection.after.upsert(function () { counts.after.upsert++ })
 
-    collection.remove({test: true})
-    var obj = collection.upsert({test: true}, {test: true, step: 'insert'})
-    collection.upsert(obj.insertedId, {test: true, step: 'update'})
+    collection.remove({ test: true })
+    var obj = collection.upsert({ test: true }, { test: true, step: 'insert' })
+    collection.upsert(obj.insertedId, { test: true, step: 'update' })
 
     test.equal(counts.before.insert, 0, 'before.insert should be 0')
     test.equal(counts.before.update, 0, 'before.update should be 0')
@@ -105,8 +105,8 @@ Tinytest.addAsync('issue #156 - upsert after.insert should have a correct doc us
     next()
   })
 
-  collection.remove({test: true})
-  collection.upsert({test: true}, {$set: {test: true, step: 'insert-async'}})
+  collection.remove({ test: true })
+  collection.upsert({ test: true }, { $set: { test: true, step: 'insert-async' } })
 })
 
 if (Meteor.isServer) {
@@ -120,7 +120,7 @@ if (Meteor.isServer) {
       test.equal(doc.step, 'insert-sync', 'doc should have a step property equal to insert-sync')
     })
 
-    collection.remove({test: true})
-    collection.upsert({test: true}, {$set: {test: true, step: 'insert-sync'}})
+    collection.remove({ test: true })
+    collection.upsert({ test: true }, { $set: { test: true, step: 'insert-sync' } })
   })
 }
