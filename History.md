@@ -1,5 +1,6 @@
 ## v0.9.0
 
+* BREAKING: Minimum required Meteor version is now 1.6.1
 * Align return values with original methods when a hook returns `false`
 * Always run `find` hooks when fetching documents for `update`, `upsert` and `remove` hooks
 * Fix unsafe `selector` in `before.find` and `before.findOne` when called without arguments. This is potentially a *breaking change* for those who are relying on the current behavior of `selector` in `before.find` and `before.findOne`
@@ -8,6 +9,8 @@
 * Use spacejam for headless testing, will make headless testing work locally
 * Add support for the new modifiers $max, $min and $currentDate
 * No longer fetch documents when no hooks are defined
+* Fix conflict with [sewdn:collection-behaviours](https://github.com/Sewdn/meteor-collection-behaviours) package
+* Updated dependencies and node version in tests
 
 ## v0.8.3
 

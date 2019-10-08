@@ -336,10 +336,12 @@ line in a nested callback before the operation to unset the `direct` setting:
 --------------------------------------------------------------------------------
 
 ## Maintainers
+Maintained by [Meteor Community Packages](https://github.com/Meteor-Community-Packages) and in particular by:
 
 - Mathieu Bouchard ([matb33](https://github.com/matb33))
 - Andrew Mao ([mizzao](https://github.com/mizzao))
 - Simon Fridlund ([zimme](https://github.com/zimme))
+- Jan Dvorak ([StorytellerCZ](https://github.com/StorytellerCZ))
 
 ## Contributors
 

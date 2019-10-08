@@ -287,7 +287,7 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
 
   // Meteor overrides the apply method which is copied from the constructor in the loop above. Replace it with the
   // default method which we need if we were to further wrap ns.Collection.
-  ns.Collection.apply = Function.prototype.apply;
+  ns.Collection.apply = Function.prototype.apply
 }
 
 CollectionHooks.modify = LocalCollection._modify

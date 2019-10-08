@@ -3,7 +3,7 @@
 Package.describe({
   name: 'matb33:collection-hooks',
   summary: 'Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne',
-  version: '0.9.0-rc.4',
+  version: '0.9.0',
   git: 'https://github.com/Meteor-Community-Packages/meteor-collection-hooks'
 })
 
@@ -14,7 +14,7 @@ Package.onUse(function (api, where) {
   api.addFiles = api.addFiles || api.add_files // backwards-compat
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
-    api.versionsFrom('1.3.5.1')
+    api.versionsFrom('1.6.1')
 
     api.use([
       'mongo',
@@ -57,7 +57,7 @@ Package.onTest(function (api) {
   api.addFiles = api.addFiles || api.add_files // backwards-compat
 
   if (api.versionsFrom) { // 0.9.0+ litmus test
-    api.versionsFrom('1.3.5.1')
+    api.versionsFrom('1.6.1')
     api.use('mongo')
   }
 
