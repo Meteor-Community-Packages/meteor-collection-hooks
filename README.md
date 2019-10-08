@@ -358,3 +358,4 @@ Maintained by [Meteor Community Packages](https://github.com/Meteor-Community-Pa
 - Pierre Ozoux ([pierreozoux](https://github.com/pierreozoux))
 - Tom Coleman ([tmeasday](https://github.com/tmeasday))
 - Eric Jackson ([repjackson](https://github.com/repjackson))
+- Koen Lav ([KoenLav](https://github.com/KoenLav))

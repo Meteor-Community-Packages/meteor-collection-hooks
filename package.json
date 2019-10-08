@@ -1,13 +1,13 @@
 {
   "name": "meteor-collection-hooks",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "scripts": {
     "start": "meteor test-packages ./",
     "start-1_4_beta_14": "meteor test-packages ./ --release 1.4-beta.14",
     "tools:lint": "./node_modules/eslint/bin/eslint.js *.js tests",
     "tools:lintfix": "./node_modules/eslint/bin/eslint.js *.js tests --fix",
-    "publish": "meteor publish",
+    "publish": "npm prune --production && meteor publish",
     "test": "spacejam test-packages ./"
   },
   "description": "Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne",
