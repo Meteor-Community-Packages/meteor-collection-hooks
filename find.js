@@ -8,7 +8,7 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
   // args[0] : selector
   // args[1] : options
 
-  args[0] = instance._getFindSelector(args)
+  args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args));
   args[1] = instance._getFindOptions(args)
 
   // before
@@ -21,7 +21,7 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
     if (abort) return instance.find(undefined)
   }
 
-  function after (cursor) {
+  function after(cursor) {
     if (!suppressAspects) {
       _.each(aspects.after, function (o) {
         o.aspect.call(ctx, userId, args[0], args[1], cursor)

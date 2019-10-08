@@ -15,6 +15,8 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
   // args[2] : options (optional)
   // args[3] : callback
 
+  args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args));
+
   if (_.isFunction(args[2])) {
     callback = args[2]
     args[2] = {}
@@ -29,7 +31,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     // copy originals for convenience for the 'after' pointcut
     if (!_.isEmpty(aspectGroup.update.after)) {
       if (_.some(aspectGroup.update.after, function (o) { return o.options.fetchPrevious !== false }) &&
-          CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
+        CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
         prev.mutator = EJSON.clone(args[1])
         prev.options = EJSON.clone(args[2])
         prev.docs = {}
@@ -48,7 +50,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     if (abort) return { numberAffected: 0 }
   }
 
-  function afterUpdate (affected, err) {
+  function afterUpdate(affected, err) {
     if (!suppressAspects) {
       if (!_.isEmpty(aspectGroup.update.after)) {
         var fields = CollectionHooks.getFields(args[1])
@@ -68,7 +70,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     }
   }
 
-  function afterInsert (id, err) {
+  function afterInsert(id, err) {
     if (!suppressAspects) {
       if (!_.isEmpty(aspectGroup.insert.after)) {
         var doc = CollectionHooks.getDocs.call(self, instance, { _id: id }, args[0], {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
