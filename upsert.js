@@ -4,6 +4,13 @@ import { CollectionHooks } from './collection-hooks';
 const isEmpty = a => !Array.isArray(a) || !a.length;
 
 CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
+  // args[0] : selector
+  // args[1] : mutator
+  // args[2] : options (optional)
+  // args[3] : callback
+
+  args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args));
+
   const ctx = {context: this, _super, args}
   let [selector, mutator, options, callback] = args;
   if (typeof options === 'function') {
@@ -26,9 +33,10 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     // copy originals for convenience for the 'after' pointcut
     if (!isEmpty(aspectGroup.update.after)) {
       if (aspectGroup.update.after.some(o => o.options.fetchPrevious !== false) &&
-          CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
+        CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
         prev.mutator = EJSON.clone(mutator)
         prev.options = EJSON.clone(options)
+
         prev.docs = {}
         docs.forEach((doc) => {
           prev.docs[doc._id] = EJSON.clone(doc)
@@ -49,7 +57,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     if (!suppressAspects && !isEmpty(aspectGroup.update.after)) {
       const fields = CollectionHooks.getFields(selector)
       const docs = CollectionHooks.getDocs.call(this, instance, {_id: {$in: docIds}}, options).fetch()
- 
+
       aspectGroup.update.after.forEach((o) => {
         docs.forEach((doc) => {
           o.aspect.call({
@@ -57,7 +65,8 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
             previous: prev.docs && prev.docs[doc._id],
             affected,
             err,
-            ...ctx}, userId, doc, fields, prev.mutator, prev.options)
+            ...ctx
+          }, userId, doc, fields, prev.mutator, prev.options)
         })
       })
     }
@@ -67,7 +76,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     if (!suppressAspects && !isEmpty(aspectGroup.insert.after)) {
       const doc = CollectionHooks.getDocs.call(this, instance, {_id}, selector, {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
       const lctx = {transform: getTransform(doc), _id, err, ...ctx}
-      
+
       aspectGroup.insert.after.forEach((o) => {
         o.aspect.call(lctx, userId, doc)
       })

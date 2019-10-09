@@ -1,4 +1,4 @@
-# Meteor Collection Hooks [![Build Status](https://travis-ci.org/matb33/meteor-collection-hooks.png?branch=master)](https://travis-ci.org/matb33/meteor-collection-hooks)
+# Meteor Collection Hooks [![Build Status](https://travis-ci.org/Meteor-Community-Packages/meteor-collection-hooks.png?branch=master)](https://travis-ci.org/matb33/meteor-collection-hooks)
 
 Extends Mongo.Collection with `before`/`after` hooks for `insert`, `update`, `remove`, `find`, and `findOne`.
 
@@ -27,7 +27,8 @@ functionality
 defined.
 
 ```javascript
-var test = new Mongo.Collection("test");
+import { Mongo } from 'meteor/mongo';
+const test = new Mongo.Collection("test");
 
 test.before.insert(function (userId, doc) {
   doc.createdAt = Date.now();
@@ -252,6 +253,8 @@ with more specific ones having higher specificity.
 Examples (in order of least specific to most specific):
 
 ```javascript
+import { CollectionHooks } from 'meteor/matb33:collection-hooks';
+
 CollectionHooks.defaults.all.all = {exampleOption: 1};
 
 CollectionHooks.defaults.before.all = {exampleOption: 2};
@@ -268,7 +271,8 @@ Similarly, collection-wide options can be defined (these have a higher
 specificity than the global defaults from above):
 
 ```javascript
-var testCollection = new Mongo.Collection("test");
+import { Mongo } from 'meteor/mongo';
+const testCollection = new Mongo.Collection("test");
 
 testCollection.hookOptions.all.all = {exampleOption: 1};
 
@@ -328,13 +332,20 @@ server.*
 
 - `find` hooks are also fired when fetching documents for `update`, `upsert` and `remove` hooks.
 
+- If using the `direct` version to bypass a hook, any mongo operations done within nested 
+callbacks of the `direct` operation will also by default run as `direct`. You can use the following
+line in a nested callback before the operation to unset the `direct` setting: 
+`CollectionHooks.directEnv = new Meteor.EnvironmentVariable(false)`
+
 --------------------------------------------------------------------------------
 
 ## Maintainers
+Maintained by [Meteor Community Packages](https://github.com/Meteor-Community-Packages) and in particular by:
 
 - Mathieu Bouchard ([matb33](https://github.com/matb33))
 - Andrew Mao ([mizzao](https://github.com/mizzao))
 - Simon Fridlund ([zimme](https://github.com/zimme))
+- Jan Dvorak ([StorytellerCZ](https://github.com/StorytellerCZ))
 
 ## Contributors
 
@@ -351,3 +362,4 @@ server.*
 - Pierre Ozoux ([pierreozoux](https://github.com/pierreozoux))
 - Tom Coleman ([tmeasday](https://github.com/tmeasday))
 - Eric Jackson ([repjackson](https://github.com/repjackson))
+- Koen Lav ([KoenLav](https://github.com/KoenLav))

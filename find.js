@@ -1,13 +1,10 @@
-import { CollectionHooks } from './collection-hooks';
-
+import { CollectionHooks } from './collection-hooks'
 
 CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  const ctx = {context: this, _super, args}
-  const selector = instance._getFindSelector(args)
+  const ctx = { context: this, _super, args }
+  const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
-  let ret
   let abort
-
   // before
   if (!suppressAspects) {
     aspects.before.forEach((o) => {
@@ -26,7 +23,7 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
     }
   }
 
-  ret = _super.call(this, selector, options)
+  const ret = _super.call(this, selector, options)
   after(ret)
 
   return ret

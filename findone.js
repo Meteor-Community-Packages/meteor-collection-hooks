@@ -1,10 +1,12 @@
-import { CollectionHooks } from './collection-hooks';
+import { CollectionHooks } from './collection-hooks'
 
 CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  const ctx = {context: this, _super, args};
-  const selector = instance._getFindSelector(args)
+  // args[0] : selector
+  // args[1] : options
+
+  const ctx = { context: this, _super, args }
+  const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
-  let ret
   let abort
 
   // before
@@ -25,7 +27,7 @@ CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspe
     }
   }
 
-  ret = _super.call(this, selector, options)
+  const ret = _super.call(this, selector, options)
   after(ret)
 
   return ret

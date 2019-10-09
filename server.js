@@ -1,5 +1,7 @@
-import { Meteor } from 'meteor/meteor';
-import { CollectionHooks } from './collection-hooks';
+import { Meteor } from 'meteor/meteor'
+import { CollectionHooks } from './collection-hooks'
+
+import './advices'
 
 const publishUserId = new Meteor.EnvironmentVariable()
 
@@ -28,16 +30,14 @@ const _publish = Meteor.publish
 Meteor.publish = function (name, handler, options) {
   return _publish.call(this, name, function (...args) {
     // This function is called repeatedly in publications
-    return publishUserId.withValue(this && this.userId, () => handler.apply(this, args));
+    return publishUserId.withValue(this && this.userId, () => handler.apply(this, args))
   }, options)
 }
 
 // Make the above available for packages with hooks that want to determine
 // whether they are running inside a publish function or not.
-CollectionHooks.isWithinPublish = () => publishUserId.get() !== void 0;
-
-import './advices';
+CollectionHooks.isWithinPublish = () => publishUserId.get() !== void 0
 
 export {
   CollectionHooks
-};
+}

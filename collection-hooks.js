@@ -14,9 +14,9 @@ const advices = {}
 
 export const CollectionHooks = {
   defaults: {
-    before: {insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {}},
-    after: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}},
-    all: {insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {}}
+    before: { insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {} },
+    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} },
+    all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
   directOp(func) {
@@ -27,7 +27,36 @@ export const CollectionHooks = {
   }
 }
 
-CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
+CollectionHooks.getUserId = function getUserId() {
+  let userId
+
+  if (Meteor.isClient) {
+    Tracker.nonreactive(function () {
+      userId = Meteor.userId && Meteor.userId()
+    })
+  }
+
+  if (Meteor.isServer) {
+    try {
+      // Will throw an error unless within method call.
+      // Attempt to recover gracefully by catching:
+      userId = Meteor.userId && Meteor.userId()
+    } catch (e) { }
+
+    if (userId == null) {
+      // Get the userId if we are in a publish function.
+      userId = publishUserId.get()
+    }
+  }
+
+  if (userId == null) {
+    userId = CollectionHooks.defaultUserId
+  }
+
+  return userId
+}
+
+CollectionHooks.extendCollectionInstance = function extendCollectionInstance(self, constructor) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   ['before', 'after'].forEach(function (pointcut) {
@@ -122,7 +151,7 @@ CollectionHooks.defineAdvice = (method, advice) => {
 
 CollectionHooks.getAdvice = method => advices[method];
 
-CollectionHooks.initOptions = (options, pointcut, method) => 
+CollectionHooks.initOptions = (options, pointcut, method) =>
   CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method);
 
 CollectionHooks.extendOptions = (source, options, pointcut, method) =>
@@ -160,11 +189,22 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options) {
   return collection.find(selector, findOptions)
 }
 
+// This function normalizes the selector (converting it to an Object)
+CollectionHooks.normalizeSelector = function (selector) {
+  if (typeof selector === 'string' || (selector && selector.constructor === Mongo.ObjectID)) {
+    return {
+      _id: selector
+    }
+  } else {
+    return selector
+  }
+}
+
 // This function contains a snippet of code pulled and modified from:
 // ~/.meteor/packages/mongo-livedata/collection.js
 // It's contained in these utility functions to make updates easier for us in
 // case this code changes.
-CollectionHooks.getFields = function getFields (mutator) {
+CollectionHooks.getFields = function getFields(mutator) {
   // compute modified fields
   const fields = []
   // ====ADDED START=======================
@@ -224,11 +264,11 @@ CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr
   }
 }
 
-CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
+CollectionHooks.wrapCollection = function wrapCollection(ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
   if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
 
-  const constructor = as._CollectionConstructor
+  const constructor = ns._NewCollectionContructor || as._CollectionConstructor
   const proto = as._CollectionPrototype
 
   ns.Collection = function (...args) {
@@ -236,6 +276,8 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
     CollectionHooks.extendCollectionInstance(this, constructor)
     return ret
   }
+  // Retain a reference to the new constructor to allow further wrapping.
+  ns._NewCollectionContructor = ns.Collection
 
   ns.Collection.prototype = proto
   ns.Collection.prototype.constructor = ns.Collection
@@ -243,6 +285,10 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   for (let prop of Object.keys(constructor)) {
     ns.Collection[prop] = constructor[prop]
   }
+
+  // Meteor overrides the apply method which is copied from the constructor in the loop above. Replace it with the
+  // default method which we need if we were to further wrap ns.Collection.
+  ns.Collection.apply = Function.prototype.apply
 }
 
 CollectionHooks.modify = LocalCollection._modify
@@ -254,3 +300,8 @@ if (typeof Mongo !== 'undefined') {
   CollectionHooks.wrapCollection(Meteor, Meteor)
 }
 
+// Make the above available for packages with hooks that want to determine
+// whether they are running inside a publish function or not.
+CollectionHooks.isWithinPublish = function isWithinPublish() {
+  return publishUserId.get() !== undefined
+}

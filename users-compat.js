@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
-import { Mongo } from 'meteor/mongo';
-import { CollectionHooks } from './collection-hooks';
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { CollectionHooks } from './collection-hooks'
 
 if (Meteor.users) {
   // If Meteor.users has been instantiated, attempt to re-assign its prototype:
