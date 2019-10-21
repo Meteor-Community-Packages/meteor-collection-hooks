@@ -1,16 +1,18 @@
-/* global Tinytest Meteor InsecureLogin */
+import { Meteor } from 'meteor/meteor'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('update - Meteor.users collection document should have extra property added before being updated', function (test, next) {
-  var collection = Meteor.users
+  const collection = Meteor.users
 
   function start () {
-    var aspect1 = collection.before.update(function (userId, doc, fieldNames, modifier) {
+    const aspect1 = collection.before.update(function (userId, doc, fieldNames, modifier) {
       if (modifier && modifier.$set && modifier.$set.test) {
         modifier.$set.before_update_value = true
       }
     })
 
-    var aspect2 = collection.after.update(function (userId, doc, fieldNames, modifier, options) {
+    const aspect2 = collection.after.update(function (userId, doc, fieldNames, modifier, options) {
       test.isTrue(modifier !== undefined && options !== undefined, 'modifier and options should not be undefined when fetchPrevious is false issue #97 and #138')
     }, { fetchPrevious: false })
 
@@ -25,7 +27,7 @@ Tinytest.addAsync('update - Meteor.users collection document should have extra p
       })
     }
 
-    var user = collection.findOne({ test: 2 })
+    const user = collection.findOne({ test: 2 })
 
     if (!user) {
       collection.insert({ test: 2 }, function (err, id) {

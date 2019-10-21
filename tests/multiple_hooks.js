@@ -1,10 +1,10 @@
-/* global Tinytest Meteor Mongo InsecureLogin */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('general - multiple hooks should all fire the appropriate number of times', function (test, next) {
-  var collection = new Collection(null)
-  var counts = {
+  const collection = new Mongo.Collection(null)
+  const counts = {
     before: {
       insert: 0,
       update: 0,

@@ -1,36 +1,33 @@
-/* global CollectionHooks _ EJSON Mongo */
+import { EJSON } from 'meteor/ejson';
+import { CollectionHooks } from './collection-hooks';
 
 CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  var self = this
-  var ctx = { context: self, _super: _super, args: args }
-  var callback = _.last(args)
-  var async = _.isFunction(callback)
-  var abort, ret
-
-  // args[0] : doc
-  // args[1] : callback
+  const ctx = {context: this, _super, args}
+  let [doc, callback] = args;
+  const async = typeof callback === 'function'
+  let abort
+  let ret
 
   // before
   if (!suppressAspects) {
     try {
-      _.each(aspects.before, function (o) {
-        var r = o.aspect.call(_.extend({ transform: getTransform(args[0]) }, ctx), userId, args[0])
+      aspects.before.forEach((o) => {
+        const r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc)
         if (r === false) abort = true
       })
 
       if (abort) return
     } catch (e) {
-      if (async) return callback.call(self, e)
+      if (async) return callback.call(this, e)
       throw e
     }
   }
 
-  function after (id, err) {
-    var doc = args[0]
+  const after = (id, err) => {
     if (id) {
       // In some cases (namely Meteor.users on Meteor 1.4+), the _id property
       // is a raw mongo _id object. We need to extract the _id from this object
-      if (_.isObject(id) && id.ops) {
+      if (typeof id === 'object' && id.ops) {
         // If _str then collection is using Mongo.ObjectID as ids
         if (doc._id._str) {
           id = new Mongo.ObjectID(doc._id._str.toString())
@@ -38,12 +35,12 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
           id = id.ops && id.ops[0] && id.ops[0]._id
         }
       }
-      doc = EJSON.clone(args[0])
+      doc = EJSON.clone(doc)
       doc._id = id
     }
     if (!suppressAspects) {
-      var lctx = _.extend({ transform: getTransform(doc), _id: id, err: err }, ctx)
-      _.each(aspects.after, function (o) {
+      const lctx = {transform: getTransform(doc), _id: id, err, ...ctx}
+      aspects.after.forEach((o) => {
         o.aspect.call(lctx, userId, doc)
       })
     }
@@ -51,13 +48,13 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
   }
 
   if (async) {
-    args[args.length - 1] = function (err, obj) {
+    const wrappedCallback = function (err, obj, ...args) {
       after((obj && obj[0] && obj[0]._id) || obj, err)
-      return callback.apply(this, arguments)
+      return callback.call(this, err, obj, ...args)
     }
-    return _super.apply(self, args)
+    return _super.call(this, doc, wrappedCallback)
   } else {
-    ret = _super.apply(self, args)
+    ret = _super.call(this, doc, callback)
     return after((ret && ret[0] && ret[0]._id) || ret)
   }
 })

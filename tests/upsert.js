@@ -1,10 +1,11 @@
-/* global Tinytest Meteor Mongo InsecureLogin */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('upsert - hooks should all fire the appropriate number of times', function (test, next) {
-  var collection = new Collection(null)
-  var counts = {
+  const collection = new Mongo.Collection(null)
+  const counts = {
     before: {
       insert: 0,
       update: 0,
@@ -53,8 +54,8 @@ Tinytest.addAsync('upsert - hooks should all fire the appropriate number of time
 
 if (Meteor.isServer) {
   Tinytest.add('upsert - hooks should all fire the appropriate number of times in a synchronous environment', function (test) {
-    var collection = new Collection(null)
-    var counts = {
+    const collection = new Mongo.Collection(null)
+    const counts = {
       before: {
         insert: 0,
         update: 0,
@@ -80,7 +81,7 @@ if (Meteor.isServer) {
     collection.after.upsert(function () { counts.after.upsert++ })
 
     collection.remove({ test: true })
-    var obj = collection.upsert({ test: true }, { test: true, step: 'insert' })
+    const obj = collection.upsert({ test: true }, { test: true, step: 'insert' })
     collection.upsert(obj.insertedId, { test: true, step: 'update' })
 
     test.equal(counts.before.insert, 0, 'before.insert should be 0')
@@ -95,7 +96,7 @@ if (Meteor.isServer) {
 }
 
 Tinytest.addAsync('issue #156 - upsert after.insert should have a correct doc using $set', function (test, next) {
-  var collection = new Collection(null)
+  const collection = new Mongo.Collection(null)
 
   collection.after.insert(function (userId, doc) {
     test.isNotUndefined(doc, 'doc should not be undefined')
@@ -111,7 +112,7 @@ Tinytest.addAsync('issue #156 - upsert after.insert should have a correct doc us
 
 if (Meteor.isServer) {
   Tinytest.add('issue #156 - upsert after.insert should have a correct doc using $set in synchronous environment', function (test) {
-    var collection = new Collection(null)
+    const collection = new Mongo.Collection(null)
 
     collection.after.insert(function (userId, doc) {
       test.isNotUndefined(doc, 'doc should not be undefined')

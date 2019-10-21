@@ -1,8 +1,9 @@
-/* global Tinytest Meteor _ Mongo */
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
 
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
-var collection = Meteor.users
-var collection1 = new Collection('test_insert_mongoid_collection1', { idGeneration: 'MONGO' })
+const collection = Meteor.users
+const collection1 = new Mongo.Collection('test_insert_mongoid_collection1', { idGeneration: 'MONGO' })
 
 if (Meteor.isServer) {
   collection.allow({
@@ -17,12 +18,12 @@ if (Meteor.isServer) {
 }
 
 Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with object _id with ops property in Meteor 1.4', function (test, next) {
-  var key = Date.now()
+  const key = Date.now()
 
-  var aspect1 = collection.after.insert(function (nil, doc) {
+  const aspect1 = collection.after.insert(function (nil, doc) {
     if (doc && doc.key && doc.key === key) {
       test.equal(doc._id, this._id)
-      test.isFalse(_.isObject(doc._id), '_id property should not be an object')
+      test.isFalse(Object(doc._id) === doc._id, '_id property should not be an object')
     }
   })
 
@@ -38,11 +39,11 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
 })
 
 Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with Mongo.ObjectID _id with _str property in Meteor 1.4', function (test, next) {
-  var key = Date.now()
+  const key = Date.now()
 
-  var aspect1 = collection1.after.insert(function (nil, doc) {
+  const aspect1 = collection1.after.insert(function (nil, doc) {
     if (doc && doc.key && doc.key === key) {
-      var foundDoc = null
+      let foundDoc = null
       try {
         foundDoc = collection1.direct.findOne({ _id: doc._id })
       } catch (exception) {}

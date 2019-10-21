@@ -1,63 +1,60 @@
-/* global CollectionHooks _ EJSON */
+import { EJSON } from 'meteor/ejson';
+import { CollectionHooks } from './collection-hooks';
+
+const isEmpty = a => !Array.isArray(a) || !a.length;
 
 CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  var self = this
-  var ctx = { context: self, _super: _super, args: args }
-  var callback = _.last(args)
-  var async = _.isFunction(callback)
-  var docs
-  var abort
-  var prev = []
-
-  // args[0] : selector
-  // args[1] : callback
+  const ctx = {context: this, _super, args};
+  const [ selector, callback ] = args;
+  const async = typeof callback === 'function'
+  let docs
+  let abort
+  let prev = []
 
   if (!suppressAspects) {
     try {
-      if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
-        docs = CollectionHooks.getDocs.call(self, instance, args[0]).fetch()
+      if (!isEmpty(aspects.before) || !isEmpty(aspects.after)) {
+        docs = CollectionHooks.getDocs.call(this, instance, selector).fetch()
       }
 
       // copy originals for convenience for the 'after' pointcut
-      if (!_.isEmpty(aspects.after)) {
-        _.each(docs, function (doc) {
-          prev.push(EJSON.clone(doc))
-        })
+      if (!isEmpty(aspects.after)) {
+        docs.forEach(doc => prev.push(EJSON.clone(doc)))
       }
 
       // before
-      _.each(aspects.before, function (o) {
-        _.each(docs, function (doc) {
-          var r = o.aspect.call(_.extend({ transform: getTransform(doc) }, ctx), userId, doc)
+      aspects.before.forEach((o) => {
+        docs.forEach((doc) => {
+          const r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc)
           if (r === false) abort = true
         })
       })
 
       if (abort) return 0
     } catch (e) {
-      if (async) return callback.call(self, e)
+      if (async) return callback.call(this, e)
       throw e
     }
   }
 
   function after (err) {
     if (!suppressAspects) {
-      _.each(aspects.after, function (o) {
-        _.each(prev, function (doc) {
-          o.aspect.call(_.extend({ transform: getTransform(doc), err: err }, ctx), userId, doc)
+      aspects.after.forEach((o) => {
+        prev.forEach((doc) => {
+          o.aspect.call({transform: getTransform(doc), err, ...ctx}, userId, doc)
         })
       })
     }
   }
 
   if (async) {
-    args[args.length - 1] = function (err) {
+    const wrappedCallback = function (err, ...args) {
       after(err)
-      return callback.apply(this, arguments)
+      return callback.call(this, err, ...args)
     }
-    return _super.apply(self, args)
+    return _super.call(this, selector, wrappedCallback)
   } else {
-    var result = _super.apply(self, args)
+    const result = _super.call(this, selector, callback)
     after()
     return result
   }

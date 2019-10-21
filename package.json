@@ -1,10 +1,9 @@
 {
   "name": "meteor-collection-hooks",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "meteor test-packages ./",
-    "start-1_4_beta_14": "meteor test-packages ./ --release 1.4-beta.14",
     "tools:lint": "./node_modules/eslint/bin/eslint.js *.js tests",
     "tools:lintfix": "./node_modules/eslint/bin/eslint.js *.js tests --fix",
     "publish": "meteor npm i && npm prune --production && meteor publish && meteor npm i",
@@ -24,6 +23,7 @@
   "devDependencies": {
     "eslint": "^6.5.1",
     "eslint-config-standard": "^14.1.0",
+    "eslint-import-resolver-meteor": "^0.4.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",

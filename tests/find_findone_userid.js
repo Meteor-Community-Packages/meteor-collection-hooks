@@ -1,17 +1,19 @@
-/* global Tinytest Meteor Mongo InsecureLogin CollectionHooks */
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
+import { CollectionHooks } from 'meteor/matb33:collection-hooks'
 
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+const collection = new Mongo.Collection('test_collection_for_find_findone_userid')
 
-var collection = new Collection('test_collection_for_find_findone_userid')
-
-var beforeFindUserId
-var afterFindUserId
-var beforeFindOneUserId
-var afterFindOneUserId
-var beforeFindWithinPublish
-var afterFindWithinPublish
-var beforeFindOneWithinPublish
-var afterFindOneWithinPublish
+let beforeFindUserId
+let afterFindUserId
+let beforeFindOneUserId
+let afterFindOneUserId
+let beforeFindWithinPublish
+let afterFindWithinPublish
+let beforeFindOneWithinPublish
+let afterFindOneWithinPublish
 
 // Don't declare hooks in publish method, as it is problematic
 collection.before.find(function (userId, selector, options) {
@@ -55,8 +57,8 @@ collection.after.findOne(function (userId, selector, options, result) {
 })
 
 if (Meteor.isServer) {
-  var serverTestsAdded = false
-  var publishContext = null
+  let serverTestsAdded = false
+  let publishContext = null
 
   Tinytest.add('general - isWithinPublish is false outside of publish function', function (test) {
     test.equal(CollectionHooks.isWithinPublish(), false)
@@ -115,69 +117,59 @@ if (Meteor.isServer) {
 }
 
 if (Meteor.isClient) {
-  (function () {
-    function cleanup () {
-      beforeFindUserId = null
-      afterFindUserId = null
-      beforeFindOneUserId = null
-      afterFindOneUserId = null
-    }
+  function cleanup () {
+    beforeFindUserId = null
+    afterFindUserId = null
+    beforeFindOneUserId = null
+    afterFindOneUserId = null
+  }
 
-    function withLogin (testFunc) {
-      return function () {
-        // grab arguments passed to testFunc (i.e. 'test')
-        var context = this
-        var args = arguments
-
-        function wrapper (cb) {
-          InsecureLogin.ready(function () {
+  function withLogin (testFunc) {
+    return function (...args) {
+      const wrapper = (cb) => {
+        InsecureLogin.ready(() => {
+          cleanup()
+          try {
+            var result = testFunc.apply(this, args)
+            cb(null, result)
+          } catch (error) {
+            cb(error)
+          } finally {
             cleanup()
-            var err
-
-            try {
-              var result = testFunc.apply(context, args)
-              cb(null, result)
-            } catch (error) {
-              err = error
-              cb(err)
-            } finally {
-              cleanup()
-            }
-          })
-        }
-
-        return Meteor.wrapAsync(wrapper) // Don't run this function, just wrap it
+          }
+        })
       }
+
+      return Meteor.wrapAsync(wrapper) // Don't run this function, just wrap it
     }
+  }
 
-    // Run client tests.
-    // TODO: Somehow, Tinytest.add / addAsync doesn't work inside InsecureLogin.ready().
-    // Hence, we add these tests wrapped synchronously with a login hook.
+  // Run client tests.
+  // TODO: Somehow, Tinytest.add / addAsync doesn't work inside InsecureLogin.ready().
+  // Hence, we add these tests wrapped synchronously with a login hook.
+  // Ideally, this function should wrap the test functions.
+  Tinytest.add('find - userId available to before find hook', withLogin(function (test) {
+    collection.find({}, { test: 1 })
+    test.notEqual(beforeFindUserId, null)
+  }))
 
-    // Ideally, this function should wrap the test functions.
-    Tinytest.add('find - userId available to before find hook', withLogin(function (test) {
-      collection.find({}, { test: 1 })
-      test.notEqual(beforeFindUserId, null)
-    }))
+  Tinytest.add('find - userId available to after find hook', withLogin(function (test) {
+    collection.find({}, { test: 1 })
+    test.notEqual(afterFindUserId, null)
+  }))
 
-    Tinytest.add('find - userId available to after find hook', withLogin(function (test) {
-      collection.find({}, { test: 1 })
-      test.notEqual(afterFindUserId, null)
-    }))
+  Tinytest.add('findone - userId available to before findOne hook', withLogin(function (test) {
+    collection.findOne({}, { test: 1 })
+    test.notEqual(beforeFindOneUserId, null)
+  }))
 
-    Tinytest.add('findone - userId available to before findOne hook', withLogin(function (test) {
-      collection.findOne({}, { test: 1 })
-      test.notEqual(beforeFindOneUserId, null)
-    }))
+  Tinytest.add('findone - userId available to after findOne hook', withLogin(function (test) {
+    collection.findOne({}, { test: 1 })
+    test.notEqual(afterFindOneUserId, null)
+  }))
 
-    Tinytest.add('findone - userId available to after findOne hook', withLogin(function (test) {
-      collection.findOne({}, { test: 1 })
-      test.notEqual(afterFindOneUserId, null)
-    }))
-
-    InsecureLogin.ready(function () {
-      // Run server tests
-      Meteor.subscribe('test_publish_for_find_findone_userid')
-    })
-  })()
+  InsecureLogin.ready(function () {
+    // Run server tests
+    Meteor.subscribe('test_publish_for_find_findone_userid')
+  })
 }

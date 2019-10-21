@@ -1,13 +1,14 @@
-/* global Tinytest Meteor Mongo InsecureLogin */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 if (Meteor.isServer) {
-  var collection1 = new Collection('test_remove_collection1')
-  var external = false
+  const collection1 = new Mongo.Collection('test_remove_collection1')
+  let external = false
 
   Tinytest.addAsync('remove - collection1 document should affect external variable before it is removed', function (test, next) {
-    var tmp = {}
+    const tmp = {}
 
     function start (nil, id) {
       collection1.before.remove(function (userId, doc) {
@@ -33,7 +34,7 @@ if (Meteor.isServer) {
   })
 }
 
-var collection2 = new Collection('test_remove_collection2')
+const collection2 = new Mongo.Collection('test_remove_collection2')
 
 if (Meteor.isServer) {
   // full client-side access
@@ -54,7 +55,7 @@ if (Meteor.isServer) {
   })
 
   // Tinytest.addAsync('remove - collection2 document should affect external variable before and after it is removed', function (test, next) {
-  var external2 = -1
+  let external2 = -1
 
   collection2.before.remove(function (userId, doc) {
     // Remove is initiated by a client, a userId must be present
@@ -87,9 +88,9 @@ if (Meteor.isClient) {
   Meteor.subscribe('test_remove_publish_collection2')
 
   Tinytest.addAsync('remove - collection2 document should affect external variable before and after it is removed', function (test, next) {
-    var external = 0
-    var c = 0
-    var n = function () {
+    let external = 0
+    let c = 0
+    const n = () => {
       if (++c === 2) {
         test.equal(external, 2)
         next()
