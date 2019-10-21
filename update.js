@@ -23,20 +23,30 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
 
   if (!suppressAspects) {
     try {
-      if (!_.isEmpty(aspects.before) || !_.isEmpty(aspects.after)) {
-        fields = CollectionHooks.getFields(args[1])
-        docs = CollectionHooks.getDocs.call(self, instance, args[0], args[2]).fetch()
-        docIds = _.map(docs, function (doc) { return doc._id })
+      // NOTE: fetching the full documents before when fetchPrevious is false and no before hooks are defined is wildly inefficient.
+      const shouldFetchForBefore = !_.isEmpty(aspects.before);
+      const shouldFetchForAfter = !_.isEmpty(aspects.after);
+      let shouldFetchForPrevious = false;
+      if (shouldFetchForAfter) {
+        shouldFetchForPrevious = _.some(aspects.after, function (o) { return o.options.fetchPrevious !== false }) && CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false
       }
+      fields = CollectionHooks.getFields(args[1]);
+      const fetchFields = { _id: true };
+      if (shouldFetchForPrevious || shouldFetchForBefore) {
+        const afterAspectFetchFields = shouldFetchForPrevious ? _.filter(aspects.after, function (o) { return o.options.fetchFields }) : [];
+        const beforeAspectFetchFields = shouldFetchForBefore ? _.filter(aspects.after, function (o) { return o.options.fetchFields }) : [];
+        const afterGlobal = shouldFetchForPrevious ? (CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchFields || {}) : {};
+        const beforeGlobal = shouldFetchForPrevious ? (CollectionHooks.extendOptions(instance.hookOptions, {}, 'before', 'update').fetchFields || {}) : {};
+        _.extend(fetchFields, afterGlobal, beforeGlobal, ...afterAspectFetchFields, ...beforeAspectFetchFields);
+      }
+      docs = CollectionHooks.getDocs.call(self, instance, args[0], args[2], fetchFields).fetch()
+      docIds = _.map(docs, function (doc) { return doc._id });
 
       // copy originals for convenience for the 'after' pointcut
-      if (!_.isEmpty(aspects.after)) {
+      if (shouldFetchForAfter) {
         prev.mutator = EJSON.clone(args[1])
         prev.options = EJSON.clone(args[2])
-        if (
-          _.some(aspects.after, function (o) { return o.options.fetchPrevious !== false }) &&
-          CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false
-        ) {
+        if (shouldFetchForPrevious) {
           prev.docs = {}
           _.each(docs, function (doc) {
             prev.docs[doc._id] = EJSON.clone(doc)
@@ -63,7 +73,13 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
     if (!suppressAspects) {
       if (!_.isEmpty(aspects.after)) {
         var fields = CollectionHooks.getFields(args[1])
-        var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2]).fetch()
+        const fetchFields = {};
+        const aspectFetchFields = _.filter(aspects.after, function (o) { return o.options.fetchFields });
+        const globalFetchFields = CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchFields;
+        if (aspectFetchFields || globalFetchFields) {
+          _.extend(fetchFields, globalFetchFields || {}, ...aspectFetchFields.map(a => a.fetchFields));
+        }
+        var docs = CollectionHooks.getDocs.call(self, instance, {_id: {$in: docIds}}, args[2], fetchFields).fetch()
       }
 
       _.each(aspects.after, function (o) {
