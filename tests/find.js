@@ -1,9 +1,9 @@
-/* global Tinytest Meteor Mongo InsecureLogin */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('find - selector should be {} when called without arguments', function (test, next) {
-  var collection = new Collection(null)
+  const collection = new Mongo.Collection(null)
 
   collection.before.find(function (userId, selector, options) {
     test.equal(selector, {})
@@ -14,7 +14,7 @@ Tinytest.addAsync('find - selector should be {} when called without arguments', 
 })
 
 Tinytest.addAsync('find - selector should have extra property', function (test, next) {
-  var collection = new Collection(null)
+  const collection = new Mongo.Collection(null)
 
   collection.before.find(function (userId, selector, options) {
     if (options && options.test) {
@@ -33,8 +33,8 @@ Tinytest.addAsync('find - selector should have extra property', function (test, 
 })
 
 Tinytest.addAsync('find - tmp variable should have property added after the find', function (test, next) {
-  var collection = new Collection(null)
-  var tmp = {}
+  const collection = new Mongo.Collection(null)
+  const tmp = {}
 
   collection.after.find(function (userId, selector, options) {
     if (options && options.test) {

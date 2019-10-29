@@ -1,35 +1,29 @@
-/* global CollectionHooks _ */
+import { CollectionHooks } from './collection-hooks'
 
 CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  var self = this
-  var ctx = { context: self, _super: _super, args: args }
-  var ret, abort
-
-  // args[0] : selector
-  // args[1] : options
-
-  args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args));
-  args[1] = instance._getFindOptions(args)
-
+  const ctx = { context: this, _super, args }
+  const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
+  const options = instance._getFindOptions(args)
+  let abort
   // before
   if (!suppressAspects) {
-    _.each(aspects.before, function (o) {
-      var r = o.aspect.call(ctx, userId, args[0], args[1])
+    aspects.before.forEach((o) => {
+      const r = o.aspect.call(ctx, userId, selector, options)
       if (r === false) abort = true
     })
 
     if (abort) return instance.find(undefined)
   }
 
-  function after(cursor) {
+  const after = (cursor) => {
     if (!suppressAspects) {
-      _.each(aspects.after, function (o) {
-        o.aspect.call(ctx, userId, args[0], args[1], cursor)
+      aspects.after.forEach((o) => {
+        o.aspect.call(ctx, userId, selector, options, cursor)
       })
     }
   }
 
-  ret = _super.apply(self, args)
+  const ret = _super.call(this, selector, options)
   after(ret)
 
   return ret

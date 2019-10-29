@@ -1,28 +1,28 @@
-/* global Tinytest Meteor Mongo _ */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
 
 Tinytest.addAsync('update - server collection documents should have extra properties added before and after being updated despite selector not being _id', function (test, next) {
-  var collection = new Collection(null)
+  const collection = new Mongo.Collection(null)
 
-  var retries = 0
-  var retry = function (func, expect, cb) {
+  let retries = 0
+  const retry = function (func, expect, cb) {
     if (++retries >= 5) return Meteor.bindEnvironment(cb)
     Meteor.setTimeout(function () {
-      var r = func()
+      const r = func()
       if (expect(r)) return cb(r)
       retry(func, expect, cb)
     }, 100)
   }
 
   collection.before.update(function (userId, doc, fieldNames, modifier, options) {
-    if (_.contains(fieldNames, 'test')) {
+    if (fieldNames.includes('test')) {
       modifier.$set.before_update_value = true
     }
   })
 
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
-    if (_.contains(fieldNames, 'test')) {
+    if (fieldNames.includes('test')) {
       collection.update({ _id: doc._id }, { $set: { after_update_value: true } })
     }
   })

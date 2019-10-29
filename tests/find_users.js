@@ -1,23 +1,25 @@
-/* global Tinytest Meteor InsecureLogin _ */
+import { Meteor } from 'meteor/meteor';
+import { Tinytest } from 'meteor/tinytest';
+import { InsecureLogin } from './insecure_login';
 
 Tinytest.addAsync('users - find hooks should be capable of being used on special Meteor.users collection', function (test, next) {
-  var aspect1 = Meteor.users.before.find(function (userId, selector, options) {
+  const aspect1 = Meteor.users.before.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.a = 1
     }
   })
 
-  var aspect2 = Meteor.users.after.find(function (userId, selector, options) {
+  const aspect2 = Meteor.users.after.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.b = 1
     }
   })
 
   InsecureLogin.ready(function () {
-    var selector = { test: 1 }
+    const selector = {test: 1}
     Meteor.users.find(selector)
-    test.equal(_.has(selector, 'a'), true)
-    test.equal(_.has(selector, 'b'), true)
+    test.equal(selector.hasOwnProperty('a'), true)
+    test.equal(selector.hasOwnProperty('b'), true)
     aspect1.remove()
     aspect2.remove()
 
@@ -29,36 +31,34 @@ Tinytest.addAsync('users - find hooks should be capable of being used on special
 
 Tinytest.addAsync('users - find hooks should be capable of being used on wrapped Meteor.users collection', function (test, next) {
   function TestUser (doc) {
-    return _.extend(this, doc)
+    return Object.assign(this, doc)
   }
 
-  Meteor.users.__transform = function (doc) { return new TestUser(doc) }
+  Meteor.users.__transform = doc => new TestUser(doc);
 
-  var MeteorUsersFind = Meteor.users.find
+  const MeteorUsersFind = Meteor.users.find
 
-  Meteor.users.find = function (selector, options) {
-    selector = selector || {}
-    options = options || {}
-    return MeteorUsersFind.call(this, selector, _.extend({ transform: Meteor.users.__transform }, options))
+  Meteor.users.find = function (selector = {}, options = {}) {
+    return MeteorUsersFind.call(this, selector, { transform: Meteor.users.__transform, ...options })
   }
 
-  var aspect1 = Meteor.users.before.find(function (userId, selector, options) {
+  const aspect1 = Meteor.users.before.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.a = 1
     }
   })
 
-  var aspect2 = Meteor.users.after.find(function (userId, selector, options) {
+  const aspect2 = Meteor.users.after.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.b = 1
     }
   })
 
   InsecureLogin.ready(function () {
-    var selector = { test: 1 }
+    const selector = { test: 1 }
     Meteor.users.find(selector)
-    test.equal(_.has(selector, 'a'), true)
-    test.equal(_.has(selector, 'b'), true)
+    test.equal(selector.hasOwnProperty('a'), true)
+    test.equal(selector.hasOwnProperty('b'), true)
     aspect1.remove()
     aspect2.remove()
 

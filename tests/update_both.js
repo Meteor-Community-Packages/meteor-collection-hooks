@@ -1,12 +1,13 @@
-/* global Tinytest Meteor Mongo InsecureLogin _ */
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
-
-var collection1 = new Collection('test_update_collection1')
+const collection1 = new Mongo.Collection('test_update_collection1')
 
 if (Meteor.isServer) {
   Tinytest.addAsync('update - collection1 document should have extra property added to it before it is updated', function (test, next) {
-    var tmp = {}
+    const tmp = {}
 
     function start () {
       collection1.before.update(function (userId, doc, fieldNames, modifier) {
@@ -35,25 +36,23 @@ if (Meteor.isServer) {
   })
 }
 
-var collection2 = new Collection('test_update_collection2')
+const collection2 = new Mongo.Collection('test_update_collection2')
 
 if (Meteor.isServer) {
   // full client-side access
   collection2.allow({
-    insert: function () { return true },
-    update: function () { return true },
-    remove: function () { return true }
+    insert () { return true },
+    update () { return true },
+    remove () { return true }
   })
 
   Meteor.methods({
-    test_update_reset_collection2: function () {
+    test_update_reset_collection2 () {
       collection2.remove({})
     }
   })
 
-  Meteor.publish('test_update_publish_collection2', function () {
-    return collection2.find()
-  })
+  Meteor.publish('test_update_publish_collection2', () => collection2.find())
 
   collection2.before.update(function (userId, doc, fieldNames, modifier) {
     modifier.$set.server_value = true
@@ -64,8 +63,8 @@ if (Meteor.isClient) {
   Meteor.subscribe('test_update_publish_collection2')
 
   Tinytest.addAsync('update - collection2 document should have client-added and server-added extra properties added to it before it is updated', function (test, next) {
-    var c = 0
-    var n = function () { if (++c === 2) { next() } }
+    let c = 0
+    const n = () => { if (++c === 2) { next() } }
 
     function start (err, id) {
       if (err) throw err
@@ -82,7 +81,7 @@ if (Meteor.isClient) {
 
       collection2.after.update(function (userId, doc, fieldNames, modifier) {
         test.equal(doc.update_value, true)
-        test.equal(_.has(this.previous, 'update_value'), false)
+        test.equal(this.previous.hasOwnProperty('update_value'), false)
         n()
       })
 

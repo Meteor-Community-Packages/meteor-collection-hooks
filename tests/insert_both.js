@@ -1,12 +1,13 @@
-/* global Tinytest Meteor Mongo InsecureLogin */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 if (Meteor.isServer) {
-  var collection1 = new Collection('test_insert_collection1')
+  const collection1 = new Mongo.Collection('test_insert_collection1')
 
   Tinytest.addAsync('insert - collection1 document should have extra property added to it before it is inserted', function (test, next) {
-    var tmp = {}
+    const tmp = {}
 
     collection1.remove({})
 
@@ -25,14 +26,14 @@ if (Meteor.isServer) {
   })
 }
 
-var collection2 = new Collection('test_insert_collection2')
+var collection2 = new Mongo.Collection('test_insert_collection2')
 
 if (Meteor.isServer) {
   // full client-side access
   collection2.allow({
-    insert: function () { return true },
-    update: function () { return true },
-    remove: function () { return true }
+    insert () { return true },
+    update () { return true },
+    remove () { return true }
   })
 
   Meteor.methods({

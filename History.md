@@ -1,3 +1,7 @@
+## v1.0.0
+* Modernization of the package
+* BREAKING CHANGE: Minimum required Meteor version is now 1.7.0.5
+
 ## v0.9.1
 * Fixed selector not being able to be modified when String or MongoID is used
 * Add `npm prune --production` to publication script to prevent addition of dev only packages to the bundle. Fixes issue [#246](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/issues/246)

@@ -1,19 +1,18 @@
-/* global Tinytest Meteor Mongo InsecureLogin _ */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Mongo } from 'meteor/mongo';
+import { Tinytest } from 'meteor/tinytest';
 
 Tinytest.addAsync('general - local collection documents should only have fetched fields', function (test, next) {
-  var collection = new Collection(null)
+  const collection = new Mongo.Collection(null)
 
   function same (arr1, arr2) {
-    return arr1.length === arr2.length && _.intersection(arr1, arr2).length === arr1.length
+    return arr1.length === arr2.length && arr1.every(el => arr2.includes(el))
   }
 
   function start (nil, id) {
-    var fields = ['fetch_value1', 'fetch_value2']
+    const fields = ['fetch_value1', 'fetch_value2']
 
     collection.after.update(function (userId, doc, fieldNames, modifier) {
-      var docKeys = _.without(_.keys(doc), '_id')
+      let { _id, ...docKeys } = Object.keys(doc);
       test.equal(same(docKeys, fields), true)
       next()
     }, {

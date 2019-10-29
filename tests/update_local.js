@@ -1,9 +1,10 @@
-/* global Tinytest Meteor Mongo InsecureLogin _ */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('update - local collection documents should have extra property added before being updated', function (test, next) {
-  var collection = new Collection(null)
+  var collection = new Mongo.Collection(null)
 
   function start () {
     collection.before.update(function (userId, doc, fieldNames, modifier) {
@@ -40,9 +41,9 @@ Tinytest.addAsync('update - local collection documents should have extra propert
 })
 
 Tinytest.addAsync('update - local collection should fire after-update hook', function (test, next) {
-  var collection = new Collection(null)
-  var c = 0
-  var n = function () { if (++c === 2) { next() } }
+  const collection = new Mongo.Collection(null)
+  let c = 0
+  const n = () => { if (++c === 2) { next() } }
 
   function start () {
     collection.after.update(function (userId, doc, fieldNames, modifier) {
@@ -59,7 +60,7 @@ Tinytest.addAsync('update - local collection should fire after-update hook', fun
       test.equal(fieldNames[0], 'update_value')
 
       test.equal(doc.update_value, true)
-      test.equal(_.has(this.previous || {}, 'update_value'), false)
+      test.equal((this.previous || {}).hasOwnProperty('update_value'), false)
 
       n()
     })
@@ -78,7 +79,7 @@ Tinytest.addAsync('update - local collection should fire after-update hook', fun
 })
 
 Tinytest.addAsync('update - local collection should fire before-update hook without options in update and still fire end-callback', function (test, next) {
-  var collection = new Collection(null)
+  const collection = new Mongo.Collection(null)
 
   function start () {
     collection.before.update(function (userId, doc, fieldNames, modifier) {
@@ -98,9 +99,9 @@ Tinytest.addAsync('update - local collection should fire before-update hook with
 })
 
 Tinytest.addAsync('update - local collection should fire after-update hook without options in update and still fire end-callback', function (test, next) {
-  var collection = new Collection(null)
-  var c = 0
-  var n = function () { if (++c === 2) { next() } }
+  const collection = new Mongo.Collection(null)
+  let c = 0
+  const n = () => { if (++c === 2) { next() } }
 
   function start () {
     collection.after.update(function (userId, doc, fieldNames, modifier) {

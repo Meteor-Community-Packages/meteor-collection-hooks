@@ -1,10 +1,10 @@
-/* global Tinytest Meteor Mongo InsecureLogin */
-
-var Collection = typeof Mongo !== 'undefined' && typeof Mongo.Collection !== 'undefined' ? Mongo.Collection : Meteor.Collection
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('try-catch - should call error callback on insert hook exception', function (test, next) {
-  var collection = new Collection(null)
-  var msg = 'insert hook test error'
+  const collection = new Mongo.Collection(null)
+  const msg = 'insert hook test error'
 
   collection.before.insert(function (userId, doc) {
     throw new Error(msg)
@@ -23,8 +23,8 @@ Tinytest.addAsync('try-catch - should call error callback on insert hook excepti
 })
 
 Tinytest.addAsync('try-catch - should call error callback on update hook exception', function (test, next) {
-  var collection = new Collection(null)
-  var msg = 'update hook test error'
+  const collection = new Mongo.Collection(null)
+  const msg = 'update hook test error'
 
   collection.before.update(function (userId, doc) {
     throw new Error(msg)
@@ -45,8 +45,8 @@ Tinytest.addAsync('try-catch - should call error callback on update hook excepti
 })
 
 Tinytest.addAsync('try-catch - should call error callback on remove hook exception', function (test, next) {
-  var collection = new Collection(null)
-  var msg = 'remove hook test error'
+  const collection = new Mongo.Collection(null)
+  const msg = 'remove hook test error'
 
   collection.before.remove(function (userId, doc) {
     throw new Error(msg)
