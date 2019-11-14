@@ -20,7 +20,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
   const prev = {}
 
   if (!suppressAspects) {
-    if (!isEmpty(aspectGroup.upsert.before)) {
+    if (!isEmpty(aspectGroup.upsert.before) || !isEmpty(aspectGroup.update.after)) {
       docs = CollectionHooks.getDocs.call(this, instance, selector, options).fetch()
       docIds = docs.map(doc => doc._id)
     }

@@ -95,6 +95,21 @@ if (Meteor.isServer) {
   })
 }
 
+Tinytest.addAsync('upsert after.update should have a correct prev-doc', function (test, next) {
+  const collection = new Mongo.Collection(null)
+
+  collection.after.update(function (userId, doc) {
+    test.isNotUndefined(this.previous, 'this.previous should not be undefined')
+    test.equal(this.previous.step, 'inserted', 'previous doc should have a step property equal to inserted')
+    test.equal(doc.step, 'updated', 'doc should have a step property equal to updated')
+    next()
+  })
+
+  collection.remove({ test: true })
+  collection.insert({ test: true, step: 'inserted' })
+  collection.upsert({ test: true }, { $set: { test: true, step: 'updated' } })
+})
+
 Tinytest.addAsync('issue #156 - upsert after.insert should have a correct doc using $set', function (test, next) {
   const collection = new Mongo.Collection(null)
 
