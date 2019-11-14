@@ -122,6 +122,19 @@ Tinytest.addAsync('upsert after.update should have a correct prev-doc', function
   collection.upsert({ test: true }, { $set: { test: true, step: 'updated' } })
 })
 
+Tinytest.addAsync('upsert after.update should have the list of manipulated fields', function (test, next) {
+  const collection = new Mongo.Collection(null)
+
+  collection.after.update(function (userId, doc, fields) {
+    test.equal(fields, ['step'])
+    next()
+  })
+
+  collection.remove({ test: true })
+  collection.insert({ test: true, step: 'inserted' })
+  collection.upsert({ test: true }, { $set: { step: 'updated' } })
+})
+
 Tinytest.addAsync('issue #156 - upsert after.insert should have a correct doc using $set', function (test, next) {
   const collection = new Mongo.Collection(null)
 
