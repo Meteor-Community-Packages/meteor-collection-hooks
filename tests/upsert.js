@@ -95,6 +95,18 @@ if (Meteor.isServer) {
   })
 }
 
+Tinytest.addAsync('upsert before.upsert can stop the execution', function (test, next) {
+  const collection = new Mongo.Collection(null)
+
+  collection.before.upsert(() => false)
+
+  collection.remove({ test: true })
+  collection.upsert({ test: true }, { $set: { test: true } })
+
+  test.isUndefined(collection.findOne({ test: true }), 'doc should not exist')
+  next()
+})
+
 Tinytest.addAsync('upsert after.update should have a correct prev-doc', function (test, next) {
   const collection = new Mongo.Collection(null)
 

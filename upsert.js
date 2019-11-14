@@ -42,7 +42,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     // before
     aspectGroup.upsert.before.forEach((o) => {
       const r = o.aspect.call(ctx, userId, selector, mutator, options)
-      if (r === false) abortMongo.Collection = true
+      if (r === false) abort = true
     })
 
     if (abort) return { numberAffected: 0 }
