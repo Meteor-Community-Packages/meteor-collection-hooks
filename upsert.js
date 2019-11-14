@@ -4,11 +4,6 @@ import { CollectionHooks } from './collection-hooks'
 const isEmpty = a => !Array.isArray(a) || !a.length
 
 CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
-  // args[0] : selector
-  // args[1] : mutator
-  // args[2] : options (optional)
-  // args[3] : callback
-
   args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
 
   const ctx = { context: this, _super, args }

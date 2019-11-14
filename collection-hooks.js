@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { EJSON } from 'meteor/ejson'
-import { Tracker } from 'meteor/tracker'
 import { LocalCollection } from 'meteor/minimongo'
 
 // Relevant AOP terminology:
@@ -25,35 +24,6 @@ export const CollectionHooks = {
   }
 }
 
-CollectionHooks.getUserId = function getUserId () {
-  let userId
-
-  if (Meteor.isClient) {
-    Tracker.nonreactive(function () {
-      userId = Meteor.userId && Meteor.userId()
-    })
-  }
-
-  if (Meteor.isServer) {
-    try {
-      // Will throw an error unless within method call.
-      // Attempt to recover gracefully by catching:
-      userId = Meteor.userId && Meteor.userId()
-    } catch (e) { }
-
-    if (userId == null) {
-      // Get the userId if we are in a publish function.
-      userId = publishUserId.get()
-    }
-  }
-
-  if (userId == null) {
-    userId = CollectionHooks.defaultUserId
-  }
-
-  return userId
-}
-
 CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
@@ -74,7 +44,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         return {
           replace (aspect, options) {
             self._hookAspects[method][pointcut].splice(len - 1, 1, {
-              aspect: aspect,
+              aspect,
               options: CollectionHooks.initOptions(options, pointcut, method)
             })
           },
@@ -296,10 +266,4 @@ if (typeof Mongo !== 'undefined') {
   CollectionHooks.wrapCollection(Mongo, Mongo)
 } else {
   CollectionHooks.wrapCollection(Meteor, Meteor)
-}
-
-// Make the above available for packages with hooks that want to determine
-// whether they are running inside a publish function or not.
-CollectionHooks.isWithinPublish = function isWithinPublish () {
-  return publishUserId.get() !== undefined
 }
