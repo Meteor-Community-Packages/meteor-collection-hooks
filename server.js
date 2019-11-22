@@ -36,7 +36,7 @@ Meteor.publish = function (name, handler, options) {
 
 // Make the above available for packages with hooks that want to determine
 // whether they are running inside a publish function or not.
-CollectionHooks.isWithinPublish = () => publishUserId.get() !== void 0
+CollectionHooks.isWithinPublish = () => publishUserId.get() !== undefined
 
 export {
   CollectionHooks

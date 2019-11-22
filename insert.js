@@ -1,9 +1,10 @@
-import { EJSON } from 'meteor/ejson';
-import { CollectionHooks } from './collection-hooks';
+import { EJSON } from 'meteor/ejson'
+import { Mongo } from 'meteor/mongo'
+import { CollectionHooks } from './collection-hooks'
 
 CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  const ctx = {context: this, _super, args}
-  let [doc, callback] = args;
+  const ctx = { context: this, _super, args }
+  let [doc, callback] = args
   const async = typeof callback === 'function'
   let abort
   let ret
@@ -12,7 +13,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
   if (!suppressAspects) {
     try {
       aspects.before.forEach((o) => {
-        const r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc)
+        const r = o.aspect.call({ transform: getTransform(doc), ...ctx }, userId, doc)
         if (r === false) abort = true
       })
 
@@ -39,7 +40,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
       doc._id = id
     }
     if (!suppressAspects) {
-      const lctx = {transform: getTransform(doc), _id: id, err, ...ctx}
+      const lctx = { transform: getTransform(doc), _id: id, err, ...ctx }
       aspects.after.forEach((o) => {
         o.aspect.call(lctx, userId, doc)
       })

@@ -117,14 +117,14 @@ if (Meteor.isServer) {
 }
 
 if (Meteor.isClient) {
-  function cleanup () {
+  const cleanup = () => {
     beforeFindUserId = null
     afterFindUserId = null
     beforeFindOneUserId = null
     afterFindOneUserId = null
   }
 
-  function withLogin (testFunc) {
+  const withLogin = (testFunc) => {
     return function (...args) {
       const wrapper = (cb) => {
         InsecureLogin.ready(() => {

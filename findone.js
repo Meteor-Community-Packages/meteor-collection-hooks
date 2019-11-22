@@ -1,9 +1,6 @@
 import { CollectionHooks } from './collection-hooks'
 
 CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  // args[0] : selector
-  // args[1] : options
-
   const ctx = { context: this, _super, args }
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)

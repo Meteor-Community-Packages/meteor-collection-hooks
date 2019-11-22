@@ -1,15 +1,14 @@
-import { EJSON } from 'meteor/ejson';
-import { CollectionHooks } from './collection-hooks';
+import { EJSON } from 'meteor/ejson'
+import { CollectionHooks } from './collection-hooks'
 
-const isEmpty = a => !Array.isArray(a) || !a.length;
+const isEmpty = a => !Array.isArray(a) || !a.length
 
 CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-
-  const ctx = {context: this, _super, args}
-  let [selector, mutator, options, callback] = args;
+  const ctx = { context: this, _super, args }
+  let [selector, mutator, options, callback] = args
   if (typeof options === 'function') {
-    callback = options;
-    options = {};
+    callback = options
+    options = {}
   }
   const async = typeof callback === 'function'
   let docs
@@ -44,7 +43,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
       // before
       aspects.before.forEach(function (o) {
         docs.forEach(function (doc) {
-          const r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc, fields, mutator, options)
+          const r = o.aspect.call({ transform: getTransform(doc), ...ctx }, userId, doc, fields, mutator, options)
           if (r === false) abort = true
         })
       })
@@ -59,7 +58,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
   const after = (affected, err) => {
     if (!suppressAspects && !isEmpty(aspects.after)) {
       const fields = CollectionHooks.getFields(mutator)
-      const docs = CollectionHooks.getDocs.call(this, instance, {_id: {$in: docIds}}, options).fetch()
+      const docs = CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options).fetch()
 
       aspects.after.forEach((o) => {
         docs.forEach((doc) => {
