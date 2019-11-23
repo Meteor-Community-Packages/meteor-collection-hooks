@@ -1,6 +1,6 @@
 {
   "name": "meteor-collection-hooks",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "start": "meteor test-packages ./",
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/Meteor-Community-Packages/meteor-collection-hooks",
   "devDependencies": {
-    "eslint": "^6.5.1",
+    "eslint": "^6.7.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-import-resolver-meteor": "^0.4.0",
     "eslint-plugin-import": "^2.18.2",
