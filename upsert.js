@@ -1,21 +1,16 @@
-import { EJSON } from 'meteor/ejson';
-import { CollectionHooks } from './collection-hooks';
+import { EJSON } from 'meteor/ejson'
+import { CollectionHooks } from './collection-hooks'
 
-const isEmpty = a => !Array.isArray(a) || !a.length;
+const isEmpty = a => !Array.isArray(a) || !a.length
 
 CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
-  // args[0] : selector
-  // args[1] : mutator
-  // args[2] : options (optional)
-  // args[3] : callback
+  args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
 
-  args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args));
-
-  const ctx = {context: this, _super, args}
-  let [selector, mutator, options, callback] = args;
+  const ctx = { context: this, _super, args }
+  let [selector, mutator, options, callback] = args
   if (typeof options === 'function') {
-    callback = options;
-    options = {};
+    callback = options
+    options = {}
   }
 
   const async = typeof callback === 'function'
@@ -25,7 +20,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
   const prev = {}
 
   if (!suppressAspects) {
-    if (!isEmpty(aspectGroup.upsert.before)) {
+    if (!isEmpty(aspectGroup.upsert.before) || !isEmpty(aspectGroup.update.after)) {
       docs = CollectionHooks.getDocs.call(this, instance, selector, options).fetch()
       docIds = docs.map(doc => doc._id)
     }
@@ -47,7 +42,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     // before
     aspectGroup.upsert.before.forEach((o) => {
       const r = o.aspect.call(ctx, userId, selector, mutator, options)
-      if (r === false) abortMongo.Collection = true
+      if (r === false) abort = true
     })
 
     if (abort) return { numberAffected: 0 }
@@ -55,8 +50,8 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   const afterUpdate = (affected, err) => {
     if (!suppressAspects && !isEmpty(aspectGroup.update.after)) {
-      const fields = CollectionHooks.getFields(selector)
-      const docs = CollectionHooks.getDocs.call(this, instance, {_id: {$in: docIds}}, options).fetch()
+      const fields = CollectionHooks.getFields(mutator)
+      const docs = CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options).fetch()
 
       aspectGroup.update.after.forEach((o) => {
         docs.forEach((doc) => {
@@ -74,8 +69,8 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   const afterInsert = (_id, err) => {
     if (!suppressAspects && !isEmpty(aspectGroup.insert.after)) {
-      const doc = CollectionHooks.getDocs.call(this, instance, {_id}, selector, {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
-      const lctx = {transform: getTransform(doc), _id, err, ...ctx}
+      const doc = CollectionHooks.getDocs.call(this, instance, { _id }, selector, {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
+      const lctx = { transform: getTransform(doc), _id, err, ...ctx }
 
       aspectGroup.insert.after.forEach((o) => {
         o.aspect.call(lctx, userId, doc)
@@ -97,9 +92,9 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
       })
     }
 
-    return CollectionHooks.directOp(() => _super.call(this, selector, mutator, options,wrappedCallback));
+    return CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, wrappedCallback))
   } else {
-    const ret = CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback));
+    const ret = CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback))
 
     if (ret && ret.insertedId) {
       afterInsert(ret.insertedId)

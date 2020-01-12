@@ -1,3 +1,6 @@
+## v1.0.1
+* Fix bug in upsert hook `after.update` not returning manipulated fields [#258](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/258) [@SimonSimCity](https://github.com/SimonSimCity)
+
 ## v1.0.0
 * Modernization of the package
 * BREAKING CHANGE: Minimum required Meteor version is now 1.7.0.5

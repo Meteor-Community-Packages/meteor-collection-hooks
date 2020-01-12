@@ -1,15 +1,15 @@
-import { EJSON } from 'meteor/ejson';
-import { CollectionHooks } from './collection-hooks';
+import { EJSON } from 'meteor/ejson'
+import { CollectionHooks } from './collection-hooks'
 
-const isEmpty = a => !Array.isArray(a) || !a.length;
+const isEmpty = a => !Array.isArray(a) || !a.length
 
 CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  const ctx = {context: this, _super, args};
-  const [ selector, callback ] = args;
+  const ctx = { context: this, _super, args }
+  const [selector, callback] = args
   const async = typeof callback === 'function'
   let docs
   let abort
-  let prev = []
+  const prev = []
 
   if (!suppressAspects) {
     try {
@@ -25,7 +25,7 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
       // before
       aspects.before.forEach((o) => {
         docs.forEach((doc) => {
-          const r = o.aspect.call({transform: getTransform(doc), ...ctx}, userId, doc)
+          const r = o.aspect.call({ transform: getTransform(doc), ...ctx }, userId, doc)
           if (r === false) abort = true
         })
       })
@@ -41,7 +41,7 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
     if (!suppressAspects) {
       aspects.after.forEach((o) => {
         prev.forEach((doc) => {
-          o.aspect.call({transform: getTransform(doc), err, ...ctx}, userId, doc)
+          o.aspect.call({ transform: getTransform(doc), err, ...ctx }, userId, doc)
         })
       })
     }

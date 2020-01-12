@@ -1,8 +1,8 @@
-import { Mongo } from 'meteor/mongo';
-import { Tinytest } from 'meteor/tinytest';
-import { InsecureLogin } from './insecure_login';
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
-const isFunction = (fn) => typeof fn === 'function';
+const isFunction = (fn) => typeof fn === 'function'
 
 Tinytest.addAsync('general - hook callbacks should have this.transform function that works', function (test, next) {
   const collection = new Mongo.Collection(null, {
@@ -10,9 +10,9 @@ Tinytest.addAsync('general - hook callbacks should have this.transform function 
   })
 
   collection.allow({
-    insert() { return true },
-    update() { return true },
-    remove() { return true }
+    insert () { return true },
+    update () { return true },
+    remove () { return true }
   })
 
   const counts = {
@@ -41,11 +41,11 @@ Tinytest.addAsync('general - hook callbacks should have this.transform function 
     // to pass? Probably not. Think more on this -- it could be that we simply
     // shouldn't be running a .transform() in a before.insert -- how will we
     // know the _id? And that's what transform is complaining about.
-    collection.insert({_id: '1', start_value: true}, function (err, id) {
+    collection.insert({ _id: '1', start_value: true }, function (err, id) {
       if (err) throw err
-      collection.update({_id: id}, {$set: {update_value: true}}, function (err) {
+      collection.update({ _id: id }, { $set: { update_value: true } }, function (err) {
         if (err) throw err
-        collection.remove({_id: id}, function (nil) {
+        collection.remove({ _id: id }, function (nil) {
           test.equal(counts.before.insert, 1, 'before insert should have 1 count')
           test.equal(counts.before.update, 1, 'before update should have 1 count')
           test.equal(counts.before.remove, 1, 'before remove should have 1 count')

@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
-import { Tinytest } from 'meteor/tinytest';
-import { InsecureLogin } from './insecure_login';
+import { Meteor } from 'meteor/meteor'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('users - find hooks should be capable of being used on special Meteor.users collection', function (test, next) {
   const aspect1 = Meteor.users.before.find(function (userId, selector, options) {
@@ -16,10 +16,10 @@ Tinytest.addAsync('users - find hooks should be capable of being used on special
   })
 
   InsecureLogin.ready(function () {
-    const selector = {test: 1}
+    const selector = { test: 1 }
     Meteor.users.find(selector)
-    test.equal(selector.hasOwnProperty('a'), true)
-    test.equal(selector.hasOwnProperty('b'), true)
+    test.equal(Object.prototype.hasOwnProperty.call(selector, 'a'), true)
+    test.equal(Object.prototype.hasOwnProperty.call(selector, 'b'), true)
     aspect1.remove()
     aspect2.remove()
 
@@ -34,7 +34,7 @@ Tinytest.addAsync('users - find hooks should be capable of being used on wrapped
     return Object.assign(this, doc)
   }
 
-  Meteor.users.__transform = doc => new TestUser(doc);
+  Meteor.users.__transform = doc => new TestUser(doc)
 
   const MeteorUsersFind = Meteor.users.find
 
@@ -57,8 +57,8 @@ Tinytest.addAsync('users - find hooks should be capable of being used on wrapped
   InsecureLogin.ready(function () {
     const selector = { test: 1 }
     Meteor.users.find(selector)
-    test.equal(selector.hasOwnProperty('a'), true)
-    test.equal(selector.hasOwnProperty('b'), true)
+    test.equal(Object.prototype.hasOwnProperty.call(selector, 'a'), true)
+    test.equal(Object.prototype.hasOwnProperty.call(selector, 'b'), true)
     aspect1.remove()
     aspect2.remove()
 

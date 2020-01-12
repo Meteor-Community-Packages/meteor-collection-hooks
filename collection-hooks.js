@@ -1,10 +1,7 @@
-import { Meteor } from 'meteor/meteor';
-import { Mongo } from 'meteor/mongo';
-import { EJSON } from 'meteor/ejson';
-import { LocalCollection } from 'meteor/minimongo';
-
-/* global Package Meteor Mongo LocalCollection CollectionHooks _ EJSON */
-/* eslint-disable no-proto, no-native-reassign, no-global-assign */
+import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
+import { EJSON } from 'meteor/ejson'
+import { LocalCollection } from 'meteor/minimongo'
 
 // Relevant AOP terminology:
 // Aspect: User code that runs before/after (hook)
@@ -19,44 +16,15 @@ export const CollectionHooks = {
     all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
-  directOp(func) {
+  directOp (func) {
     return this.directEnv.withValue(true, func)
   },
-  hookedOp(func) {
+  hookedOp (func) {
     return this.directEnv.withValue(false, func)
   }
 }
 
-CollectionHooks.getUserId = function getUserId() {
-  let userId
-
-  if (Meteor.isClient) {
-    Tracker.nonreactive(function () {
-      userId = Meteor.userId && Meteor.userId()
-    })
-  }
-
-  if (Meteor.isServer) {
-    try {
-      // Will throw an error unless within method call.
-      // Attempt to recover gracefully by catching:
-      userId = Meteor.userId && Meteor.userId()
-    } catch (e) { }
-
-    if (userId == null) {
-      // Get the userId if we are in a publish function.
-      userId = publishUserId.get()
-    }
-  }
-
-  if (userId == null) {
-    userId = CollectionHooks.defaultUserId
-  }
-
-  return userId
-}
-
-CollectionHooks.extendCollectionInstance = function extendCollectionInstance(self, constructor) {
+CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   ['before', 'after'].forEach(function (pointcut) {
@@ -74,13 +42,13 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance(sel
         })
 
         return {
-          replace(aspect, options) {
+          replace (aspect, options) {
             self._hookAspects[method][pointcut].splice(len - 1, 1, {
-              aspect: aspect,
+              aspect,
               options: CollectionHooks.initOptions(options, pointcut, method)
             })
           },
-          remove() {
+          remove () {
             self._hookAspects[method][pointcut].splice(len - 1, 1)
           }
         }
@@ -134,8 +102,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance(sel
         function (doc) {
           return (
             typeof self._transform === 'function'
-            ? function (d) { return self._transform(d || doc) }
-            : function (d) { return d || doc }
+              ? function (d) { return self._transform(d || doc) }
+              : function (d) { return d || doc }
           )
         },
         args,
@@ -149,13 +117,13 @@ CollectionHooks.defineAdvice = (method, advice) => {
   advices[method] = advice
 }
 
-CollectionHooks.getAdvice = method => advices[method];
+CollectionHooks.getAdvice = method => advices[method]
 
 CollectionHooks.initOptions = (options, pointcut, method) =>
-  CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method);
+  CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method)
 
 CollectionHooks.extendOptions = (source, options, pointcut, method) =>
-  ({...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method]});
+  ({ ...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method] })
 
 CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields) {
   const findOptions = {transform: null, reactive: false, fields: fetchFields || {}} // added reactive: false
@@ -181,7 +149,7 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options, fetch
       findOptions.limit = 1
     }
     const { multi, upsert, ...rest } = options
-    Object.assign(findOptions, rest);
+    Object.assign(findOptions, rest)
   }
 
   // Unlike validators, we iterate over multiple docs, so use
@@ -204,7 +172,7 @@ CollectionHooks.normalizeSelector = function (selector) {
 // ~/.meteor/packages/mongo-livedata/collection.js
 // It's contained in these utility functions to make updates easier for us in
 // case this code changes.
-CollectionHooks.getFields = function getFields(mutator) {
+CollectionHooks.getFields = function getFields (mutator) {
   // compute modified fields
   const fields = []
   // ====ADDED START=======================
@@ -259,12 +227,12 @@ CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr
   // Note: Assigning a prototype dynamically has performance implications
   if (hasSetPrototypeOf) {
     Object.setPrototypeOf(instance, constr.prototype)
-  } else if (instance.__proto__) {
-    instance.__proto__ = constr.prototype
+  } else if (instance.__proto__) { // eslint-disable-line no-proto
+    instance.__proto__ = constr.prototype // eslint-disable-line no-proto
   }
 }
 
-CollectionHooks.wrapCollection = function wrapCollection(ns, as) {
+CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
   if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
 
@@ -282,7 +250,7 @@ CollectionHooks.wrapCollection = function wrapCollection(ns, as) {
   ns.Collection.prototype = proto
   ns.Collection.prototype.constructor = ns.Collection
 
-  for (let prop of Object.keys(constructor)) {
+  for (const prop of Object.keys(constructor)) {
     ns.Collection[prop] = constructor[prop]
   }
 
@@ -298,10 +266,4 @@ if (typeof Mongo !== 'undefined') {
   CollectionHooks.wrapCollection(Mongo, Mongo)
 } else {
   CollectionHooks.wrapCollection(Meteor, Meteor)
-}
-
-// Make the above available for packages with hooks that want to determine
-// whether they are running inside a publish function or not.
-CollectionHooks.isWithinPublish = function isWithinPublish() {
-  return publishUserId.get() !== undefined
 }
