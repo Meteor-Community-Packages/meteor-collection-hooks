@@ -6,9 +6,7 @@ node_js:
 
 before_install:
   - curl https://install.meteor.com | sh
-
-before_script:
-  - "export PATH=$HOME/.meteor:$PATH"
+  - export PATH=$PATH:$HOME/.meteor
 
 env:
   - CXX=g++-4.8
