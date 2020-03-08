@@ -119,18 +119,16 @@ Tinytest.addAsync('update - local collection should fire after-update hook witho
   })
 })
 
-
-
 Tinytest.addAsync('update - no previous document should be present if fetchPrevious is false', function (test, next) {
   var collection = new Mongo.Collection(null)
 
   function start () {
     collection.after.update(
       function (userId, doc, fieldNames, modifier) {
-        test.equal(this.previous, undefined);
+        test.equal(this.previous, undefined)
       },
       { fetchPrevious: false }
-  )
+    )
 
     collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
       next()
@@ -153,11 +151,11 @@ Tinytest.addAsync('update - a previous document should be present if fetchPrevio
   function start () {
     collection.after.update(
       function (userId, doc, fieldNames, modifier) {
-        test.notEqual(this.previous, undefined);
-        test.notEqual(this.previous.start_value, undefined);
+        test.notEqual(this.previous, undefined)
+        test.notEqual(this.previous.start_value, undefined)
       },
       { fetchPrevious: true }
-  )
+    )
 
     collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
       next()
@@ -180,12 +178,12 @@ Tinytest.addAsync('update - a previous document should be present if fetchPrevio
   function start () {
     collection.after.update(
       function (userId, doc, fieldNames, modifier) {
-        test.notEqual(this.previous, undefined);
-        test.notEqual(this.previous.start_value, undefined);
-        test.equal(this.previous.another_value, undefined);
+        test.notEqual(this.previous, undefined)
+        test.notEqual(this.previous.start_value, undefined)
+        test.equal(this.previous.another_value, undefined)
       },
       { fetchPrevious: true, fetchFields: { start_value: true } }
-  )
+    )
 
     collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
       next()

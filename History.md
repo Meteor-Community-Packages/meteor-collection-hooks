@@ -1,3 +1,6 @@
+## v1.0.2
+* Specify which fields of a document to pull into the before/after update hooks [#256](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/256) [@znewsham](https://github.com/znewsham)
+
 ## v1.0.1
 * Fix bug in upsert hook `after.update` not returning manipulated fields [#258](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/258) [@SimonSimCity](https://github.com/SimonSimCity)
 
