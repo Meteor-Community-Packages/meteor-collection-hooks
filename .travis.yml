@@ -11,6 +11,7 @@ before_script:
 
 env:
   - CXX=g++-4.8
+  - TEST_COMMAND=./travis.sh
 addons:
   apt:
     sources:
