@@ -2,10 +2,13 @@ sudo: false
 language: node_js
 node_js:
   - "8"
+  - "12"
 
 before_install:
   - curl https://install.meteor.com | sh
-  - export PATH=$PATH:$HOME/.meteor
+
+before_script:
+  - "export PATH=$HOME/.meteor:$PATH"
 
 env:
   - CXX=g++-4.8
