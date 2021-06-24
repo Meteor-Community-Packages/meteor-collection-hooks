@@ -1,6 +1,6 @@
 {
   "name": "meteor-collection-hooks",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "start": "meteor test-packages ./",
@@ -21,14 +21,14 @@
   },
   "homepage": "https://github.com/Meteor-Community-Packages/meteor-collection-hooks",
   "devDependencies": {
-    "eslint": "^6.7.0",
-    "eslint-config-standard": "^14.1.0",
+    "eslint": "^7.27.0",
+    "eslint-config-standard": "^16.0.3",
     "eslint-import-resolver-meteor": "^0.4.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-react": "^7.16.0",
-    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-standard": "^4.1.0",
     "spacejam": "^1.6.1"
   }
 }

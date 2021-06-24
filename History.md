@@ -1,3 +1,7 @@
+## v1.1.0
+* Add compatibility to Meteor 2.3 while also maintaining backward compatibility.
+* Testing now on Node 12 and 14
+
 ## v1.0.1
 * Fix bug in upsert hook `after.update` not returning manipulated fields [#258](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/258) [@SimonSimCity](https://github.com/SimonSimCity)
 
