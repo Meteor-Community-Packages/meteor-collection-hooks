@@ -56,6 +56,6 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
     return _super.call(this, doc, wrappedCallback)
   } else {
     ret = _super.call(this, doc, callback)
-    return after((ret && ret[0] && ret[0]._id) || ret)
+    return after((ret && ret.insertedId) || (ret && ret[0] && ret[0]._id) || ret)
   }
 })
