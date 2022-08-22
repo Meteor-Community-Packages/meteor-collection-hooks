@@ -54,9 +54,13 @@ test.before.update(function (userId, doc, fieldNames, modifier, options) {
 });
 ```
 
-__Important__: Note that we are changing `modifier`, and not `doc`.
+__Important__: 
+
+1. Note that we are changing `modifier`, and not `doc`.
 Changing `doc` won't have any effect as the document is a copy and is not what
 ultimately gets sent down to the underlying `update` method.
+
+2. When triggering a single update targeting multiple documents using the option `multi: true` (see [Meteor documentation](https://docs.meteor.com/api/collections.html#Mongo-Collection-update)), the `before.update` hook is called once per document about to be updated, **but** the collection update called afterwards remains a single update (targetting multiple documents) with a single modifier. Hence it is not possible at the time to use `before.update` to create a specific modifier for each targeted document.
 
 --------------------------------------------------------------------------------
 

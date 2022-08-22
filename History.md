@@ -1,3 +1,7 @@
+## v1.1.1
+* Added support for MongoDB 5.x => insertOne instead of insert [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/278) [@KoenLav](https://github.com/KoenLav)
+* Updated dev dependencies
+
 ## v1.1.0
 * Add compatibility to Meteor 2.3 while also maintaining backward compatibility.
 * Testing now on Node 12 and 14
