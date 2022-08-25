@@ -10,7 +10,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
     callback = args[args.length - 1]
   }
   
-const async = typeof callback === 'function'
+  const async = typeof callback === 'function'
   let abort
   let ret
 
