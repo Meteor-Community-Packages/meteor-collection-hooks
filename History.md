@@ -1,3 +1,5 @@
+* Resolve conflict in Insert with autoform that resulted in lost callback [#1710](https://github.com/Meteor-Community-Packages/meteor-autoform/issues/1710)
+
 ## v1.1.1
 * Added support for MongoDB 5.x => insertOne instead of insert [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/278) [@KoenLav](https://github.com/KoenLav)
 * Updated dev dependencies
