@@ -373,3 +373,4 @@ Maintained by [Meteor Community Packages](https://github.com/Meteor-Community-Pa
 - Eric Jackson ([repjackson](https://github.com/repjackson))
 - Koen Lav ([KoenLav](https://github.com/KoenLav))
 - Chris Pravetz ([cpravetz](https://github.com/cpravetz))
+- Jan Kuster ([jankapunkt](https://github.com/jankapunkt))

@@ -1,3 +1,6 @@
+## v1.1.4
+* Added full CI suite for GitHub [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/285) [@jankapunkt](https://github.com/jankapunkt)
+
 ## v1.1.3
 * Resolve conflict in Insert with autoform that resulted in lost callback [#1710](https://github.com/Meteor-Community-Packages/meteor-autoform/issues/1710) [@cpravetz](https://github.com/cpravetz)
 * Added GitHub action to run linter
