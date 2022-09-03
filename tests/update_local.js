@@ -4,7 +4,7 @@ import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('update - local collection documents should have extra property added before being updated', function (test, next) {
-  var collection = new Mongo.Collection(null)
+  const collection = new Mongo.Collection(null)
 
   function start () {
     collection.before.update(function (userId, doc, fieldNames, modifier) {

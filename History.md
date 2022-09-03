@@ -1,5 +1,20 @@
-## v1.0.2
+## v1.1.4
 * Specify which fields of a document to pull into the before/after update hooks [#256](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/256) [@znewsham](https://github.com/znewsham)
+* Added full CI suite for GitHub [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/285) [@jankapunkt](https://github.com/jankapunkt)
+
+## v1.1.3
+* Resolve conflict in Insert with autoform that resulted in lost callback [#1710](https://github.com/Meteor-Community-Packages/meteor-autoform/issues/1710) [@cpravetz](https://github.com/cpravetz)
+* Added GitHub action to run linter
+
+## v1.1.2
+* Updated dev dependencies
+
+## v1.1.1
+* Added support for MongoDB 5.x => insertOne instead of insert [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/278) [@KoenLav](https://github.com/KoenLav)
+
+## v1.1.0
+* Add compatibility to Meteor 2.3 while also maintaining backward compatibility.
+* Testing now on Node 12 and 14
 
 ## v1.0.1
 * Fix bug in upsert hook `after.update` not returning manipulated fields [#258](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/258) [@SimonSimCity](https://github.com/SimonSimCity)
