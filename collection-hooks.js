@@ -36,20 +36,33 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
       self._hookAspects[method][pointcut] = []
       self[pointcut][method] = function (aspect, options) {
-        const len = self._hookAspects[method][pointcut].push({
+        let target = {
           aspect,
           options: CollectionHooks.initOptions(options, pointcut, method)
-        })
+        }
+        // adding is simply pushing it to the array
+        self._hookAspects[method][pointcut].push(target)
 
         return {
           replace (aspect, options) {
-            self._hookAspects[method][pointcut].splice(len - 1, 1, {
+            // replacing is done by determining the actual index of a given target
+            // and replace this with the new one
+            const src = self._hookAspects[method][pointcut]
+            const targetIndex = src.findIndex(entry => entry === target)
+            const newTarget = {
               aspect,
               options: CollectionHooks.initOptions(options, pointcut, method)
-            })
+            }
+            src.splice(targetIndex, 1, newTarget)
+            // update the target to get the correct index in future calls
+            target = newTarget
           },
           remove () {
-            self._hookAspects[method][pointcut].splice(len - 1, 1)
+            // removing a hook is done by determining the actual index of a given target
+            // and removing it form the source array
+            const src = self._hookAspects[method][pointcut]
+            const targetIndex = src.findIndex(entry => entry === target)
+            self._hookAspects[method][pointcut].splice(targetIndex, 1)
           }
         }
       }
