@@ -26,7 +26,7 @@ if (Meteor.isServer) {
   })
 }
 
-var collection2 = new Mongo.Collection('test_insert_collection2')
+const collection2 = new Mongo.Collection('test_insert_collection2')
 
 if (Meteor.isServer) {
   // full client-side access

@@ -107,11 +107,13 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         CollectionHooks.getUserId(),
         _super,
         self,
-        method === 'upsert' ? {
-          insert: self._hookAspects.insert || {},
-          update: self._hookAspects.update || {},
-          upsert: self._hookAspects.upsert || {}
-        } : self._hookAspects[method] || {},
+        method === 'upsert'
+          ? {
+              insert: self._hookAspects.insert || {},
+              update: self._hookAspects.update || {},
+              upsert: self._hookAspects.upsert || {}
+            }
+          : self._hookAspects[method] || {},
         function (doc) {
           return (
             typeof self._transform === 'function'

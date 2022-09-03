@@ -4,7 +4,12 @@ import { CollectionHooks } from './collection-hooks'
 
 CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   const ctx = { context: this, _super, args }
-  let [doc, callback] = args
+  let doc = args[0]
+  let callback
+  if (typeof args[args.length - 1] === 'function') {
+    callback = args[args.length - 1]
+  }
+
   const async = typeof callback === 'function'
   let abort
   let ret

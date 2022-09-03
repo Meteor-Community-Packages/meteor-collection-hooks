@@ -5,6 +5,7 @@ import { InsecureLogin } from './insecure_login'
 Tinytest.addAsync('find - selector should be {} when called without arguments', function (test, next) {
   const collection = new Mongo.Collection(null)
 
+  // eslint-disable-next-line array-callback-return
   collection.before.find(function (userId, selector, options) {
     test.equal(selector, {})
     next()
@@ -16,6 +17,7 @@ Tinytest.addAsync('find - selector should be {} when called without arguments', 
 Tinytest.addAsync('find - selector should have extra property', function (test, next) {
   const collection = new Mongo.Collection(null)
 
+  // eslint-disable-next-line array-callback-return
   collection.before.find(function (userId, selector, options) {
     if (options && options.test) {
       delete selector.bogus_value
@@ -36,6 +38,7 @@ Tinytest.addAsync('find - tmp variable should have property added after the find
   const collection = new Mongo.Collection(null)
   const tmp = {}
 
+  // eslint-disable-next-line array-callback-return
   collection.after.find(function (userId, selector, options) {
     if (options && options.test) {
       tmp.after_find = true
