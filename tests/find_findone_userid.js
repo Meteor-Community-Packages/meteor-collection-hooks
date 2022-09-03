@@ -16,6 +16,7 @@ let beforeFindOneWithinPublish
 let afterFindOneWithinPublish
 
 // Don't declare hooks in publish method, as it is problematic
+// eslint-disable-next-line array-callback-return
 collection.before.find(function (userId, selector, options) {
   if (options && options.test) { // ignore other calls to find (caused by insert/update)
     beforeFindUserId = userId
@@ -26,6 +27,7 @@ collection.before.find(function (userId, selector, options) {
   }
 })
 
+// eslint-disable-next-line array-callback-return
 collection.after.find(function (userId, selector, options, result) {
   if (options && options.test) { // ignore other calls to find (caused by insert/update)
     afterFindUserId = userId
@@ -130,7 +132,7 @@ if (Meteor.isClient) {
         InsecureLogin.ready(() => {
           cleanup()
           try {
-            var result = testFunc.apply(this, args)
+            const result = testFunc.apply(this, args)
             cb(null, result)
           } catch (error) {
             cb(error)

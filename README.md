@@ -166,7 +166,7 @@ Fired after the doc was removed.
 
 `doc` contains a copy of the document before it was removed.
 
-Allows you to to run post-removal tasks that don't necessarily depend
+Allows you to run post-removal tasks that don't necessarily depend
 on the document being found in the database (external service clean-up for
 instance).
 
@@ -185,7 +185,7 @@ test.after.remove(function (userId, doc) {
 
 Fired before a find query.
 
-Allows you to to adjust selector/options on-the-fly.
+Allows you to adjust selector/options on-the-fly.
 
 ```javascript
 test.before.find(function (userId, selector, options) {
@@ -199,7 +199,7 @@ test.before.find(function (userId, selector, options) {
 
 Fired after a find query.
 
-Allows you to to act on a given find query. The cursor resulting from
+Allows you to act on a given find query. The cursor resulting from
 the query is provided as the last argument for convenience.
 
 ```javascript
@@ -214,7 +214,7 @@ test.after.find(function (userId, selector, options, cursor) {
 
 Fired before a findOne query.
 
-Allows you to to adjust selector/options on-the-fly.
+Allows you to adjust selector/options on-the-fly.
 
 ```javascript
 test.before.findOne(function (userId, selector, options) {
@@ -228,7 +228,7 @@ test.before.findOne(function (userId, selector, options) {
 
 Fired after a findOne query.
 
-Allows you to to act on a given findOne query. The document resulting
+Allows you to act on a given findOne query. The document resulting
 from the query is provided as the last argument for convenience.
 
 ```javascript
@@ -372,3 +372,4 @@ Maintained by [Meteor Community Packages](https://github.com/Meteor-Community-Pa
 - Tom Coleman ([tmeasday](https://github.com/tmeasday))
 - Eric Jackson ([repjackson](https://github.com/repjackson))
 - Koen Lav ([KoenLav](https://github.com/KoenLav))
+- Chris Pravetz ([cpravetz](https://github.com/cpravetz))
