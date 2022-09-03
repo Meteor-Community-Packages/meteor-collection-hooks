@@ -3,12 +3,14 @@ import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync('users - find hooks should be capable of being used on special Meteor.users collection', function (test, next) {
+  // eslint-disable-next-line array-callback-return
   const aspect1 = Meteor.users.before.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.a = 1
     }
   })
 
+  // eslint-disable-next-line array-callback-return
   const aspect2 = Meteor.users.after.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.b = 1
@@ -42,12 +44,14 @@ Tinytest.addAsync('users - find hooks should be capable of being used on wrapped
     return MeteorUsersFind.call(this, selector, { transform: Meteor.users.__transform, ...options })
   }
 
+  // eslint-disable-next-line array-callback-return
   const aspect1 = Meteor.users.before.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.a = 1
     }
   })
 
+  // eslint-disable-next-line array-callback-return
   const aspect2 = Meteor.users.after.find(function (userId, selector, options) {
     if (selector && selector.test) {
       selector.b = 1
