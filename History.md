@@ -1,4 +1,5 @@
 ## v1.1.4
+* Fix: Replace and remove functions search indexes before splicing [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/286) [@jankapunkt](https://github.com/jankapunkt)
 * Specify which fields of a document to pull into the before/after update hooks [#256](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/256) [@znewsham](https://github.com/znewsham)
 * Added full CI suite for GitHub [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/285) [@jankapunkt](https://github.com/jankapunkt)
 
