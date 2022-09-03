@@ -1,4 +1,5 @@
 ## v1.1.4
+* Fix: Replace and remove functions search indexes before splicing [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/286) [@jankapunkt](https://github.com/jankapunkt)
 * Added full CI suite for GitHub [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/285) [@jankapunkt](https://github.com/jankapunkt)
 
 ## v1.1.3
