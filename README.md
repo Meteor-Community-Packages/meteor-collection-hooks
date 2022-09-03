@@ -1,4 +1,9 @@
-# Meteor Collection Hooks [![Build Status](https://travis-ci.org/Meteor-Community-Packages/meteor-collection-hooks.png?branch=master)](https://travis-ci.org/matb33/meteor-collection-hooks)
+# Meteor Collection Hooks
+
+![Test suite](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/workflows/Test%20suite/badge.svg)
+![Code lint](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/workflows/Code%20lint/badge.svg)
+![CodeQL Analysis](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/workflows/CodeQL/badge.svg)
+
 
 Extends Mongo.Collection with `before`/`after` hooks for `insert`, `update`, `remove`, `find`, and `findOne`.
 
