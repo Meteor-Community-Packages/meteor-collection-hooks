@@ -140,8 +140,8 @@ CollectionHooks.initOptions = (options, pointcut, method) =>
 CollectionHooks.extendOptions = (source, options, pointcut, method) =>
   ({ ...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method] })
 
-CollectionHooks.getDocs = function getDocs (collection, selector, options) {
-  const findOptions = { transform: null, reactive: false } // added reactive: false
+CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields) {
+  const findOptions = { transform: null, reactive: false, fields: fetchFields || {} } // added reactive: false
 
   /*
   // No "fetch" support at this time.
