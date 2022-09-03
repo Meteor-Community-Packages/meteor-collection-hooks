@@ -120,7 +120,7 @@ Tinytest.addAsync('update - local collection should fire after-update hook witho
 })
 
 Tinytest.addAsync('update - no previous document should be present if fetchPrevious is false', function (test, next) {
-  var collection = new Mongo.Collection(null)
+  const collection = new Mongo.Collection(null)
 
   function start () {
     collection.after.update(
@@ -130,7 +130,7 @@ Tinytest.addAsync('update - no previous document should be present if fetchPrevi
       { fetchPrevious: false }
     )
 
-    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
+    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function () {
       next()
     })
   }
@@ -146,7 +146,7 @@ Tinytest.addAsync('update - no previous document should be present if fetchPrevi
 })
 
 Tinytest.addAsync('update - a previous document should be present if fetchPrevious is true', function (test, next) {
-  var collection = new Mongo.Collection(null)
+  const collection = new Mongo.Collection(null)
 
   function start () {
     collection.after.update(
@@ -157,7 +157,7 @@ Tinytest.addAsync('update - a previous document should be present if fetchPrevio
       { fetchPrevious: true }
     )
 
-    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
+    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function () {
       next()
     })
   }
@@ -173,7 +173,7 @@ Tinytest.addAsync('update - a previous document should be present if fetchPrevio
 })
 
 Tinytest.addAsync('update - a previous document should be present if fetchPrevious is true, but only requested fields if present', function (test, next) {
-  var collection = new Mongo.Collection(null)
+  const collection = new Mongo.Collection(null)
 
   function start () {
     collection.after.update(
@@ -185,7 +185,7 @@ Tinytest.addAsync('update - a previous document should be present if fetchPrevio
       { fetchPrevious: true, fetchFields: { start_value: true } }
     )
 
-    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
+    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function () {
       next()
     })
   }
