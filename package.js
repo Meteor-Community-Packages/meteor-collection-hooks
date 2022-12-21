@@ -3,12 +3,12 @@
 Package.describe({
   name: 'matb33:collection-hooks',
   summary: 'Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne',
-  version: '1.1.4',
+  version: '1.2.0',
   git: 'https://github.com/Meteor-Community-Packages/meteor-collection-hooks'
 })
 
 Package.onUse(function (api, where) {
-  api.versionsFrom(['1.12', '2.3'])
+  api.versionsFrom(['2.3'])
 
   api.use([
     'mongo',
@@ -17,6 +17,8 @@ Package.onUse(function (api, where) {
     'minimongo',
     'ecmascript'
   ])
+
+  api.use('zodern:types@1.0.9', 'server')
 
   api.use(['accounts-base'], ['client', 'server'], { weak: true })
 

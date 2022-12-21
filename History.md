@@ -1,3 +1,10 @@
+## v1.2.0
+* Automated issue comment [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/290) [@jankapunkt](https://github.com/jankapunkt)
+* Add types definition [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/289) [@olragon](https://github.com/olragon)
+* Include `zodern:types` [@storytellercz](https://github.com/sponsors/StorytellerCZ)
+* Bump minimum required version to v2.3 due to `zodern:types` [@storytellercz](https://github.com/sponsors/StorytellerCZ)
+* Remove testing on Meteor 1.12 and add testing on Meteor 2.9 [@storytellercz](https://github.com/sponsors/StorytellerCZ)
+
 ## v1.1.4
 * Fix: Replace and remove functions search indexes before splicing [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/286) [@jankapunkt](https://github.com/jankapunkt)
 * Specify which fields of a document to pull into the before/after update hooks [#256](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/256) [@znewsham](https://github.com/znewsham)

@@ -12,9 +12,9 @@ jobs:
     strategy:
       matrix:
         meteorRelease:
-          - '--release 1.12.1'
           - '--release 2.3'
           - '--release 2.7.3'
+          - '--release 2.9.0'
           # Latest version
     steps:
       - name: Checkout code
