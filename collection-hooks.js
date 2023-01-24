@@ -140,13 +140,13 @@ CollectionHooks.initOptions = (options, pointcut, method) =>
 CollectionHooks.extendOptions = (source, options, pointcut, method) =>
   ({ ...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method] })
 
-CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields) {
-  const findOptions = { transform: null, reactive: false };
+CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields = {}) {
+  const findOptions = { transform: null, reactive: false }
 
   if (Object.keys(fetchFields).length > 0) {
-    findOptions.fields = fetchFields;
+    findOptions.fields = fetchFields
   }
-  
+
   /*
   // No "fetch" support at this time.
   if (!this._validators.fetchAllFields) {
