@@ -1,3 +1,6 @@
+## v1.2.1
+* Revert change in default behavior of `getDocs` [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/295) [@KoenLav](https://github.com/KoenLav)
+
 ## v1.2.0
 * Automated issue comment [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/290) [@jankapunkt](https://github.com/jankapunkt)
 * Add types definition [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/289) [@olragon](https://github.com/olragon)
