@@ -140,7 +140,7 @@ CollectionHooks.initOptions = (options, pointcut, method) =>
 CollectionHooks.extendOptions = (source, options, pointcut, method) =>
   ({ ...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method] })
 
-CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields) {
+CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields, { useDirect = false } = {}) {
   const findOptions = { transform: null, reactive: false, fields: fetchFields || {} } // added reactive: false
 
   /*
@@ -169,7 +169,7 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options, fetch
 
   // Unlike validators, we iterate over multiple docs, so use
   // find instead of findOne:
-  return collection.find(selector, findOptions)
+  return (useDirect ? collection.direct : collection).find(selector, findOptions)
 }
 
 // This function normalizes the selector (converting it to an Object)
