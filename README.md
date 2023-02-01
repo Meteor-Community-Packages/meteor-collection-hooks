@@ -158,7 +158,7 @@ effectively disable the pre-fetching of documents.
 It is instead recommended to use the collection-wide options (e.g.
 `MyCollection.hookOptions.after.update = {fetchPrevious: false};`).
 
-This hook will always be called with the new documents; even if the updated document gets modified in a way were it would normally not be able to be found because of `before.find` hooks (see GH-297).
+This hook will always be called with the new documents; even if the updated document gets modified in a way were it would normally not be able to be found because of `before.find` hooks (see https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297).
 
 --------------------------------------------------------------------------------
 
@@ -195,7 +195,7 @@ test.before.find(function (userId, selector, options) {
 });
 ```
 
-__Important:__ This hook does not get called for `after.update` hooks (see GH-297).
+__Important:__ This hook does not get called for `after.update` hooks (see https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297).
 
 --------------------------------------------------------------------------------
 
