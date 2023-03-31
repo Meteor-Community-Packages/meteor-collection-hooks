@@ -1,3 +1,6 @@
+## v1.2.2
+* Fixed [issue](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/issues/296) where after update did not use direct find [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297) [@jdgjsag67251](https://github.com/jdgjsag67251)
+
 ## v1.2.1
 * Revert change in default behavior of `getDocs` [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/295) [@KoenLav](https://github.com/KoenLav)
 
