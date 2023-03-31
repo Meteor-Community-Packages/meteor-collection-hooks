@@ -77,7 +77,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
         if (aspectFetchFields || globalFetchFields) {
           Object.assign(fetchFields, globalFetchFields || {}, ...aspectFetchFields.map(a => a.fetchFields))
         }
-        docs = CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options, fetchFields).fetch()
+        docs = CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options, fetchFields, { useDirect: true }).fetch()
       }
 
       aspects.after.forEach((o) => {
