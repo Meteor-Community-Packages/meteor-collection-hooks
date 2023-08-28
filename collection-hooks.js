@@ -28,7 +28,9 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   ['before', 'after'].forEach(function (pointcut) {
-    const handleMethod = (method) => {
+    Object.entries(advices).forEach(function ([method, advice]) {
+      if (advice === 'upsert' && pointcut === 'after') return
+
       Meteor._ensure(self, pointcut, method)
       Meteor._ensure(self, '_hookAspects', method)
 
@@ -62,20 +64,6 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
             const targetIndex = src.findIndex(entry => entry === target)
             self._hookAspects[method][pointcut].splice(targetIndex, 1)
           }
-        }
-      }
-    }
-
-    Object.entries(advices).forEach(function ([method, advice]) {
-      if (advice === 'upsert' && pointcut === 'after') return
-
-      handleMethod(method)
-
-      {
-        const asyncMethodName = `${method}Async`
-
-        if (asyncMethodName in Mongo.Collection.prototype) {
-          handleMethod(asyncMethodName)
         }
       }
     })
