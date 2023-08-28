@@ -71,8 +71,12 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
       handleMethod(method)
 
-      if (advice !== 'find') {
-        handleMethod(`${method}Async`)
+      {
+        const asyncMethodName = `${method}Async`
+
+        if (asyncMethodName in Mongo.Collection.prototype) {
+          handleMethod(asyncMethodName)
+        }
       }
     })
   })

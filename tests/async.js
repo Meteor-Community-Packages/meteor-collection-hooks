@@ -1,196 +1,198 @@
 import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 
-// Before
+if (Mongo.Collection.prototype.insertAsync) {
+  // Before
 
-Tinytest.addAsync('async - before - insertAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+  Tinytest.addAsync('async - before - insertAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  collection.before.insert((userId, doc) => {
-    doc.called = true
+    collection.before.insert((userId, doc) => {
+      doc.called = true
+    })
+
+    const id = await collection.insertAsync({ test: true })
+
+    test.isTrue(collection.findOne(id).called)
+
+    next()
   })
 
-  const id = await collection.insertAsync({ test: true })
+  Tinytest.addAsync('async - before - findOneAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  test.isTrue(collection.findOne(id).called)
+    let called = false
 
-  next()
-})
+    collection.before.findOne(() => {
+      called = true
+    })
 
-Tinytest.addAsync('async - before - findOneAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    const id = collection.insert({ test: true })
 
-  let called = false
+    await collection.findOneAsync(id)
 
-  collection.before.findOne(() => {
-    called = true
+    test.isTrue(called)
+
+    next()
   })
 
-  const id = collection.insert({ test: true })
+  Tinytest.addAsync('async - before - findAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  await collection.findOneAsync(id)
+    let called = false
 
-  test.isTrue(called)
+    // eslint-disable-next-line array-callback-return
+    collection.before.find(() => {
+      called = true
+    })
 
-  next()
-})
+    const id = collection.insert({ test: true })
 
-Tinytest.addAsync('async - before - findAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    await collection.find(id).fetchAsync()
 
-  let called = false
+    test.isTrue(called)
 
-  // eslint-disable-next-line array-callback-return
-  collection.before.find(() => {
-    called = true
+    next()
   })
 
-  const id = collection.insert({ test: true })
+  Tinytest.addAsync('async - before - updateAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  await collection.find(id).fetchAsync()
+    collection.before.update((userId, doc, fieldNames, modifier) => {
+      modifier.$set.called = true
+    })
 
-  test.isTrue(called)
+    const id = collection.insert({ test: true })
 
-  next()
-})
+    await collection.updateAsync(id, { $set: { test: false } })
 
-Tinytest.addAsync('async - before - updateAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    test.isTrue(collection.findOne(id).called)
 
-  collection.before.update((userId, doc, fieldNames, modifier) => {
-    modifier.$set.called = true
+    next()
   })
 
-  const id = collection.insert({ test: true })
+  Tinytest.addAsync('async - before - removeAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  await collection.updateAsync(id, { $set: { test: false } })
+    let called = false
 
-  test.isTrue(collection.findOne(id).called)
+    collection.before.remove(() => {
+      called = true
+    })
 
-  next()
-})
+    const id = collection.insert({ test: true })
 
-Tinytest.addAsync('async - before - removeAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    await collection.removeAsync(id)
 
-  let called = false
+    test.isTrue(called)
 
-  collection.before.remove(() => {
-    called = true
+    next()
   })
 
-  const id = collection.insert({ test: true })
+  Tinytest.addAsync('async - before - upsertAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  await collection.removeAsync(id)
+    let called = false
 
-  test.isTrue(called)
+    collection.before.upsert(() => {
+      called = true
+    })
 
-  next()
-})
+    await collection.upsertAsync({ test: true }, { $set: { name: 'Test' } })
 
-Tinytest.addAsync('async - before - upsertAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    test.isTrue(called)
 
-  let called = false
-
-  collection.before.upsert(() => {
-    called = true
+    next()
   })
 
-  await collection.upsertAsync({ test: true }, { $set: { name: 'Test' } })
+  // After
 
-  test.isTrue(called)
+  Tinytest.addAsync('async - after - insertAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  next()
-})
+    let called = false
 
-// After
+    collection.after.insert(() => {
+      called = true
+    })
 
-Tinytest.addAsync('async - after - insertAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    await collection.insertAsync({ test: true })
 
-  let called = false
+    test.isTrue(called)
 
-  collection.after.insert(() => {
-    called = true
+    next()
   })
 
-  await collection.insertAsync({ test: true })
+  Tinytest.addAsync('async - after - findOneAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  test.isTrue(called)
+    let called = false
 
-  next()
-})
+    collection.after.findOne(() => {
+      called = true
+    })
 
-Tinytest.addAsync('async - after - findOneAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    const id = collection.insert({ test: true })
 
-  let called = false
+    await collection.findOneAsync(id)
 
-  collection.after.findOne(() => {
-    called = true
+    test.isTrue(called)
+
+    next()
   })
 
-  const id = collection.insert({ test: true })
+  Tinytest.addAsync('async - after - findAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  await collection.findOneAsync(id)
+    let called = false
 
-  test.isTrue(called)
+    // eslint-disable-next-line array-callback-return
+    collection.after.find(() => {
+      called = true
+    })
 
-  next()
-})
+    const id = collection.insert({ test: true })
 
-Tinytest.addAsync('async - after - findAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    await collection.find(id).fetchAsync()
 
-  let called = false
+    test.isTrue(called)
 
-  // eslint-disable-next-line array-callback-return
-  collection.after.find(() => {
-    called = true
+    next()
   })
 
-  const id = collection.insert({ test: true })
+  Tinytest.addAsync('async - after - updateAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  await collection.find(id).fetchAsync()
+    let called = false
 
-  test.isTrue(called)
+    collection.after.update(() => {
+      called = true
+    })
 
-  next()
-})
+    const id = collection.insert({ test: true })
 
-Tinytest.addAsync('async - after - updateAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    await collection.updateAsync(id, { $set: { test: false } })
 
-  let called = false
+    test.isTrue(called)
 
-  collection.after.update(() => {
-    called = true
+    next()
   })
 
-  const id = collection.insert({ test: true })
+  Tinytest.addAsync('async - after - removeAsync', async (test, next) => {
+    const collection = new Mongo.Collection(null)
 
-  await collection.updateAsync(id, { $set: { test: false } })
+    let called = false
 
-  test.isTrue(called)
+    collection.after.remove(() => {
+      called = true
+    })
 
-  next()
-})
+    const id = collection.insert({ test: true })
 
-Tinytest.addAsync('async - after - removeAsync', async (test, next) => {
-  const collection = new Mongo.Collection(null)
+    await collection.removeAsync(id)
 
-  let called = false
+    test.isTrue(called)
 
-  collection.after.remove(() => {
-    called = true
+    next()
   })
-
-  const id = collection.insert({ test: true })
-
-  await collection.removeAsync(id)
-
-  test.isTrue(called)
-
-  next()
-})
+}
