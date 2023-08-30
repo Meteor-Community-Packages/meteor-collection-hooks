@@ -13,7 +13,7 @@ if (Mongo.Collection.prototype.insertAsync) {
 
     const id = await collection.insertAsync({ test: true })
 
-    test.isTrue(collection.findOne(id).called)
+    test.isTrue((await collection.findOneAsync(id)).called)
 
     next()
   })
@@ -27,7 +27,7 @@ if (Mongo.Collection.prototype.insertAsync) {
       called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.findOneAsync(id)
 
@@ -46,7 +46,7 @@ if (Mongo.Collection.prototype.insertAsync) {
       called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.find(id).fetchAsync()
 
@@ -62,11 +62,11 @@ if (Mongo.Collection.prototype.insertAsync) {
       modifier.$set.called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.updateAsync(id, { $set: { test: false } })
 
-    test.isTrue(collection.findOne(id).called)
+    test.isTrue((await collection.findOneAsync(id)).called)
 
     next()
   })
@@ -80,7 +80,7 @@ if (Mongo.Collection.prototype.insertAsync) {
       called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.removeAsync(id)
 
@@ -132,7 +132,7 @@ if (Mongo.Collection.prototype.insertAsync) {
       called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.findOneAsync(id)
 
@@ -151,7 +151,7 @@ if (Mongo.Collection.prototype.insertAsync) {
       called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.find(id).fetchAsync()
 
@@ -169,7 +169,7 @@ if (Mongo.Collection.prototype.insertAsync) {
       called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.updateAsync(id, { $set: { test: false } })
 
@@ -187,7 +187,7 @@ if (Mongo.Collection.prototype.insertAsync) {
       called = true
     })
 
-    const id = collection.insert({ test: true })
+    const id = await collection.insertAsync({ test: true })
 
     await collection.removeAsync(id)
 
