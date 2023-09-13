@@ -88,6 +88,13 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
       })
     }
 
+    const asyncMethod = method + 'Async'
+    self.direct[asyncMethod] = function (...args) {
+      return CollectionHooks.directOp(function () {
+        return constructor.prototype[asyncMethod].apply(self, args)
+      })
+    }
+
     collection[method] = function (...args) {
       if (CollectionHooks.directEnv.get() === true) {
         return _super.apply(collection, args)

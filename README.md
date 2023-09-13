@@ -249,10 +249,16 @@ All compatible methods have a `direct` version that circumvent any defined hooks
 
 ```javascript
 collection.direct.insert({_id: "test", test: 1});
+collection.direct.insertAsync({_id: "test", test: 1});
+collection.direct.upsert({_id: "test", test: 1});
+collection.direct.upsertAsync({_id: "test", test: 1});
 collection.direct.update({_id: "test"}, {$set: {test: 1}});
+collection.direct.updateAsync({_id: "test"}, {$set: {test: 1}});
 collection.direct.find({test: 1});
 collection.direct.findOne({test: 1});
+collection.direct.findOneAsync({test: 1});
 collection.direct.remove({_id: "test"});
+collection.direct.removeAsync({_id: "test"});
 ```
 
 --------------------------------------------------------------------------------

@@ -58,7 +58,7 @@ declare module 'meteor/mongo' {
 
         interface Collection<T, U = T> {
             hookOptions: CollectionHooks["GlobalOptions"]
-            direct: Pick<Collection<T, U>, "insert"|"update"|"find"|"findOne"|"remove">
+            direct: Pick<Collection<T, U>, "insert"|"insertAsync"|"update"|"updateAsync"|"find"|"findOne"|"findOneAsync"|"remove"|"removeAsync">
             before: {
                 insert<Fn = THookBeforeInsert<T,void|false>>(fn: Fn): THandler<Fn>
                 update<Fn = THookBeforeUpdate<T,void|false>>(fn: Fn): THandler<Fn>
