@@ -1,3 +1,9 @@
+## v1.3.0
+* Add direct async methods [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/300) [@alisnic](https://github.com/alisnic)
+* Add support for async collection methods [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/299) [@jdgjsag67251](https://github.com/jdgjsag67251)
+* Added additional Meteor version targets for Meteor `2.8.1` and `3.0-alpha.15` [@storytellercz](https://github.com/sponsors/StorytellerCZ)
+* Updated tests targets to Meteor `2.8.1` and `2.13.3` [@storytellercz](https://github.com/sponsors/StorytellerCZ)
+
 ## v1.2.2
 * Fixed [issue](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/issues/296) where after update did not use direct find [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297) [@jdgjsag67251](https://github.com/jdgjsag67251)
 
