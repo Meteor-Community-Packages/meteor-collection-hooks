@@ -1,3 +1,7 @@
+## v1.3.1
+* Updated zodern:types to v1.0.10
+* Meteor `3.0-beta.0` is now a supported version, but not functionality wise (need to upgrade `count` functions in code)
+
 ## v1.3.0
 * Add direct async methods [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/300) [@alisnic](https://github.com/alisnic)
 * Add support for async collection methods [PR](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/299) [@jdgjsag67251](https://github.com/jdgjsag67251)

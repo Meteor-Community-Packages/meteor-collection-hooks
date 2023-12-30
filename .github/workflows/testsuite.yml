@@ -14,7 +14,7 @@ jobs:
         meteorRelease:
           - '--release 2.3'
           - '--release 2.8.1'
-          - '--release 2.13.3'
+          - '--release 2.14'
           # Latest version
     steps:
       - name: Checkout code
@@ -23,7 +23,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: '20.x'
 
       - name: Install Dependencies
         run: |
