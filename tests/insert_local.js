@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
-Tinytest.addAsync('insert - local collection document should have extra property added before being inserted', function (test, next) {
+Tinytest.addAsync('insert - local collection document should have extra property added before being inserted', async function (test) {
   const collection = new Mongo.Collection(null)
   const tmp = {}
 
@@ -12,17 +12,15 @@ Tinytest.addAsync('insert - local collection document should have extra property
     doc.before_insert_value = true
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ start_value: true }, function (err, id) {
-      if (err) throw err
-      if (Meteor.isServer) {
-        test.equal(tmp.typeof_userId, 'undefined', 'Local collection on server should NOT know about a userId')
-      } else {
-        test.equal(tmp.typeof_userId, 'string', 'There should be a userId on the client')
-      }
-      test.equal(collection.find({ start_value: true, before_insert_value: true }).count(), 1)
-      next()
-    })
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true })
+
+    if (Meteor.isServer) {
+      test.equal(tmp.typeof_userId, 'undefined', 'Local collection on server should NOT know about a userId')
+    } else {
+      test.equal(tmp.typeof_userId, 'string', 'There should be a userId on the client')
+    }
+    test.equal(await collection.find({ start_value: true, before_insert_value: true }).countAsync(), 1)
   })
 })
 

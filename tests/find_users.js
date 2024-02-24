@@ -17,7 +17,7 @@ Tinytest.addAsync('users - find hooks should be capable of being used on special
     }
   })
 
-  InsecureLogin.ready(function () {
+  InsecureLogin.ready(async function () {
     const selector = { test: 1 }
     Meteor.users.find(selector)
     test.equal(Object.prototype.hasOwnProperty.call(selector, 'a'), true)
@@ -25,7 +25,7 @@ Tinytest.addAsync('users - find hooks should be capable of being used on special
     aspect1.remove()
     aspect2.remove()
 
-    test.notEqual(Meteor.users.find().count(), 0)
+    test.notEqual(await Meteor.users.find().countAsync(), 0)
 
     next()
   })
@@ -46,6 +46,7 @@ Tinytest.addAsync('users - find hooks should be capable of being used on wrapped
 
   // eslint-disable-next-line array-callback-return
   const aspect1 = Meteor.users.before.find(function (userId, selector, options) {
+    console.log('before find', selector, options)
     if (selector && selector.test) {
       selector.a = 1
     }
@@ -53,23 +54,27 @@ Tinytest.addAsync('users - find hooks should be capable of being used on wrapped
 
   // eslint-disable-next-line array-callback-return
   const aspect2 = Meteor.users.after.find(function (userId, selector, options) {
+    console.log('after find', selector, options)
     if (selector && selector.test) {
       selector.b = 1
     }
   })
 
-  InsecureLogin.ready(function () {
+  InsecureLogin.ready(async function () {
     const selector = { test: 1 }
-    Meteor.users.find(selector)
+    const res = Meteor.users.find(selector)
+    console.log('res', res)
+    console.log('selector', selector)
     test.equal(Object.prototype.hasOwnProperty.call(selector, 'a'), true)
     test.equal(Object.prototype.hasOwnProperty.call(selector, 'b'), true)
     aspect1.remove()
     aspect2.remove()
 
-    test.notEqual(Meteor.users.find().count(), 0)
+    test.notEqual(await Meteor.users.find().countAsync(), 0)
 
     Meteor.users.find = MeteorUsersFind
 
+    console.log('calling next')
     next()
   })
 })

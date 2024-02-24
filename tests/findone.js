@@ -43,9 +43,9 @@ Tinytest.addAsync('findone - tmp variable should have property added after the f
   })
 
   InsecureLogin.ready(function () {
-    collection.insert({ start_value: true }, function (err, id) {
+    collection.insert({ start_value: true }, async function (err, id) {
       if (err) throw err
-      collection.findOne({ start_value: true }, { test: 1 })
+      await collection.findOneAsync({ start_value: true }, { test: 1 })
       test.equal(tmp.after_findone, true)
       next()
     })

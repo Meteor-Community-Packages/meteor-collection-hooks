@@ -10,12 +10,15 @@ if (Meteor.isServer) {
   collection.allow({
     insert () { return true },
     update (userId, doc, fieldNames, modifier) { return modifier.$set.allowed },
+    updateAsync (userId, doc, fieldNames, modifier) {
+      return modifier.$set.allowed
+    },
     remove () { return true }
   })
 
   Meteor.methods({
     test_update_allow_reset_collection: function () {
-      collection.remove({})
+      return collection.removeAsync({})
     }
   })
 
@@ -39,8 +42,9 @@ if (Meteor.isClient) {
     InsecureLogin.ready(function () {
       Meteor.call('test_update_allow_reset_collection', function (nil, result) {
         function start (id1, id2) {
-          collection.update({ _id: id1 }, { $set: { update_value: true, allowed: true } }, function (err1) {
-            collection.update({ _id: id2 }, { $set: { update_value: true, allowed: false } }, function (err2) {
+          // TODO(v3): required to use async
+          collection.updateAsync({ _id: id1 }, { $set: { update_value: true, allowed: true } }).then(function () {
+            collection.updateAsync({ _id: id2 }, { $set: { update_value: true, allowed: false } }).then(null, function (err2) {
               test.equal(collection.find({ start_value: true, update_value: true, client_value: true, server_value: true }).count(), 1)
               next()
             })

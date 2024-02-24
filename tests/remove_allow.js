@@ -10,12 +10,13 @@ if (Meteor.isServer) {
   collection.allow({
     insert () { return true },
     update () { return true },
-    remove (userId, doc) { return doc.allowed }
+    remove (userId, doc) { return doc.allowed },
+    removeAsync (userId, doc) { return doc.allowed }
   })
 
   Meteor.methods({
     test_remove_allow_reset_collection: function () {
-      collection.remove({})
+      return collection.removeAsync({})
     }
   })
 
@@ -34,13 +35,15 @@ if (Meteor.isClient) {
 
     InsecureLogin.ready(function () {
       Meteor.call('test_remove_allow_reset_collection', function (nil, result) {
-        function start (id1, id2) {
-          collection.remove({ _id: id1 }, function (err1) {
-            collection.remove({ _id: id2 }, function (err2) {
-              test.equal(collection.find({ start_value: true }).count(), 1, 'only one document should remain')
-              next()
-            })
-          })
+        async function start (id1, id2) {
+          // TODO(v3): allow-deny
+          console.log('removing async')
+          await collection.removeAsync({ _id: id1 })
+          // just ignore the error
+          await collection.removeAsync({ _id: id2 }).catch((err) => {})
+
+          test.equal(collection.find({ start_value: true }).count(), 1, 'only one document should remain')
+          next()
         }
 
         // Insert two documents

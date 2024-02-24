@@ -1,26 +1,42 @@
+import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
-Tinytest.addAsync('try-catch - should call error callback on insert hook exception', function (test, next) {
+Tinytest.addAsync('try-catch - should call error callback on insert hook exception async', function (test, next) {
   const collection = new Mongo.Collection(null)
   const msg = 'insert hook test error'
 
   collection.before.insert(function (userId, doc) {
+    console.log('calling insert hook')
     throw new Error(msg)
   })
 
-  InsecureLogin.ready(function () {
+  InsecureLogin.ready(async function () {
     test.throws(function () {
-      collection.insert({ test: 1 })
+      collection.insertAsync({ test: 1 })
     }, msg)
+    next()
+  })
+})
 
-    collection.insert({ test: 1 }, function (err, id) {
-      test.equal(err && err.message, msg)
+if (Meteor.isClient) {
+  Tinytest.addAsync('try-catch - should call error callback on insert hook exception sync (client)', function (test, next) {
+    const collection = new Mongo.Collection(null)
+    const msg = 'insert hook test error'
+
+    collection.before.insert(function (userId, doc) {
+      throw new Error(msg)
+    })
+
+    InsecureLogin.ready(async function () {
+      test.throws(function () {
+        collection.insert({ test: 1 })
+      }, msg)
       next()
     })
   })
-})
+}
 
 Tinytest.addAsync('try-catch - should call error callback on update hook exception', function (test, next) {
   const collection = new Mongo.Collection(null)

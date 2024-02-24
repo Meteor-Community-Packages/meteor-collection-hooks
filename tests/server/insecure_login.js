@@ -5,8 +5,8 @@ import { InsecureLogin } from '../insecure_login'
 InsecureLogin.run()
 
 // Meteor.users.remove({'username': 'InsecureLogin'})
-if (!Meteor.users.find({ username: 'InsecureLogin' }).count()) {
-  Accounts.createUser({
+if (!(await Meteor.users.find({ username: 'InsecureLogin' }).countAsync())) {
+  await Accounts.createUserAsync({
     username: 'InsecureLogin',
     email: 'test@test.com',
     password: 'password',
@@ -14,9 +14,9 @@ if (!Meteor.users.find({ username: 'InsecureLogin' }).count()) {
   })
 }
 
-Accounts.registerLoginHandler(function (options) {
+Accounts.registerLoginHandler(async function (options) {
   if (!options.username) return
-  const user = Meteor.users.findOne({ username: options.username })
+  const user = await Meteor.users.findOneAsync({ username: options.username })
   if (!user) return
   return {
     userId: user._id

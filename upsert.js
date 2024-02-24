@@ -3,7 +3,7 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = a => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
+CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
   args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
 
   const ctx = { context: this, _super, args }
@@ -21,7 +21,8 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   if (!suppressAspects) {
     if (!isEmpty(aspectGroup.upsert.before) || !isEmpty(aspectGroup.update.after)) {
-      docs = CollectionHooks.getDocs.call(this, instance, selector, options).fetch()
+      const cursor = await CollectionHooks.getDocs.call(this, instance, selector, options)
+      docs = await cursor.fetch()
       docIds = docs.map(doc => doc._id)
     }
 
@@ -94,7 +95,7 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
     return CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, wrappedCallback))
   } else {
-    const ret = CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback))
+    const ret = await CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback))
 
     if (ret && ret.insertedId) {
       afterInsert(ret.insertedId)

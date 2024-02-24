@@ -3,7 +3,7 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = a => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
+CollectionHooks.defineAdvice('remove', async function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   const ctx = { context: this, _super, args }
   const [selector, callback] = args
   const async = typeof callback === 'function'
@@ -14,7 +14,8 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
   if (!suppressAspects) {
     try {
       if (!isEmpty(aspects.before) || !isEmpty(aspects.after)) {
-        docs = CollectionHooks.getDocs.call(this, instance, selector).fetch()
+        const cursor = await CollectionHooks.getDocs.call(this, instance, selector)
+        docs = await cursor.fetch()
       }
 
       // copy originals for convenience for the 'after' pointcut
@@ -54,7 +55,7 @@ CollectionHooks.defineAdvice('remove', function (userId, _super, instance, aspec
     }
     return _super.call(this, selector, wrappedCallback)
   } else {
-    const result = _super.call(this, selector, callback)
+    const result = await _super.call(this, selector, callback)
     after()
     return result
   }
