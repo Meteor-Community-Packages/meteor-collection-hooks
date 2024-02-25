@@ -38,13 +38,22 @@ CollectionHooks.defineAdvice('remove', async function (userId, _super, instance,
     }
   }
 
-  function after (err) {
+  async function after (err) {
     if (!suppressAspects) {
+      const promises = []
       aspects.after.forEach((o) => {
-        prev.forEach((doc) => {
+        const result = prev.forEach((doc) => {
           o.aspect.call({ transform: getTransform(doc), err, ...ctx }, userId, doc)
         })
+
+        if (CollectionHooks.isPromise(result)) {
+          promises.push(result)
+        }
       })
+
+      if (promises.length) {
+        return Promise.all(promises)
+      }
     }
   }
 
@@ -56,7 +65,7 @@ CollectionHooks.defineAdvice('remove', async function (userId, _super, instance,
     return _super.call(this, selector, wrappedCallback)
   } else {
     const result = await _super.call(this, selector, callback)
-    after()
+    await after()
     return result
   }
 })

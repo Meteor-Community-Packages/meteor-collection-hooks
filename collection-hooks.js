@@ -90,7 +90,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
     const asyncMethod = method + 'Async'
 
-    // TODO: don't understand why this is necessary. Maybe related to Meteor 2.x and async?
+    // TODO(v3): don't understand why this is necessary. Maybe related to Meteor 2.x and async?
     if (constructor.prototype[asyncMethod]) {
       self.direct[asyncMethod] = function (...args) {
         return CollectionHooks.directOp(function () {
