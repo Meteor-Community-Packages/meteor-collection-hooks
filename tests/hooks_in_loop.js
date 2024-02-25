@@ -12,14 +12,14 @@ if (Meteor.isServer) {
   // full client-side access
   collection.allow({
     insert: function () { return true },
-    update: function () { return true },
+    updateAsync: function () { return true },
     remove: function () { return true }
   })
 
   Meteor.methods({
     test_hooks_in_loop_reset_collection: function () {
       s1 = 0
-      collection.remove({})
+      return collection.removeAsync({})
     }
   })
 
@@ -49,7 +49,8 @@ if (Meteor.isClient) {
       Meteor.call('test_hooks_in_loop_reset_collection', function (nil, result) {
         function start (id) {
           for (let i = 0; i < times; i++) {
-            collection.update({ _id: id }, { $set: { times: times } }, function (nil) {
+            // TODO(v3): allow-deny error findOne on server
+            collection.updateAsync({ _id: id }, { $set: { times: times } }).then(function (nil) {
               c2++
               check()
             })

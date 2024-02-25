@@ -121,40 +121,44 @@ import { Tinytest } from 'meteor/tinytest';
 //   })
 // })
 
+// TODO(v3): failing on client
 [{}, { connection: null }].forEach(function (conntype, i) {
   [null, 'direct_collection_test_stringid'].forEach(function (ctype) {
     const cname = ctype && (ctype + i)
-    Tinytest.add(`direct - update and remove should allow removing by _id string (${cname}, ${JSON.stringify(conntype)})`, function (test) {
+    Tinytest.addAsync(`direct - update and remove should allow removing by _id string (${cname}, ${JSON.stringify(conntype)})`, async function (test) {
       const collection = new Mongo.Collection(cname, conntype)
 
       // Full permissions on collection
       collection.allow({
         insert: function () { return true },
         update: function () { return true },
-        remove: function () { return true }
+        remove: function () { return true },
+        insertAsync: function () { return true },
+        updateAsync: function () { return true },
+        removeAsync: function () { return true }
       })
 
-      function hasCountAndTestValue (count, value) {
-        const cursor = collection.direct.find({ _id: 'testid', test: value })
-        test.equal(cursor.count(), count)
+      async function hasCountAndTestValue (count, value) {
+        const cursor = await collection.direct.find({ _id: 'testid', test: value })
+        test.equal(await cursor.countAsync(), count)
       }
 
-      collection.direct.remove({ _id: 'testid' })
-      collection.direct.insert({ _id: 'testid', test: 1 })
-      hasCountAndTestValue(1, 1)
-      collection.direct.update('testid', { $set: { test: 2 } })
-      hasCountAndTestValue(1, 2)
-      collection.direct.remove('testid')
-      hasCountAndTestValue(0, 2)
+      await collection.direct.removeAsync({ _id: 'testid' })
+      await collection.direct.insertAsync({ _id: 'testid', test: 1 })
+      await hasCountAndTestValue(1, 1)
+      await collection.direct.updateAsync('testid', { $set: { test: 2 } })
+      await hasCountAndTestValue(1, 2)
+      await collection.direct.removeAsync('testid')
+      await hasCountAndTestValue(0, 2)
     })
   })
 })
 
 if (Meteor.isServer) {
-  Tinytest.add('direct - Meteor.users.direct.insert should return _id, not an object', function (test) {
-    Meteor.users.remove('directinserttestid')
+  Tinytest.addAsync('direct - Meteor.users.direct.insert should return _id, not an object', async function (test) {
+    await Meteor.users.removeAsync('directinserttestid')
 
-    const result = Meteor.users.direct.insert({ _id: 'directinserttestid', test: 1 })
+    const result = await Meteor.users.direct.insertAsync({ _id: 'directinserttestid', test: 1 })
     test.isFalse(Object(result) === result)
   })
 }

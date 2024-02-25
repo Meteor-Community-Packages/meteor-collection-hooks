@@ -11,7 +11,7 @@ Package.onUse(function (api) {
   api.versionsFrom(['2.3', '2.8.1', '3.0-beta.0'])
 
   api.use([
-    'mongo@2.0.0-beta300.0',
+    'mongo',
     'tracker',
     'ejson',
     'minimongo',

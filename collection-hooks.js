@@ -16,6 +16,7 @@ export const CollectionHooks = {
     all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
+  // TODO(v3): withValue returns a promise now
   directOp (func) {
     return this.directEnv.withValue(true, func)
   },

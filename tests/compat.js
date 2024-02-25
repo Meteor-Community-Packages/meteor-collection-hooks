@@ -50,7 +50,8 @@ function simpleCountTest (collection, test, next) {
       if (err) throw err
       collection.update({ _id: id }, { $set: { update_value: true } }, function (err) {
         if (err) throw err
-        collection.remove({ _id: id }, function (nil) {
+        // TODO(v3): remove doesn't support callback
+        collection.removeAsync({ _id: id }).then(function (nil) {
           test.equal(counts.before.insert, 1, 'before insert should have 1 count')
           test.equal(counts.before.update, 1, 'before update should have 1 count')
           test.equal(counts.before.remove, 1, 'before remove should have 1 count')
