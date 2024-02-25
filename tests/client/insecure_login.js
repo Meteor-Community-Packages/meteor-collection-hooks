@@ -5,7 +5,6 @@ Accounts.callLoginMethod({
   methodArguments: [{ username: 'InsecureLogin' }],
   async userCallback (err) {
     if (err) throw err
-    console.info('Insecure login successful!')
     await InsecureLogin.run()
   }
 })

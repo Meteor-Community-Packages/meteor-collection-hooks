@@ -11,6 +11,7 @@ if (Meteor.isServer) {
     insert () { return true },
     update (userId, doc, fieldNames, modifier) { return modifier.$set.allowed },
     updateAsync (userId, doc, fieldNames, modifier) {
+      console.log('checking permissions', modifier.$set.allowed)
       return modifier.$set.allowed
     },
     remove () { return true }
@@ -44,7 +45,11 @@ if (Meteor.isClient) {
         function start (id1, id2) {
           // TODO(v3): required to use async
           collection.updateAsync({ _id: id1 }, { $set: { update_value: true, allowed: true } }).then(function () {
-            collection.updateAsync({ _id: id2 }, { $set: { update_value: true, allowed: false } }).then(null, function (err2) {
+            collection.updateAsync({ _id: id2 }, { $set: { update_value: true, allowed: false } }).then(() => {
+              // TODO(v2): allow-deny won't check permissions on the client (due to updateAsync?)
+              test.fail('should not be allowed to update')
+              next()
+            }, function (err2) {
               test.equal(collection.find({ start_value: true, update_value: true, client_value: true, server_value: true }).count(), 1)
               next()
             })

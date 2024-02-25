@@ -6,10 +6,10 @@ import { InsecureLogin } from './insecure_login'
 const collection1 = new Mongo.Collection('test_update_collection1')
 
 if (Meteor.isServer) {
-  Tinytest.addAsync('update - collection1 document should have extra property added to it before it is updated', async function (test, next) {
+  Tinytest.addAsync('update - collection1 document should have extra property added to it before it is updated', async function (test) {
     const tmp = {}
 
-    function start () {
+    async function start () {
       collection1.before.update(function (userId, doc, fieldNames, modifier) {
         // There should be no userId because the update was initiated
         // on the server -- there's no correlation to any specific user
@@ -17,22 +17,18 @@ if (Meteor.isServer) {
         modifier.$set.before_update_value = true
       })
 
-      collection1.updateAsync({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
-        if (err) throw err
-        test.equal(collection1.find({ start_value: true, update_value: true, before_update_value: true }).count(), 2)
-        test.equal(tmp.userId, undefined)
-        next()
-      })
+      await collection1.updateAsync({ start_value: true }, { $set: { update_value: true } }, { multi: true })
+
+      test.equal(await collection1.find({ start_value: true, update_value: true, before_update_value: true }).countAsync(), 2)
+      test.equal(tmp.userId, undefined)
     }
 
     await collection1.removeAsync({})
 
     // Add two documents
-    await collection1.insertAsync({ start_value: true }, async function () {
-      await collection1.insertAsync({ start_value: true }, function () {
-        start()
-      })
-    })
+    await collection1.insertAsync({ start_value: true })
+    await collection1.insertAsync({ start_value: true })
+    await start()
   })
 }
 
@@ -66,7 +62,11 @@ if (Meteor.isClient) {
 
   Tinytest.addAsync('update - collection2 document should have client-added and server-added extra properties added to it before it is updated', function (test, next) {
     let c = 0
-    const n = () => { if (++c === 2) { next() } }
+    const n = () => {
+      if (++c === 2) {
+        next()
+      }
+    }
 
     function start (err, id) {
       if (err) throw err
@@ -84,6 +84,7 @@ if (Meteor.isClient) {
       collection2.after.update(function (userId, doc, fieldNames, modifier) {
         test.equal(doc.update_value, true)
         test.equal(Object.prototype.hasOwnProperty.call(this.previous, 'update_value'), false)
+
         n()
       })
 
@@ -105,8 +106,9 @@ if (Meteor.isClient) {
       // W20240224-16:43:38.770(1)? (STDERR)     at EnvironmentVariableAsync.<anonymous> (packages/meteor.js:1285:23)
       // W20240224-16:43:38.770(1)? (STDERR)     at packages/meteor.js:771:17
       // W20240224-16:43:38.770(1)? (STDERR)     at AsyncLocalStorage.run (node:async_hooks:346:14)
-      collection2.updateAsync({ _id: id }, { $set: { update_value: true } }).then(function (res, err) {
-        if (err) throw err
+      collection2.updateAsync({ _id: id }, { $set: { update_value: true } }).then(async function () {
+        // TODO(v3): this is required for Meteor v2 to work
+        await new Promise(resolve => setTimeout(resolve, 100))
         test.equal(collection2.find({ start_value: true, client_value: true, server_value: true }).count(), 1)
         n()
       })

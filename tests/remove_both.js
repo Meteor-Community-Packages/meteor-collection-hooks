@@ -91,9 +91,12 @@ if (Meteor.isClient) {
     let external = 0
     let c = 0
     const n = () => {
-      if (++c === 2) {
+      ++c
+      if (c === 2) {
         test.equal(external, 2)
         next()
+      } else {
+        test.fail('should not be called more than twice')
       }
     }
 

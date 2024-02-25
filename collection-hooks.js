@@ -2,12 +2,15 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { EJSON } from 'meteor/ejson'
 import { LocalCollection } from 'meteor/minimongo'
+import { IS_NO_FIBER_METEOR } from './utils'
 
 // Relevant AOP terminology:
 // Aspect: User code that runs before/after (hook)
 // Advice: Wrapper code that knows when to call user code (aspects)
 // Pointcut: before/after
 const advices = {}
+
+const asyncCallEnv = new Meteor.EnvironmentVariable()
 
 export const CollectionHooks = {
   defaults: {
@@ -102,7 +105,12 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
     function getWrappedMethod (_super) {
       return function wrappedMethod (...args) {
-        if (CollectionHooks.directEnv.get() === true) {
+        // TODO(v2): not quite sure why _super in the first updateAsync call points to LocalCollection's wrapped async method which
+        // will then again call this wrapped method
+        if (
+          (method === 'update' && this.update.isCalledFromAsync) ||
+          (method === 'remove' && this.remove.isCalledFromAsync) ||
+          CollectionHooks.directEnv.get() === true) {
           return _super.apply(collection, args)
         }
 
@@ -137,14 +145,37 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
           args,
           false
         )
+
+        // return advice.call(this,
+        //   CollectionHooks.getUserId(),
+        //   _super,
+        //   self,
+        //   method === 'upsert'
+        //     ? {
+        //         insert: self._hookAspects.insert || {},
+        //         update: self._hookAspects.update || {},
+        //         upsert: self._hookAspects.upsert || {}
+        //       }
+        //     : self._hookAspects[method] || {},
+        //   function (doc) {
+        //     return (
+        //       typeof self._transform === 'function'
+        //         ? function (d) { return self._transform(d || doc) }
+        //         : function (d) { return d || doc }
+        //     )
+        //   },
+        //   args,
+        //   false
+        // )
       }
     }
 
-    // TODO: it appears this is necessary
+    // TODO(v3): it appears this is necessary
+    // In Meteor 2 *Async methods call the non-async methods
     if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
       const _superAsync = collection[asyncMethod]
       // const wrapped = getWrappedMethod(_superAsync);
-      collection[asyncMethod] = getWrappedMethod(_superAsync)
+      collection[asyncMethod] = getWrappedMethod(_superAsync, !IS_NO_FIBER_METEOR)
     }
 
     collection[method] = getWrappedMethod(_super)

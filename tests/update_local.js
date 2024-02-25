@@ -119,10 +119,10 @@ Tinytest.addAsync('update - local collection should fire after-update hook witho
   })
 })
 
-Tinytest.addAsync('update - no previous document should be present if fetchPrevious is false', async function (test, next) {
+Tinytest.addAsync('update - no previous document should be present if fetchPrevious is false', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  function start () {
+  async function start () {
     collection.after.update(
       function (userId, doc, fieldNames, modifier) {
         test.equal(this.previous, undefined)
@@ -130,18 +130,15 @@ Tinytest.addAsync('update - no previous document should be present if fetchPrevi
       { fetchPrevious: false }
     )
 
-    collection.updateAsync({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function () {
-      next()
-    })
+    await collection.updateAsync({ start_value: true }, { $set: { update_value: true } }, { multi: true })
   }
 
-  InsecureLogin.ready(function () {
+  await InsecureLogin.ready(async function () {
     // Add two documents
-    collection.insertAsync({ start_value: true }, function () {
-      collection.insertAsync({ start_value: true }, function () {
-        start()
-      })
-    })
+    await collection.insertAsync({ start_value: true })
+
+    await collection.insertAsync({ start_value: true })
+    await start()
   })
 })
 

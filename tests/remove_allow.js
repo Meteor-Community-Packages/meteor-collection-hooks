@@ -37,7 +37,6 @@ if (Meteor.isClient) {
       Meteor.call('test_remove_allow_reset_collection', function (nil, result) {
         async function start (id1, id2) {
           // TODO(v3): allow-deny
-          console.log('removing async')
           await collection.removeAsync({ _id: id1 })
           // just ignore the error
           await collection.removeAsync({ _id: id2 }).catch((err) => {})
