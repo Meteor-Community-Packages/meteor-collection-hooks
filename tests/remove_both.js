@@ -95,7 +95,7 @@ if (Meteor.isClient) {
       if (c === 2) {
         test.equal(external, 2)
         next()
-      } else {
+      } else if (c > 2) {
         test.fail('should not be called more than twice')
       }
     }

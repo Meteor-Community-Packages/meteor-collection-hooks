@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { Tinytest } from 'meteor/tinytest';
+import { Tinytest } from 'meteor/tinytest'
 
 // XXX: Code below throws
 // TypeError: Cannot read property '#<Object>' of undefined
@@ -122,37 +122,52 @@ import { Tinytest } from 'meteor/tinytest';
 // })
 
 // TODO(v3): failing on client
-[{}, { connection: null }].forEach(function (conntype, i) {
-  [null, 'direct_collection_test_stringid'].forEach(function (ctype) {
-    const cname = ctype && (ctype + i)
-    Tinytest.addAsync(`direct - update and remove should allow removing by _id string (${cname}, ${JSON.stringify(conntype)})`, async function (test) {
-      const collection = new Mongo.Collection(cname, conntype)
+// [{}, { connection: null }].forEach(function (conntype, i) {
+//   [null, 'direct_collection_test_stringid'].forEach(function (ctype) {
+//     const cname = ctype && (ctype + i)
+//   })
+// })
 
-      // Full permissions on collection
-      collection.allow({
-        insert: function () { return true },
-        update: function () { return true },
-        remove: function () { return true },
-        insertAsync: function () { return true },
-        updateAsync: function () { return true },
-        removeAsync: function () { return true }
-      })
+function createTest (cname, conntype) {
+  Tinytest.addAsync(`direct - update and remove should allow removing by _id string (${cname}, ${JSON.stringify(conntype)})`, async function (test) {
+    const collection = new Mongo.Collection(cname, conntype)
 
-      async function hasCountAndTestValue (count, value) {
-        const cursor = await collection.direct.find({ _id: 'testid', test: value })
-        test.equal(await cursor.countAsync(), count)
-      }
-
-      await collection.direct.removeAsync({ _id: 'testid' })
-      await collection.direct.insertAsync({ _id: 'testid', test: 1 })
-      await hasCountAndTestValue(1, 1)
-      await collection.direct.updateAsync('testid', { $set: { test: 2 } })
-      await hasCountAndTestValue(1, 2)
-      await collection.direct.removeAsync('testid')
-      await hasCountAndTestValue(0, 2)
+    // Full permissions on collection
+    collection.allow({
+      insert: function () { return true },
+      update: function () { return true },
+      remove: function () { return true },
+      insertAsync: function () { return true },
+      updateAsync: function () { return true },
+      removeAsync: function () { return true }
     })
+
+    async function hasCountAndTestValue (count, value) {
+      const cursor = await collection.direct.find({ _id: 'testid', test: value })
+      test.equal(await cursor.countAsync(), count)
+    }
+
+    await collection.direct.removeAsync({ _id: 'testid' })
+    await collection.direct.insertAsync({ _id: 'testid', test: 1 })
+
+    // TODO(v3): returns []
+    console.log(await collection.find().fetchAsync())
+
+    await hasCountAndTestValue(1, 1)
+    await collection.direct.updateAsync('testid', { $set: { test: 2 } })
+    await hasCountAndTestValue(1, 2)
+    await collection.direct.removeAsync('testid')
+    await hasCountAndTestValue(0, 2)
   })
-})
+}
+
+// TODO(v3): failing on client
+createTest('direct_collection_test_stringid0', {})
+
+// The rest are working
+createTest(null, {})
+createTest('direct_collection_test_stringid1', { connection: null })
+createTest(null, { connection: null })
 
 if (Meteor.isServer) {
   Tinytest.addAsync('direct - Meteor.users.direct.insert should return _id, not an object', async function (test) {

@@ -11,7 +11,6 @@ if (Meteor.isServer) {
     insert () { return true },
     update (userId, doc, fieldNames, modifier) { return modifier.$set.allowed },
     updateAsync (userId, doc, fieldNames, modifier) {
-      console.log('checking permissions', modifier.$set.allowed)
       return modifier.$set.allowed
     },
     remove () { return true }

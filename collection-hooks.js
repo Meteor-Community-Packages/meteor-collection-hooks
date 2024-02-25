@@ -2,15 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { EJSON } from 'meteor/ejson'
 import { LocalCollection } from 'meteor/minimongo'
-import { IS_NO_FIBER_METEOR } from './utils'
 
 // Relevant AOP terminology:
 // Aspect: User code that runs before/after (hook)
 // Advice: Wrapper code that knows when to call user code (aspects)
 // Pointcut: before/after
 const advices = {}
-
-const asyncCallEnv = new Meteor.EnvironmentVariable()
 
 export const CollectionHooks = {
   defaults: {
@@ -145,28 +142,6 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
           args,
           false
         )
-
-        // return advice.call(this,
-        //   CollectionHooks.getUserId(),
-        //   _super,
-        //   self,
-        //   method === 'upsert'
-        //     ? {
-        //         insert: self._hookAspects.insert || {},
-        //         update: self._hookAspects.update || {},
-        //         upsert: self._hookAspects.upsert || {}
-        //       }
-        //     : self._hookAspects[method] || {},
-        //   function (doc) {
-        //     return (
-        //       typeof self._transform === 'function'
-        //         ? function (d) { return self._transform(d || doc) }
-        //         : function (d) { return d || doc }
-        //     )
-        //   },
-        //   args,
-        //   false
-        // )
       }
     }
 
@@ -175,7 +150,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
     if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
       const _superAsync = collection[asyncMethod]
       // const wrapped = getWrappedMethod(_superAsync);
-      collection[asyncMethod] = getWrappedMethod(_superAsync, !IS_NO_FIBER_METEOR)
+      collection[asyncMethod] = getWrappedMethod(_superAsync)
     }
 
     collection[method] = getWrappedMethod(_super)
