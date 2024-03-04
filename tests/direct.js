@@ -150,9 +150,6 @@ function createTest (cname, conntype) {
     await collection.direct.removeAsync({ _id: 'testid' })
     await collection.direct.insertAsync({ _id: 'testid', test: 1 })
 
-    // TODO(v3): returns []
-    console.log(await collection.find().fetchAsync())
-
     await hasCountAndTestValue(1, 1)
     await collection.direct.updateAsync('testid', { $set: { test: 2 } })
     await hasCountAndTestValue(1, 2)
@@ -161,8 +158,11 @@ function createTest (cname, conntype) {
   })
 }
 
-// TODO(v3): failing on client
-createTest('direct_collection_test_stringid0', {})
+// NOTE: failing on client without resolverType: 'stub'
+// See: https://github.com/meteor/meteor/issues/13036
+createTest('direct_collection_test_stringid0', {
+  resolverType: 'stub'
+})
 
 // The rest are working
 createTest(null, {})
