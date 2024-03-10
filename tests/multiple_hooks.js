@@ -38,7 +38,8 @@ Tinytest.addAsync('general - multiple hooks should all fire the appropriate numb
       if (err) throw err
       collection.update({ _id: id }, { $set: {} }, function (err) {
         if (err) throw err
-        collection.remove({ _id: id }, function (nil) {
+        // TODO(v3): remove doesn't support callback
+        collection.removeAsync({ _id: id }).then(function (nil) {
           test.equal(counts.before.insert, 2)
           test.equal(counts.before.update, 2)
           test.equal(counts.before.remove, 2)

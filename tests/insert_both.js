@@ -6,10 +6,10 @@ import { InsecureLogin } from './insecure_login'
 if (Meteor.isServer) {
   const collection1 = new Mongo.Collection('test_insert_collection1')
 
-  Tinytest.addAsync('insert - collection1 document should have extra property added to it before it is inserted', function (test, next) {
+  Tinytest.addAsync('insert - collection1 document should have extra property added to it before it is inserted', async function (test, next) {
     const tmp = {}
 
-    collection1.remove({})
+    await collection1.removeAsync({})
 
     collection1.before.insert(function (userId, doc) {
       // There should be no userId because the insert was initiated
@@ -18,11 +18,11 @@ if (Meteor.isServer) {
       doc.before_insert_value = true
     })
 
-    collection1.insert({ start_value: true }, function () {
-      test.equal(collection1.find({ start_value: true, before_insert_value: true }).count(), 1)
-      test.equal(tmp.userId, undefined)
-      next()
-    })
+    await collection1.insertAsync({ start_value: true })
+    test.equal(await collection1.find({ start_value: true, before_insert_value: true }).countAsync(), 1)
+    test.equal(tmp.userId, undefined)
+
+    next()
   })
 }
 
@@ -38,7 +38,7 @@ if (Meteor.isServer) {
 
   Meteor.methods({
     test_insert_reset_collection2: function () {
-      collection2.remove({})
+      return collection2.removeAsync({})
     }
   })
 
@@ -56,26 +56,30 @@ if (Meteor.isClient) {
   Meteor.subscribe('test_insert_publish_collection2')
 
   Tinytest.addAsync('insert - collection2 document on client should have client-added and server-added extra properties added to it before it is inserted', function (test, next) {
-    collection2.before.insert(function (userId, doc) {
+    async function fnAsync () {
+      collection2.before.insert(function (userId, doc) {
       // console.log('test_insert_collection2 BEFORE INSERT', userId, doc)
-      test.notEqual(userId, undefined, 'the userId should be present since we are on the client')
-      test.equal(collection2.find({ start_value: true }).count(), 0, 'collection2 should not have the test document in it')
-      doc.client_value = true
-    })
+        test.notEqual(userId, undefined, 'the userId should be present since we are on the client')
+        test.equal(collection2.find({ start_value: true }).count(), 0, 'collection2 should not have the test document in it')
+        doc.client_value = true
+      })
 
-    collection2.after.insert(function (userId, doc) {
-      // console.log('test_insert_collection2 AFTER INSERT', userId, doc)
-      test.notEqual(this._id, undefined, 'the _id should be available on this')
-    })
+      collection2.after.insert(function (userId, doc) {
+        // console.log('test_insert_collection2 AFTER INSERT', userId, doc)
+        test.notEqual(this._id, undefined, 'the _id should be available on this')
+      })
 
-    InsecureLogin.ready(function () {
-      Meteor.call('test_insert_reset_collection2', function (nil, result) {
+      await InsecureLogin.ready(async function () {
+        await Meteor.callAsync('test_insert_reset_collection2')
         // console.log('test_insert_collection2 INSERT')
         collection2.insert({ start_value: true }, function () {
           test.equal(collection2.find({ start_value: true, client_value: true, server_value: true }).count(), 1, 'collection2 should have the test document with client_value AND server_value in it')
+
           next()
         })
       })
-    })
+    }
+
+    fnAsync()
   })
 }

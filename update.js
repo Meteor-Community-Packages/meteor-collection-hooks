@@ -3,7 +3,7 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = a => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
+CollectionHooks.defineAdvice('update', async function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   const ctx = { context: this, _super, args }
   let [selector, mutator, options, callback] = args
   if (typeof options === 'function') {
@@ -35,7 +35,8 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
         const beforeGlobal = shouldFetchForPrevious ? (CollectionHooks.extendOptions(instance.hookOptions, {}, 'before', 'update').fetchFields || {}) : {}
         Object.assign(fetchFields, afterGlobal, beforeGlobal, ...afterAspectFetchFields, ...beforeAspectFetchFields)
       }
-      docs = CollectionHooks.getDocs.call(this, instance, args[0], args[2], fetchFields).fetch()
+      const cursor = await CollectionHooks.getDocs.call(this, instance, args[0], args[2], fetchFields)
+      docs = await cursor.fetch()
       docIds = Object.values(docs).map(doc => doc._id)
 
       // copy originals for convenience for the 'after' pointcut
@@ -65,7 +66,7 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
     }
   }
 
-  const after = (affected, err) => {
+  const after = async (affected, err) => {
     if (!suppressAspects) {
       let docs
       let fields
@@ -77,7 +78,10 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
         if (aspectFetchFields || globalFetchFields) {
           Object.assign(fetchFields, globalFetchFields || {}, ...aspectFetchFields.map(a => a.fetchFields))
         }
-        docs = CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options, fetchFields, { useDirect: true }).fetch()
+
+        const cursor = await CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options, fetchFields, { useDirect: true })
+
+        docs = await cursor.fetch()
       }
 
       aspects.after.forEach((o) => {
@@ -101,8 +105,9 @@ CollectionHooks.defineAdvice('update', function (userId, _super, instance, aspec
     }
     return _super.call(this, selector, mutator, options, wrappedCallback)
   } else {
-    const affected = _super.call(this, selector, mutator, options, callback)
-    after(affected)
+    const affected = await _super.call(this, selector, mutator, options, callback)
+    // TODO(v3): do we want await here?
+    await after(affected)
     return affected
   }
 })

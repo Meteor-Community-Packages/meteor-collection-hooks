@@ -30,5 +30,8 @@
     "eslint-plugin-react": "^7.31.4",
     "eslint-plugin-standard": "^4.1.0",
     "spacejam": "^1.6.1"
+  },
+  "volta": {
+    "node": "20.9.0"
   }
 }

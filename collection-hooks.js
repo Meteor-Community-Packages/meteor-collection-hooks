@@ -16,6 +16,7 @@ export const CollectionHooks = {
     all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
+  // TODO(v3): withValue returns a promise now
   directOp (func) {
     return this.directEnv.withValue(true, func)
   },
@@ -76,6 +77,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
   // Wrap mutator methods, letting the defined advice do the work
   Object.entries(advices).forEach(function ([method, advice]) {
+    // For client side, it wraps around minimongo LocalCollection
+    // For server side, it wraps around mongo Collection._collection (i.e. driver directly)
     const collection = Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
@@ -90,6 +93,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
     const asyncMethod = method + 'Async'
 
+    // TODO(v3): don't understand why this is necessary. Maybe related to Meteor 2.x and async?
     if (constructor.prototype[asyncMethod]) {
       self.direct[asyncMethod] = function (...args) {
         return CollectionHooks.directOp(function () {
@@ -98,43 +102,59 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
       }
     }
 
-    collection[method] = function (...args) {
-      if (CollectionHooks.directEnv.get() === true) {
-        return _super.apply(collection, args)
+    function getWrappedMethod (_super) {
+      return function wrappedMethod (...args) {
+        // TODO(v2): not quite sure why _super in the first updateAsync call points to LocalCollection's wrapped async method which
+        // will then again call this wrapped method
+        if (
+          (method === 'update' && this.update.isCalledFromAsync) ||
+          (method === 'remove' && this.remove.isCalledFromAsync) ||
+          CollectionHooks.directEnv.get() === true) {
+          return _super.apply(collection, args)
+        }
+
+        // NOTE: should we decide to force `update` with `{upsert:true}` to use
+        // the `upsert` hooks, this is what will accomplish it. It's important to
+        // realize that Meteor won't distinguish between an `update` and an
+        // `insert` though, so we'll end up with `after.update` getting called
+        // even on an `insert`. That's why we've chosen to disable this for now.
+        // if (method === "update" && Object(args[2]) === args[2] && args[2].upsert) {
+        //   method = "upsert";
+        //   advice = CollectionHooks.getAdvice(method);
+        // }
+
+        return advice.call(this,
+          CollectionHooks.getUserId(),
+          _super,
+          self,
+          method === 'upsert'
+            ? {
+                insert: self._hookAspects.insert || {},
+                update: self._hookAspects.update || {},
+                upsert: self._hookAspects.upsert || {}
+              }
+            : self._hookAspects[method] || {},
+          function (doc) {
+            return (
+              typeof self._transform === 'function'
+                ? function (d) { return self._transform(d || doc) }
+                : function (d) { return d || doc }
+            )
+          },
+          args,
+          false
+        )
       }
-
-      // NOTE: should we decide to force `update` with `{upsert:true}` to use
-      // the `upsert` hooks, this is what will accomplish it. It's important to
-      // realize that Meteor won't distinguish between an `update` and an
-      // `insert` though, so we'll end up with `after.update` getting called
-      // even on an `insert`. That's why we've chosen to disable this for now.
-      // if (method === "update" && Object(args[2]) === args[2] && args[2].upsert) {
-      //   method = "upsert";
-      //   advice = CollectionHooks.getAdvice(method);
-      // }
-
-      return advice.call(this,
-        CollectionHooks.getUserId(),
-        _super,
-        self,
-        method === 'upsert'
-          ? {
-              insert: self._hookAspects.insert || {},
-              update: self._hookAspects.update || {},
-              upsert: self._hookAspects.upsert || {}
-            }
-          : self._hookAspects[method] || {},
-        function (doc) {
-          return (
-            typeof self._transform === 'function'
-              ? function (d) { return self._transform(d || doc) }
-              : function (d) { return d || doc }
-          )
-        },
-        args,
-        false
-      )
     }
+
+    // TODO(v3): it appears this is necessary
+    // In Meteor 2 *Async methods call the non-async methods
+    if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
+      const _superAsync = collection[asyncMethod]
+      collection[asyncMethod] = getWrappedMethod(_superAsync)
+    }
+
+    collection[method] = getWrappedMethod(_super)
   })
 }
 
@@ -286,6 +306,17 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   // Meteor overrides the apply method which is copied from the constructor in the loop above. Replace it with the
   // default method which we need if we were to further wrap ns.Collection.
   ns.Collection.apply = Function.prototype.apply
+}
+
+CollectionHooks.isPromise = (value) => {
+  return value && typeof value.then === 'function'
+}
+
+CollectionHooks.callAfterValueOrPromise = (value, cb) => {
+  if (CollectionHooks.isPromise(value)) {
+    return value.then((res) => cb(res))
+  }
+  return cb(value)
 }
 
 CollectionHooks.modify = LocalCollection._modify

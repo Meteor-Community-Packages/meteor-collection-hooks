@@ -22,10 +22,11 @@ CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspe
         o.aspect.call(ctx, userId, selector, options, doc)
       })
     }
+
+    // return because of callAfterValueOrPromise
+    return doc
   }
 
   const ret = _super.call(this, selector, options)
-  after(ret)
-
-  return ret
+  return CollectionHooks.callAfterValueOrPromise(ret, (ret) => after(ret))
 })

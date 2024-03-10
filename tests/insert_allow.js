@@ -15,7 +15,7 @@ if (Meteor.isServer) {
 
   Meteor.methods({
     test_insert_allow_reset_collection: function () {
-      collection.remove({})
+      return collection.removeAsync({})
     }
   })
 

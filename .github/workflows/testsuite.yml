@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         meteorRelease:
-          - '--release 2.3'
-          - '--release 2.8.1'
-          - '--release 2.14'
-          # Latest version
+          # - '--release 2.3'
+          # - '--release 2.8.1'
+          # - '--release 2.14'
+          - '--release 3.0-beta.6'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

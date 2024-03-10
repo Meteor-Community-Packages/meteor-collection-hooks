@@ -119,10 +119,10 @@ Tinytest.addAsync('update - local collection should fire after-update hook witho
   })
 })
 
-Tinytest.addAsync('update - no previous document should be present if fetchPrevious is false', function (test, next) {
+Tinytest.addAsync('update - no previous document should be present if fetchPrevious is false', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  function start () {
+  async function start () {
     collection.after.update(
       function (userId, doc, fieldNames, modifier) {
         test.equal(this.previous, undefined)
@@ -130,52 +130,45 @@ Tinytest.addAsync('update - no previous document should be present if fetchPrevi
       { fetchPrevious: false }
     )
 
-    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function () {
-      next()
-    })
+    await collection.updateAsync({ start_value: true }, { $set: { update_value: true } }, { multi: true })
   }
 
-  InsecureLogin.ready(function () {
+  await InsecureLogin.ready(async function () {
     // Add two documents
-    collection.insert({ start_value: true }, function () {
-      collection.insert({ start_value: true }, function () {
-        start()
-      })
-    })
+    await collection.insertAsync({ start_value: true })
+
+    await collection.insertAsync({ start_value: true })
+    await start()
   })
 })
 
-Tinytest.addAsync('update - a previous document should be present if fetchPrevious is true', function (test, next) {
+Tinytest.addAsync('update - a previous document should be present if fetchPrevious is true', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  function start () {
+  async function start () {
     collection.after.update(
       function (userId, doc, fieldNames, modifier) {
-        test.notEqual(this.previous, undefined)
+        test.notEqual('abc', undefined, 'previous must be an object')
         test.notEqual(this.previous.start_value, undefined)
       },
       { fetchPrevious: true }
     )
 
-    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function () {
-      next()
-    })
+    await collection.updateAsync({ start_value: true }, { $set: { update_value: true } }, { multi: true })
   }
 
-  InsecureLogin.ready(function () {
+  await InsecureLogin.ready(async function () {
     // Add two documents
-    collection.insert({ start_value: true }, function () {
-      collection.insert({ start_value: true }, function () {
-        start()
-      })
-    })
+    await collection.insertAsync({ start_value: true })
+    await collection.insertAsync({ start_value: true })
+    await start()
   })
 })
 
-Tinytest.addAsync('update - a previous document should be present if fetchPrevious is true, but only requested fields if present', function (test, next) {
+Tinytest.addAsync('update - a previous document should be present if fetchPrevious is true, but only requested fields if present', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  function start () {
+  async function start () {
     collection.after.update(
       function (userId, doc, fieldNames, modifier) {
         test.notEqual(this.previous, undefined)
@@ -185,17 +178,13 @@ Tinytest.addAsync('update - a previous document should be present if fetchPrevio
       { fetchPrevious: true, fetchFields: { start_value: true } }
     )
 
-    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function () {
-      next()
-    })
+    collection.update({ start_value: true }, { $set: { update_value: true } }, { multi: true })
   }
 
-  InsecureLogin.ready(function () {
+  await InsecureLogin.ready(async function () {
     // Add two documents
-    collection.insert({ start_value: true, another_value: true }, function () {
-      collection.insert({ start_value: true, another_value: true }, function () {
-        start()
-      })
-    })
+    await collection.insertAsync({ start_value: true, another_value: true })
+    await collection.insertAsync({ start_value: true, another_value: true })
+    await start()
   })
 })
