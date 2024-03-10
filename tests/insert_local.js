@@ -24,7 +24,7 @@ Tinytest.addAsync('insert - local collection document should have extra property
   })
 })
 
-Tinytest.addAsync('insert - local collection should fire after-insert hook', function (test, next) {
+Tinytest.addAsync('insert - local collection should fire after-insert hook', async function (test) {
   const collection = new Mongo.Collection(null)
 
   collection.after.insert(function (userId, doc) {
@@ -36,11 +36,9 @@ Tinytest.addAsync('insert - local collection should fire after-insert hook', fun
 
     test.notEqual(doc.start_value, undefined, 'doc should have start_value')
     test.notEqual(this._id, undefined, 'should provide inserted _id on this')
-
-    next()
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ start_value: true })
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true })
   })
 })

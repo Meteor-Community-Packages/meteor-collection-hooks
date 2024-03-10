@@ -77,6 +77,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
   // Wrap mutator methods, letting the defined advice do the work
   Object.entries(advices).forEach(function ([method, advice]) {
+    // For client side, it wraps around minimongo LocalCollection
+    // For server side, it wraps around mongo Collection._collection (i.e. driver directly)
     const collection = Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
@@ -149,7 +151,6 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
     // In Meteor 2 *Async methods call the non-async methods
     if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
       const _superAsync = collection[asyncMethod]
-      // const wrapped = getWrappedMethod(_superAsync);
       collection[asyncMethod] = getWrappedMethod(_superAsync)
     }
 
