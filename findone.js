@@ -1,6 +1,6 @@
 import { CollectionHooks } from './collection-hooks'
 
-CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
+CollectionHooks.defineAdvice('findOne', async function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
   const ctx = { context: this, _super, args }
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
@@ -8,25 +8,26 @@ CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspe
 
   // before
   if (!suppressAspects) {
-    aspects.before.forEach((o) => {
-      const r = o.aspect.call(ctx, userId, selector, options)
-      if (r === false) abort = true
-    })
+    for (const o of aspects.before) {
+      const r = await o.aspect.call(ctx, userId, selector, options)
+      if (r === false) {
+        abort = true
+        break
+      }
+    }
 
     if (abort) return
   }
 
-  function after (doc) {
+  async function after (doc) {
     if (!suppressAspects) {
-      aspects.after.forEach((o) => {
+      for (const o of aspects.after) {
         o.aspect.call(ctx, userId, selector, options, doc)
-      })
+      }
     }
-
-    // return because of callAfterValueOrPromise
-    return doc
   }
 
-  const ret = _super.call(this, selector, options)
-  return CollectionHooks.callAfterValueOrPromise(ret, (ret) => after(ret))
+  const ret = await _super.call(this, selector, options)
+  await after(ret)
+  return ret
 })

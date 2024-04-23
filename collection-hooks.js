@@ -11,8 +11,23 @@ const advices = {}
 
 export const CollectionHooks = {
   defaults: {
-    before: { insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {} },
-    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} },
+    before: {
+      insert: {},
+      update: {},
+      remove: {},
+      upsert: {},
+      find: {},
+      findOne: {},
+      all: {}
+    },
+    after: {
+      insert: {},
+      update: {},
+      remove: {},
+      find: {},
+      findOne: {},
+      all: {}
+    },
     all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
@@ -25,7 +40,10 @@ export const CollectionHooks = {
   }
 }
 
-CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
+CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
+  self,
+  constructor
+) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   ['before', 'after'].forEach(function (pointcut) {
@@ -49,7 +67,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
             // replacing is done by determining the actual index of a given target
             // and replace this with the new one
             const src = self._hookAspects[method][pointcut]
-            const targetIndex = src.findIndex(entry => entry === target)
+            const targetIndex = src.findIndex((entry) => entry === target)
             const newTarget = {
               aspect,
               options: CollectionHooks.initOptions(options, pointcut, method)
@@ -62,7 +80,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
             // removing a hook is done by determining the actual index of a given target
             // and removing it form the source array
             const src = self._hookAspects[method][pointcut]
-            const targetIndex = src.findIndex(entry => entry === target)
+            const targetIndex = src.findIndex((entry) => entry === target)
             self._hookAspects[method][pointcut].splice(targetIndex, 1)
           }
         }
@@ -79,7 +97,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
   Object.entries(advices).forEach(function ([method, advice]) {
     // For client side, it wraps around minimongo LocalCollection
     // For server side, it wraps around mongo Collection._collection (i.e. driver directly)
-    const collection = Meteor.isClient || method === 'upsert' ? self : self._collection
+    const collection =
+      Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
     const _super = collection[method]
@@ -109,7 +128,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         if (
           (method === 'update' && this.update.isCalledFromAsync) ||
           (method === 'remove' && this.remove.isCalledFromAsync) ||
-          CollectionHooks.directEnv.get() === true) {
+          CollectionHooks.directEnv.get() === true
+        ) {
           return _super.apply(collection, args)
         }
 
@@ -123,7 +143,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
         //   advice = CollectionHooks.getAdvice(method);
         // }
 
-        return advice.call(this,
+        return advice.call(
+          this,
           CollectionHooks.getUserId(),
           _super,
           self,
@@ -135,11 +156,13 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
               }
             : self._hookAspects[method] || {},
           function (doc) {
-            return (
-              typeof self._transform === 'function'
-                ? function (d) { return self._transform(d || doc) }
-                : function (d) { return d || doc }
-            )
+            return typeof self._transform === 'function'
+              ? function (d) {
+                return self._transform(d || doc)
+              }
+              : function (d) {
+                return d || doc
+              }
           },
           args,
           false
@@ -162,15 +185,31 @@ CollectionHooks.defineAdvice = (method, advice) => {
   advices[method] = advice
 }
 
-CollectionHooks.getAdvice = method => advices[method]
+CollectionHooks.getAdvice = (method) => advices[method]
 
 CollectionHooks.initOptions = (options, pointcut, method) =>
-  CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method)
+  CollectionHooks.extendOptions(
+    CollectionHooks.defaults,
+    options,
+    pointcut,
+    method
+  )
 
-CollectionHooks.extendOptions = (source, options, pointcut, method) =>
-  ({ ...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method] })
+CollectionHooks.extendOptions = (source, options, pointcut, method) => ({
+  ...options,
+  ...source.all.all,
+  ...source[pointcut].all,
+  ...source.all[method],
+  ...source[pointcut][method]
+})
 
-CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields = {}, { useDirect = false } = {}) {
+CollectionHooks.getDocs = function getDocs (
+  collection,
+  selector,
+  options,
+  fetchFields = {},
+  { useDirect = false } = {}
+) {
   const findOptions = { transform: null, reactive: false }
 
   if (Object.keys(fetchFields).length > 0) {
@@ -203,12 +242,18 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options, fetch
 
   // Unlike validators, we iterate over multiple docs, so use
   // find instead of findOne:
-  return (useDirect ? collection.direct : collection).find(selector, findOptions)
+  return (useDirect ? collection.direct : collection).find(
+    selector,
+    findOptions
+  )
 }
 
 // This function normalizes the selector (converting it to an Object)
 CollectionHooks.normalizeSelector = function (selector) {
-  if (typeof selector === 'string' || (selector && selector.constructor === Mongo.ObjectID)) {
+  if (
+    typeof selector === 'string' ||
+    (selector && selector.constructor === Mongo.ObjectID)
+  ) {
     return {
       _id: selector
     }
@@ -245,7 +290,7 @@ CollectionHooks.getFields = function getFields (mutator) {
   Object.entries(mutator).forEach(function ([op, params]) {
     // ====ADDED START=======================
     if (operators.includes(op)) {
-    // ====ADDED END=========================
+      // ====ADDED END=========================
       Object.keys(params).forEach(function (field) {
         // treat dotted fields as if they are replacing their
         // top-level part
@@ -268,7 +313,10 @@ CollectionHooks.getFields = function getFields (mutator) {
   return fields
 }
 
-CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr) {
+CollectionHooks.reassignPrototype = function reassignPrototype (
+  instance,
+  constr
+) {
   const hasSetPrototypeOf = typeof Object.setPrototypeOf === 'function'
   constr = constr || Mongo.Collection
 
@@ -276,14 +324,15 @@ CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr
   // Note: Assigning a prototype dynamically has performance implications
   if (hasSetPrototypeOf) {
     Object.setPrototypeOf(instance, constr.prototype)
-  } else if (instance.__proto__) { // eslint-disable-line no-proto
+  } else if (instance.__proto__) {
+    // eslint-disable-line no-proto
     instance.__proto__ = constr.prototype // eslint-disable-line no-proto
   }
 }
 
 CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
-  if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
+  if (!as._CollectionPrototype) { as._CollectionPrototype = new as.Collection(null) }
 
   const constructor = ns._NewCollectionContructor || as._CollectionConstructor
   const proto = as._CollectionPrototype
@@ -306,17 +355,6 @@ CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   // Meteor overrides the apply method which is copied from the constructor in the loop above. Replace it with the
   // default method which we need if we were to further wrap ns.Collection.
   ns.Collection.apply = Function.prototype.apply
-}
-
-CollectionHooks.isPromise = (value) => {
-  return value && typeof value.then === 'function'
-}
-
-CollectionHooks.callAfterValueOrPromise = (value, cb) => {
-  if (CollectionHooks.isPromise(value)) {
-    return value.then((res) => cb(res))
-  }
-  return cb(value)
 }
 
 CollectionHooks.modify = LocalCollection._modify
