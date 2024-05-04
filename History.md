@@ -1,3 +1,7 @@
+## v1.4.0
+* Test suite minimum Meteor version is 2.12 to support new counts and to be fully compatible with Meteor 3
+* Meteor `3.0-beta.0` is now a supported version, but not functionality wise (need to upgrade `count` functions in tests)
+
 ## v1.3.1
 * Updated zodern:types to v1.0.10
 * Meteor `3.0-beta.0` is now a supported version, but not functionality wise (need to upgrade `count` functions in code)
