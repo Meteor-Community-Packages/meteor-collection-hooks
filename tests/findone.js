@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
@@ -48,3 +49,22 @@ Tinytest.addAsync('findone - tmp variable should have property added after the f
     test.equal(tmp.after_findone, true)
   })
 })
+
+const collection = new Mongo.Collection('collection_for_findone_sync_call')
+if (Meteor.isClient) {
+  Tinytest.add('findone - hooks are not called for sync methods', async function (test) {
+    let beforeCalled = false
+    let afterCalled = false
+    collection.before.findOne(function (userId, selector, options) {
+      beforeCalled = true
+    })
+    collection.after.findOne(function (userId, selector, options) {
+      afterCalled = true
+    })
+
+    collection.findOne({ test: 1 })
+
+    test.equal(beforeCalled, false)
+    test.equal(afterCalled, false)
+  })
+}

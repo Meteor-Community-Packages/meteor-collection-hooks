@@ -1,6 +1,6 @@
-import { Mongo } from 'meteor/mongo'
-import { Tinytest } from 'meteor/tinytest'
-import { InsecureLogin } from './insecure_login'
+// import { Mongo } from 'meteor/mongo'
+// import { Tinytest } from 'meteor/tinytest'
+// import { InsecureLogin } from './insecure_login'
 
 // NOTE: no async find hooks in v3
 // Tinytest.addAsync('find - selector should be {} when called without arguments', function (test, next) {

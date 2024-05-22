@@ -177,3 +177,26 @@ Tinytest.addAsync('issue #156 - upsert after.insert should have a correct doc us
 //     collection.upsert({ test: true }, { $set: { test: true, step: 'insert-sync' } })
 //   })
 // }
+
+if (Meteor.isClient) {
+  const collectionForSync = new Mongo.Collection(null)
+  Tinytest.add('upsert - hooks are not called for sync methods', function (test) {
+    let beforeCalled = false
+    let afterCalled = false
+    collectionForSync.before.upsert(function (userId, selector, options) {
+      beforeCalled = true
+    })
+    collectionForSync.after.upsert(function (userId, selector, options) {
+      afterCalled = true
+    })
+
+    const result = collectionForSync.upsert({ test: 1 }, {
+      $set: { name: 'abc' }
+    })
+
+    test.equal(result.numberAffected, 1)
+
+    test.equal(beforeCalled, false)
+    test.equal(afterCalled, false)
+  })
+}

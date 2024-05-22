@@ -121,3 +121,24 @@ if (Meteor.isClient) {
     })
   })
 }
+
+if (Meteor.isClient) {
+  const collectionForSync = new Mongo.Collection(null)
+  Tinytest.add('update - hooks are not called for sync methods', function (test) {
+    let beforeCalled = false
+    let afterCalled = false
+    collectionForSync.before.update(function (userId, selector, options) {
+      beforeCalled = true
+    })
+    collectionForSync.after.update(function (userId, selector, options) {
+      afterCalled = true
+    })
+
+    const id = collectionForSync.insert({ test: 1 })
+    const res = collectionForSync.update({ _id: id }, { $set: { test: 2 } })
+    test.equal(res, 1)
+
+    test.equal(beforeCalled, false)
+    test.equal(afterCalled, false)
+  })
+}

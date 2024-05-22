@@ -22,7 +22,7 @@ CollectionHooks.defineAdvice('findOne', async function (userId, _super, instance
   async function after (doc) {
     if (!suppressAspects) {
       for (const o of aspects.after) {
-        o.aspect.call(ctx, userId, selector, options, doc)
+        await o.aspect.call(ctx, userId, selector, options, doc)
       }
     }
   }

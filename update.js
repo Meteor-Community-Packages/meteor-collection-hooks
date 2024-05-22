@@ -107,7 +107,7 @@ CollectionHooks.defineAdvice(
         // before
         for (const o of aspects.before) {
           for (const doc of docs) {
-            const r = o.aspect.call(
+            const r = await o.aspect.call(
               { transform: getTransform(doc), ...ctx },
               userId,
               doc,

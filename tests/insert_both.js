@@ -13,7 +13,7 @@ if (Meteor.isServer) {
 
       await collection1.removeAsync({})
 
-      collection1.before.insert(function (userId, doc) {
+      collection1.before.insert(async function (userId, doc) {
         // There should be no userId because the insert was initiated
         // on the server -- there's no correlation to any specific user
         tmp.userId = userId // HACK: can't test here directly otherwise refreshing test stops execution here
@@ -122,25 +122,21 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isClient) {
-  const collection3 = new Mongo.Collection(null)
+  const collectionForSync = new Mongo.Collection(null)
+  Tinytest.add('insert - hooks are not called for sync methods', function (test) {
+    let beforeCalled = false
+    let afterCalled = false
+    collectionForSync.before.insert(function (userId, selector, options) {
+      beforeCalled = true
+    })
+    collectionForSync.after.insert(function (userId, selector, options) {
+      afterCalled = true
+    })
 
-  Tinytest.add(
-    'insert - collection3 hooks on client should not be called when using sync methods',
-    function (test) {
-      collection3.before.insert(function (userId, doc) {
-        doc.client_value = true
-      })
+    const res = collectionForSync.insert({ test: 1 })
+    test.equal(typeof res, 'string')
 
-      const id = collection3.insert({ start_value: true })
-
-      // id still gets returned
-      test.equal(typeof id, 'string')
-
-      // Only start_value expected, client_value should not be set
-      const items = collection3.find({ start_value: true }).fetch()
-
-      test.equal(items.length, 1)
-      test.equal(items[0].client_value, undefined)
-    }
-  )
+    test.equal(beforeCalled, false)
+    test.equal(afterCalled, false)
+  })
 }
