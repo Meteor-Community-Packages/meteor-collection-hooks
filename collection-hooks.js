@@ -101,7 +101,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
       Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
-    const _super = collection[method]
+    // const _super = collection[method]
 
     Meteor._ensure(self, 'direct', method)
     self.direct[method] = function (...args) {
@@ -326,6 +326,7 @@ CollectionHooks.reassignPrototype = function reassignPrototype (
   // Note: Assigning a prototype dynamically has performance implications
   if (hasSetPrototypeOf) {
     Object.setPrototypeOf(instance, constr.prototype)
+  // eslint-disable-next-line no-proto
   } else if (instance.__proto__) {
     // eslint-disable-line no-proto
     instance.__proto__ = constr.prototype // eslint-disable-line no-proto

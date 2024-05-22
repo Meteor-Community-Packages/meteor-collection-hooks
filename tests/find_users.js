@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor'
-import { Tinytest } from 'meteor/tinytest'
-import { InsecureLogin } from './insecure_login'
+// import { Meteor } from 'meteor/meteor'
+// import { Tinytest } from 'meteor/tinytest'
+// import { InsecureLogin } from './insecure_login'
 
 // NOTE: v3 not supporting find hooks
 // TODO(v3): both not working on client. selector is just { test: 1 } instead of { test: 1, a: 1, b: 1 }

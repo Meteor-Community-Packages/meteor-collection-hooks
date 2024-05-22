@@ -39,7 +39,7 @@ if (Meteor.isClient) {
           // TODO(v3): allow-deny
           await collection.removeAsync({ _id: id1 })
           // just ignore the error
-          await collection.removeAsync({ _id: id2 }).catch((err) => {})
+          await collection.removeAsync({ _id: id2 }).catch(() => {})
 
           test.equal(collection.find({ start_value: true }).count(), 1, 'only one document should remain')
           next()
