@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/Meteor-Community-Packages/meteor-collection-hooks",
   "devDependencies": {
-    "eslint": "^7.32.0",
+    "eslint": "^8.57.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-import-resolver-meteor": "^0.4.0",
     "eslint-plugin-import": "^2.26.0",
