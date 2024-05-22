@@ -41,10 +41,10 @@ CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance,
     }
 
     // before
-    aspectGroup.upsert.before.forEach((o) => {
-      const r = o.aspect.call(ctx, userId, selector, mutator, options)
+    for (const fn of aspectGroup.upsert.before) {
+      const r = await fn.aspect.call(ctx, userId, selector, mutator, options)
       if (r === false) abort = true
-    })
+    }
 
     if (abort) return { numberAffected: 0 }
   }

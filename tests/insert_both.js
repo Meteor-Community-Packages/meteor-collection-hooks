@@ -43,6 +43,9 @@ if (Meteor.isServer) {
     insert () {
       return true
     },
+    insertAsync () {
+      return true
+    },
     update () {
       return true
     },
@@ -72,54 +75,72 @@ if (Meteor.isClient) {
 
   Tinytest.addAsync(
     'insert - collection2 document on client should have client-added and server-added extra properties added to it before it is inserted',
-    function (test, next) {
-      async function fnAsync () {
-        collection2.before.insert(function (userId, doc) {
-          // console.log('test_insert_collection2 BEFORE INSERT', userId, doc)
-          test.notEqual(
-            userId,
-            undefined,
-            'the userId should be present since we are on the client'
-          )
-          test.equal(
-            collection2.find({ start_value: true }).count(),
-            0,
-            'collection2 should not have the test document in it'
-          )
-          doc.client_value = true
-        })
+    async function (test) {
+      collection2.before.insert(function (userId, doc) {
+        // console.log('test_insert_collection2 BEFORE INSERT', userId, doc)
+        test.notEqual(
+          userId,
+          undefined,
+          'the userId should be present since we are on the client'
+        )
+        test.equal(
+          collection2.find({ start_value: true }).count(),
+          0,
+          'collection2 should not have the test document in it'
+        )
+        doc.client_value = true
+      })
 
-        collection2.after.insert(function (userId, doc) {
-          // console.log('test_insert_collection2 AFTER INSERT', userId, doc)
-          test.notEqual(
-            this._id,
-            undefined,
-            'the _id should be available on this'
-          )
-        })
+      collection2.after.insert(function (userId, doc) {
+        // console.log('test_insert_collection2 AFTER INSERT', userId, doc)
+        test.notEqual(
+          this._id,
+          undefined,
+          'the _id should be available on this'
+        )
+      })
 
-        await InsecureLogin.ready(async function () {
-          await Meteor.callAsync('test_insert_reset_collection2')
-          // console.log('test_insert_collection2 INSERT')
-          collection2.insert({ start_value: true }, function () {
-            test.equal(
-              collection2
-                .find({
-                  start_value: true,
-                  client_value: true,
-                  server_value: true
-                })
-                .count(),
-              1,
-              'collection2 should have the test document with client_value AND server_value in it'
-            )
+      await InsecureLogin.ready(async function () {
+        await Meteor.callAsync('test_insert_reset_collection2')
+        // console.log('test_insert_collection2 INSERT')
+        await collection2.insertAsync({ start_value: true })
 
-            next()
-          })
-        })
-      }
+        test.equal(
+          collection2
+            .find({
+              start_value: true,
+              client_value: true,
+              server_value: true
+            })
+            .count(),
+          1,
+          'collection2 should have the test document with client_value AND server_value in it'
+        )
+      })
+    }
+  )
+}
 
-      fnAsync()
+if (Meteor.isClient) {
+  const collection3 = new Mongo.Collection(null)
+
+  Tinytest.add(
+    'insert - collection3 hooks on client should not be called when using sync methods',
+    function (test) {
+      collection3.before.insert(function (userId, doc) {
+        doc.client_value = true
+      })
+
+      const id = collection3.insert({ start_value: true })
+
+      // id still gets returned
+      test.equal(typeof id, 'string')
+
+      // Only start_value expected, client_value should not be set
+      const items = collection3.find({ start_value: true }).fetch()
+
+      test.equal(items.length, 1)
+      test.equal(items[0].client_value, undefined)
     }
   )
 }

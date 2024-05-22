@@ -177,7 +177,9 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
       collection[asyncMethod] = getWrappedMethod(_superAsync)
     }
 
-    collection[method] = getWrappedMethod(_super)
+    // Don't do this for v3 since we need to keep client methods sync.
+    // With v3, it wraps the sync method with async resulting in errors.
+    // collection[method] = getWrappedMethod(_super)
   })
 }
 

@@ -1,38 +1,42 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
-import { CollectionHooks } from 'meteor/matb33:collection-hooks'
+import { CollectionHooks } from '../collection-hooks'
 
-Tinytest.addAsync('optional-previous - update hook should not prefetch previous, via hook option param', function (test, next) {
+Tinytest.addAsync('optional-previous - update hook should not prefetch previous, via hook option param', async function (test) {
   const collection = new Mongo.Collection(null)
 
+  let called = false
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
     if (doc && doc._id === 'test') {
       test.equal(!!this.previous, false)
-      next()
+      called = true
     }
   }, { fetchPrevious: false })
 
-  collection.insert({ _id: 'test', test: 1 }, function () {
-    collection.update({ _id: 'test' }, { $set: { test: 1 } })
-  })
+  await collection.insertAsync({ _id: 'test', test: 1 })
+  await collection.updateAsync({ _id: 'test' }, { $set: { test: 1 } })
+
+  test.equal(called, true)
 })
 
-Tinytest.addAsync('optional-previous - update hook should not prefetch previous, via collection option param', function (test, next) {
+Tinytest.addAsync('optional-previous - update hook should not prefetch previous, via collection option param', async function (test) {
   const collection = new Mongo.Collection(null)
 
   collection.hookOptions.after.update = { fetchPrevious: false }
 
+  let called = false
   collection.after.update(function (userId, doc, fieldNames, modifier, options) {
     if (doc && doc._id === 'test') {
       test.equal(!!this.previous, false)
-      next()
+      called = true
     }
   })
 
-  collection.insert({ _id: 'test', test: 1 }, function () {
-    collection.update({ _id: 'test' }, { $set: { test: 1 } })
-  })
+  await collection.insertAsync({ _id: 'test', test: 1 })
+  await collection.updateAsync({ _id: 'test' }, { $set: { test: 1 } })
+
+  test.equal(called, true)
 })
 
 if (Meteor.isServer) {

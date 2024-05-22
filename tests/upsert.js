@@ -113,7 +113,7 @@ if (Meteor.isServer) {
 Tinytest.addAsync('upsert before.upsert can stop the execution', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  collection.before.upsert(() => false)
+  collection.before.upsert(async () => false)
 
   await collection.removeAsync({ test: true })
   await collection.upsertAsync({ test: true }, { $set: { test: true } })

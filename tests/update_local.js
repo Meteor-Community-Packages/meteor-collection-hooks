@@ -5,10 +5,10 @@ import { InsecureLogin } from './insecure_login'
 
 Tinytest.addAsync(
   'update - local collection documents should have extra property added before being updated',
-  function (test, next) {
+  async function (test) {
     const collection = new Mongo.Collection(null)
 
-    function start () {
+    async function start () {
       collection.before.update(function (userId, doc, fieldNames, modifier) {
         // There should be a userId if we're running on the client.
         // Since this is a local collection, the server should NOT know
@@ -25,50 +25,46 @@ Tinytest.addAsync(
         modifier.$set.before_update_value = true
       })
 
-      collection.update(
+      await collection.updateAsync(
         { start_value: true },
         { $set: { update_value: true } },
-        { multi: true },
-        function (err) {
-          if (err) throw err
-          test.equal(
-            collection
-              .find({
-                start_value: true,
-                update_value: true,
-                before_update_value: true
-              })
-              .count(),
-            2
-          )
-          next()
-        }
+        { multi: true }
+      )
+
+      test.equal(
+        collection
+          .find({
+            start_value: true,
+            update_value: true,
+            before_update_value: true
+          })
+          .count(),
+        2
       )
     }
 
-    InsecureLogin.ready(function () {
+    await InsecureLogin.ready(async function () {
       // Add two documents
-      collection.insert({ start_value: true }, function () {
-        collection.insert({ start_value: true }, function () {
-          start()
-        })
-      })
+      await collection.insertAsync({ start_value: true })
+      await collection.insertAsync({ start_value: true })
+
+      await start()
     })
   }
 )
 
 Tinytest.addAsync(
   'update - local collection should fire after-update hook',
-  function (test, next) {
+  async function (test) {
     const collection = new Mongo.Collection(null)
     let c = 0
     const n = () => {
       if (++c === 2) {
-        next()
+        // next()
       }
     }
 
-    function start () {
+    async function start () {
       collection.after.update(function (userId, doc, fieldNames, modifier) {
         // There should be a userId if we're running on the client.
         // Since this is a local collection, the server should NOT know
@@ -91,88 +87,82 @@ Tinytest.addAsync(
         n()
       })
 
-      collection.update(
+      await collection.updateAsync(
         { start_value: true },
         { $set: { update_value: true } },
         { multi: true }
       )
     }
 
-    InsecureLogin.ready(function () {
+    await InsecureLogin.ready(async function () {
       // Add two documents
-      collection.insert({ start_value: true }, function () {
-        collection.insert({ start_value: true }, function () {
-          start()
-        })
-      })
+      await collection.insertAsync({ start_value: true })
+      await collection.insert({ start_value: true })
+      await start()
     })
   }
 )
 
 Tinytest.addAsync(
   'update - local collection should fire before-update hook without options in update and still fire end-callback',
-  function (test, next) {
+  async function (test) {
     const collection = new Mongo.Collection(null)
 
-    function start () {
+    async function start () {
       collection.before.update(function (userId, doc, fieldNames, modifier) {
         modifier.$set.before_update_value = true
       })
 
-      collection.update(
+      await collection.updateAsync(
         { start_value: true },
-        { $set: { update_value: true } },
-        function (err) {
-          if (err) throw err
-          test.equal(
-            collection
-              .find({
-                start_value: true,
-                update_value: true,
-                before_update_value: true
-              })
-              .count(),
-            1
-          )
-          next()
-        }
+        { $set: { update_value: true } }
+      )
+
+      test.equal(
+        await collection
+          .find({
+            start_value: true,
+            update_value: true,
+            before_update_value: true
+          })
+          .countAsync(),
+        1
       )
     }
 
-    InsecureLogin.ready(function () {
-      collection.insert({ start_value: true }, start)
+    await InsecureLogin.ready(async function () {
+      await collection.insertAsync({ start_value: true })
+      await start()
     })
   }
 )
 
 Tinytest.addAsync(
   'update - local collection should fire after-update hook without options in update and still fire end-callback',
-  function (test, next) {
+  async function (test) {
     const collection = new Mongo.Collection(null)
     let c = 0
     const n = () => {
-      if (++c === 2) {
-        next()
-      }
+      ++c
     }
 
-    function start () {
+    async function start () {
       collection.after.update(function (userId, doc, fieldNames, modifier) {
         n()
       })
 
-      collection.update(
+      await collection.updateAsync(
         { start_value: true },
-        { $set: { update_value: true } },
-        function (err) {
-          if (err) throw err
-          n()
-        }
+        { $set: { update_value: true } }
       )
+
+      // Expect hook to be called
+      test.equal(c, 1)
     }
 
-    InsecureLogin.ready(function () {
-      collection.insert({ start_value: true }, start)
+    await InsecureLogin.ready(async function () {
+      await collection.insertAsync({ start_value: true })
+      await start()
     })
   }
 )

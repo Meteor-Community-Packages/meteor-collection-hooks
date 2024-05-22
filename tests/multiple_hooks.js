@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
-Tinytest.addAsync('general - multiple hooks should all fire the appropriate number of times', function (test, next) {
+Tinytest.addAsync('general - multiple hooks should all fire the appropriate number of times', async function (test) {
   const collection = new Mongo.Collection(null)
   const counts = {
     before: {
@@ -33,22 +33,17 @@ Tinytest.addAsync('general - multiple hooks should all fire the appropriate numb
   collection.after.update(function () { counts.after.update++ })
   collection.after.remove(function () { counts.after.remove++ })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ start_value: true }, function (err, id) {
-      if (err) throw err
-      collection.update({ _id: id }, { $set: {} }, function (err) {
-        if (err) throw err
-        // TODO(v3): remove doesn't support callback
-        collection.removeAsync({ _id: id }).then(function (nil) {
-          test.equal(counts.before.insert, 2)
-          test.equal(counts.before.update, 2)
-          test.equal(counts.before.remove, 2)
-          test.equal(counts.after.insert, 2)
-          test.equal(counts.after.update, 2)
-          test.equal(counts.after.remove, 2)
-          next()
-        })
-      })
-    })
+  await InsecureLogin.ready(async function () {
+    const id = await collection.insertAsync({ start_value: true })
+    await collection.updateAsync({ start_value: true }, { $set: {} })
+
+    await collection.removeAsync({ _id: id })
+
+    test.equal(counts.before.insert, 2)
+    test.equal(counts.before.update, 2)
+    test.equal(counts.before.remove, 2)
+    test.equal(counts.after.insert, 2)
+    test.equal(counts.after.update, 2)
+    test.equal(counts.after.remove, 2)
   })
 })
