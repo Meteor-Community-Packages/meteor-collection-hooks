@@ -27,7 +27,7 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
     }
   })
 
-  const id = await collection.insertAsync({ key: key })
+  const id = await collection.insertAsync({ key })
   // clean-up
   await collection.removeAsync({ _id: id })
   aspect1.remove()
@@ -46,7 +46,7 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
     }
   })
 
-  const id = await collection1.insertAsync({ key: key })
+  const id = await collection1.insertAsync({ key })
 
   // clean-up
   await collection1.removeAsync({ _id: id })

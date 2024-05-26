@@ -50,7 +50,7 @@ if (Meteor.isClient) {
         function start (id) {
           for (let i = 0; i < times; i++) {
             // TODO(v3): allow-deny error findOne on server
-            collection.updateAsync({ _id: id }, { $set: { times: times } }).then(function (nil) {
+            collection.updateAsync({ _id: id }, { $set: { times } }).then(function (nil) {
               c2++
               check()
             })
@@ -59,7 +59,7 @@ if (Meteor.isClient) {
 
         function check () {
           if (c2 === times) {
-            test.equal(collection.find({ times: times, client_counter: times, server_counter: times }).count(), 1)
+            test.equal(collection.find({ times, client_counter: times, server_counter: times }).count(), 1)
             next()
           }
         }
