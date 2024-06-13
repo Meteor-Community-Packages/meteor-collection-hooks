@@ -1,3 +1,9 @@
+## v2.0.0
+
+* BREAKING: find hooks have been removed (due to Meteor 3 compatibility)
+* Async hooks are now supported
+* Meteor 3.0 is now the minimum required Meteor version
+
 ## v1.4.0
 * Test suite minimum Meteor version is 2.12 to support new counts and to be fully compatible with Meteor 3
 * Meteor `3.0-beta.0` is now a supported version, but not functionality wise (need to upgrade `count` functions in tests)
