@@ -29,8 +29,6 @@ Package.onUse(function (api) {
 })
 
 Package.onTest(function (api) {
-  // var isTravisCI = process && process.env && process.env.TRAVIS
-
   api.versionsFrom(['3.0-rc.4'])
 
   api.use([
