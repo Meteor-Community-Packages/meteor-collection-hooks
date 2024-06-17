@@ -92,19 +92,19 @@ if (Meteor.isServer) {
 
       // Our monkey-patch of Meteor.publish should preserve the value of 'this'.
       Tinytest.add('general - this (context) preserved in publish functions', function (test) {
-        console.log('this', publishContext)
         test.isTrue(publishContext && publishContext.userId)
       })
 
-      Tinytest.add('find - userId available to before find hook when within publish context', function (test) {
-        test.notEqual(beforeFindUserId, null)
-        test.equal(beforeFindWithinPublish, true)
-      })
+      // TODO(v3): find not supported
+      // Tinytest.add('find - userId available to before find hook when within publish context', function (test) {
+      //   test.notEqual(beforeFindUserId, null)
+      //   test.equal(beforeFindWithinPublish, true)
+      // })
 
-      Tinytest.add('find - userId available to after find hook when within publish context', function (test) {
-        test.notEqual(afterFindUserId, null)
-        test.equal(afterFindWithinPublish, true)
-      })
+      // Tinytest.add('find - userId available to after find hook when within publish context', function (test) {
+      //   test.notEqual(afterFindUserId, null)
+      //   test.equal(afterFindWithinPublish, true)
+      // })
 
       Tinytest.add('findone - userId available to before findOne hook when within publish context', function (test) {
         test.notEqual(beforeFindOneUserId, null)

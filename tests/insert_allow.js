@@ -10,7 +10,6 @@ if (Meteor.isServer) {
   collection.allow({
     insert (userId, doc) { return doc.allowed },
     insertAsync (userId, doc) {
-      console.log('doc', doc)
       return doc.allowed
     },
     update () { return true },
