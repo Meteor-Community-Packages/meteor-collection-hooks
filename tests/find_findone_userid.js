@@ -95,16 +95,15 @@ if (Meteor.isServer) {
         test.isTrue(publishContext && publishContext.userId)
       })
 
-      // TODO(v3): find not supported
-      // Tinytest.add('find - userId available to before find hook when within publish context', function (test) {
-      //   test.notEqual(beforeFindUserId, null)
-      //   test.equal(beforeFindWithinPublish, true)
-      // })
+      Tinytest.add('find - userId available to before find hook when within publish context', function (test) {
+        test.notEqual(beforeFindUserId, null)
+        test.equal(beforeFindWithinPublish, true)
+      })
 
-      // Tinytest.add('find - userId available to after find hook when within publish context', function (test) {
-      //   test.notEqual(afterFindUserId, null)
-      //   test.equal(afterFindWithinPublish, true)
-      // })
+      Tinytest.add('find - userId available to after find hook when within publish context', function (test) {
+        test.notEqual(afterFindUserId, null)
+        test.equal(afterFindWithinPublish, true)
+      })
 
       Tinytest.add('findone - userId available to before findOne hook when within publish context', function (test) {
         test.notEqual(beforeFindOneUserId, null)

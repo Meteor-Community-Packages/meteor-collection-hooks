@@ -46,28 +46,6 @@ if (Meteor.isClient) {
 
     await InsecureLogin.ready(async function () {
       await Meteor.callAsync('test_hooks_in_loop_reset_collection')
-      // , function (nil, result) {
-      //   function start (id) {
-      //     for (let i = 0; i < times; i++) {
-      //       // TODO(v3): allow-deny error findOne on server
-      //       collection.updateAsync({ _id: id }, { $set: { times } }).then(function (nil) {
-      //         c2++
-      //         check()
-      //       })
-      //     }
-      //   }
-
-      //   function check () {
-      //     if (c2 === times) {
-      //       test.equal(collection.find({ times, client_counter: times, server_counter: times }).count(), 1)
-      //       next()
-      //     }
-      //   }
-
-      //   collection.insert({ times: 0, client_counter: 0, server_counter: 0 }, function (nil, id) {
-      //     start(id)
-      //   })
-      // })
 
       const id = await collection.insertAsync({ times: 0, client_counter: 0, server_counter: 0 })
 

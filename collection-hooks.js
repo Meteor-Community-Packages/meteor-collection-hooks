@@ -175,6 +175,10 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
     if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
       const _superAsync = collection[asyncMethod]
       collection[asyncMethod] = getWrappedMethod(_superAsync)
+    } else if (method === 'find') {
+      // find is returning a cursor and is a sync method
+      const _superMethod = collection[method]
+      collection[method] = getWrappedMethod(_superMethod)
     }
 
     // Don't do this for v3 since we need to keep client methods sync.
