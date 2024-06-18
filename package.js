@@ -39,7 +39,8 @@ Package.onTest(function (api) {
     'ddp',
     'tinytest',
     'test-helpers',
-    'ecmascript'
+    'ecmascript',
+    'jquery'
   ])
 
   api.mainModule('tests/client/main.js', 'client')
