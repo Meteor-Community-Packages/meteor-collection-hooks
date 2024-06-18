@@ -11,7 +11,7 @@ if (Meteor.isServer) {
 
   // full client-side access
   collection.allow({
-    insert: function () { return true },
+    insertAsync: function () { return true },
     updateAsync: function () { return true },
     remove: function () { return true }
   })
@@ -36,38 +36,24 @@ if (Meteor.isServer) {
 if (Meteor.isClient) {
   Meteor.subscribe('test_hooks_in_loop_publish_collection')
 
-  Tinytest.addAsync('issue #67 - hooks should get called when mutation method called in a tight loop', function (test, next) {
+  Tinytest.addAsync('issue #67 - hooks should get called when mutation method called in a tight loop', async function (test) {
     let c1 = 0
-    let c2 = 0
 
     collection.before.update(function (userId, doc, fieldNames, modifier) {
       c1++
       modifier.$set.client_counter = c1
     })
 
-    InsecureLogin.ready(function () {
-      Meteor.call('test_hooks_in_loop_reset_collection', function (nil, result) {
-        function start (id) {
-          for (let i = 0; i < times; i++) {
-            // TODO(v3): allow-deny error findOne on server
-            collection.updateAsync({ _id: id }, { $set: { times } }).then(function (nil) {
-              c2++
-              check()
-            })
-          }
-        }
+    await InsecureLogin.ready(async function () {
+      await Meteor.callAsync('test_hooks_in_loop_reset_collection')
 
-        function check () {
-          if (c2 === times) {
-            test.equal(collection.find({ times, client_counter: times, server_counter: times }).count(), 1)
-            next()
-          }
-        }
+      const id = await collection.insertAsync({ times: 0, client_counter: 0, server_counter: 0 })
 
-        collection.insert({ times: 0, client_counter: 0, server_counter: 0 }, function (nil, id) {
-          start(id)
-        })
-      })
+      for (let i = 0; i < times; i++) {
+        await collection.updateAsync({ _id: id }, { $set: { times } })
+      }
+
+      test.equal(collection.find({ times, client_counter: times, server_counter: times }).count(), 1)
     })
   })
 }

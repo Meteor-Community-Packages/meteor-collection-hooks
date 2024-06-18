@@ -44,13 +44,10 @@ const collection2 = new Mongo.Collection('test_remove_collection2')
 if (Meteor.isServer) {
   // full client-side access
   collection2.allow({
-    insert: function () {
+    insertAsync: function () {
       return true
     },
-    update: function () {
-      return true
-    },
-    remove: function () {
+    updateAsync: function () {
       return true
     },
     removeAsync: function () {
@@ -103,17 +100,12 @@ if (Meteor.isClient) {
 
   Tinytest.add(
     'remove - collection2 document should affect external variable before and after it is removed',
-    function (test, next) {
+    async function (test) {
       let external = 0
       let c = 0
+
       const n = () => {
         ++c
-        if (c === 2) {
-          test.equal(external, 2)
-          next()
-        } else if (c > 2) {
-          test.fail('should not be called more than twice')
-        }
       }
 
       async function start (err, id) {
@@ -144,11 +136,14 @@ if (Meteor.isClient) {
         n()
       }
 
-      InsecureLogin.ready(function () {
-        Meteor.call('test_remove_reset_collection2', function (nil, result) {
-          collection2.insert({ start_value: true }, start)
-        })
+      await InsecureLogin.ready(async function () {
+        await Meteor.callAsync('test_remove_reset_collection2')
+        const id = await collection2.insertAsync({ start_value: true })
+        await start(null, id)
       })
+
+      test.equal(external, 2)
+      test.equal(c, 2, 'should be called twice')
     }
   )
 }

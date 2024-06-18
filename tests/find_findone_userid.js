@@ -92,7 +92,6 @@ if (Meteor.isServer) {
 
       // Our monkey-patch of Meteor.publish should preserve the value of 'this'.
       Tinytest.add('general - this (context) preserved in publish functions', function (test) {
-        console.log('this', publishContext)
         test.isTrue(publishContext && publishContext.userId)
       })
 

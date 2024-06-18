@@ -1,59 +1,52 @@
-// import { Mongo } from 'meteor/mongo'
-// import { Tinytest } from 'meteor/tinytest'
-// import { InsecureLogin } from './insecure_login'
+import { Mongo } from 'meteor/mongo'
+import { Tinytest } from 'meteor/tinytest'
+import { InsecureLogin } from './insecure_login'
 
-// NOTE: no async find hooks in v3
-// Tinytest.addAsync('find - selector should be {} when called without arguments', function (test, next) {
-//   const collection = new Mongo.Collection(null)
+Tinytest.addAsync('find - selector should be {} when called without arguments', async function (test) {
+  const collection = new Mongo.Collection(null)
 
-//   // eslint-disable-next-line array-callback-return
-//   collection.before.find(function (userId, selector, options) {
-//     test.equal(selector, {})
-//     next()
-//   })
+  let findSelector = null
+  collection.before.find(async function (userId, selector, options) {
+    findSelector = selector
+  })
 
-//   collection.find()
-// })
+  // hooks won't be triggered on find() alone, we must call fetchAsync()
+  await collection.find().fetchAsync()
 
-// NOTE: no async find hooks in v3
-// Tinytest.addAsync('find - selector should have extra property', function (test, next) {
-//   const collection = new Mongo.Collection(null)
+  test.equal(findSelector, {})
+})
 
-//   // eslint-disable-next-line array-callback-return
-//   collection.before.find(function (userId, selector, options) {
-//     if (options && options.test) {
-//       delete selector.bogus_value
-//       selector.before_find = true
-//     }
-//   })
+Tinytest.addAsync('find - selector should have extra property', async function (test) {
+  const collection = new Mongo.Collection(null)
 
-//   InsecureLogin.ready(function () {
-//     collection.insert({ start_value: true, before_find: true }, function (err, id) {
-//       if (err) throw err
-//       test.equal(collection.find({ start_value: true, bogus_value: true }, { test: 1 }).count(), 1)
-//       next()
-//     })
-//   })
-// })
+  collection.before.find(async function (userId, selector, options) {
+    if (options && options.test) {
+      delete selector.bogus_value
+      selector.before_find = true
+    }
+  })
 
-// NOTE: no async find hooks in v3
-// Tinytest.addAsync('find - tmp variable should have property added after the find', function (test, next) {
-//   const collection = new Mongo.Collection(null)
-//   const tmp = {}
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true, before_find: true })
+    test.equal(await collection.find({ start_value: true, bogus_value: true }, { test: 1 }).countAsync(), 1)
+  })
+})
 
-//   // eslint-disable-next-line array-callback-return
-//   collection.after.find(function (userId, selector, options) {
-//     if (options && options.test) {
-//       tmp.after_find = true
-//     }
-//   })
+Tinytest.addAsync('find - tmp variable should have property added after the find', async function (test) {
+  const collection = new Mongo.Collection(null)
+  const tmp = {}
 
-//   InsecureLogin.ready(function () {
-//     collection.insert({ start_value: true }, function (err, id) {
-//       if (err) throw err
-//       collection.find({ start_value: true }, { test: 1 })
-//       test.equal(tmp.after_find, true)
-//       next()
-//     })
-//   })
-// })
+  // eslint-disable-next-line array-callback-return
+  collection.after.find(async function (userId, selector, options) {
+    if (options && options.test) {
+      tmp.after_find = true
+    }
+  })
+
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true })
+    await collection.find({ start_value: true }, { test: 1 }).fetchAsync()
+
+    test.equal(tmp.after_find, true)
+  })
+})
