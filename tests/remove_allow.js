@@ -8,10 +8,10 @@ const collection = new Mongo.Collection('test_remove_allow_collection')
 if (Meteor.isServer) {
   // full client-side access
   collection.allow({
-    insertAsync() { return true },
-    updateAsync() { return true },
-    remove(userId, doc) { return doc.allowed },
-    removeAsync(userId, doc) { return doc.allowed }
+    insertAsync () { return true },
+    updateAsync () { return true },
+    remove (userId, doc) { return doc.allowed },
+    removeAsync (userId, doc) { return doc.allowed }
   })
 
   Meteor.methods({
@@ -30,7 +30,7 @@ if (Meteor.isClient) {
 
   Tinytest.addAsync('remove - only one of two collection documents should be allowed to be removed', async function (test) {
     collection.before.remove(function (userId, doc) {
-      // Ensuring remove gets triggered 
+      // Ensuring remove gets triggered
       test.equal(doc.start_value, true)
     })
 
