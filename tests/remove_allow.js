@@ -8,10 +8,10 @@ const collection = new Mongo.Collection('test_remove_allow_collection')
 if (Meteor.isServer) {
   // full client-side access
   collection.allow({
-    insertAsync () { return true },
-    updateAsync () { return true },
-    remove (userId, doc) { return doc.allowed },
-    removeAsync (userId, doc) { return doc.allowed }
+    insertAsync() { return true },
+    updateAsync() { return true },
+    remove(userId, doc) { return doc.allowed },
+    removeAsync(userId, doc) { return doc.allowed }
   })
 
   Meteor.methods({
@@ -30,6 +30,7 @@ if (Meteor.isClient) {
 
   Tinytest.addAsync('remove - only one of two collection documents should be allowed to be removed', async function (test) {
     collection.before.remove(function (userId, doc) {
+      // Ensuring remove gets triggered 
       test.equal(doc.start_value, true)
     })
 
@@ -38,17 +39,16 @@ if (Meteor.isClient) {
 
       const id1 = await collection.insertAsync({ start_value: true, allowed: true })
       const id2 = await collection.insertAsync({ start_value: true, allowed: false })
-
-      // TODO(v3): allow-deny
       await collection.removeAsync({ _id: id1 })
+      test.equal(collection.findOne({ _id: id1 }), undefined)
       try {
+        // second document should be unremovable as allowed is set to false
         await collection.removeAsync({ _id: id2 })
+        test.equal(collection.findOne({ _id: id2 }), { _id: id2, start_value: true, allowed: false })
         test.fail('should not be allowed to remove')
       } catch (e) {
         // just ignore the error - it is expected
       }
-
-      test.equal(collection.find({ start_value: true }).count(), 1, 'only one document should remain')
     })
   })
 }
