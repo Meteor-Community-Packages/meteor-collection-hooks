@@ -1,5 +1,3 @@
-/* eslint-disable no-native-reassign, no-global-assign */
-
 export const InsecureLogin = {
   queue: [],
   ran: false,

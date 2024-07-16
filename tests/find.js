@@ -36,7 +36,6 @@ Tinytest.addAsync('find - tmp variable should have property added after the find
   const collection = new Mongo.Collection(null)
   const tmp = {}
 
-  // eslint-disable-next-line array-callback-return
   collection.after.find(async function (userId, selector, options) {
     if (options && options.test) {
       tmp.after_find = true

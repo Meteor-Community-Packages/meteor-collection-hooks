@@ -332,7 +332,6 @@ CollectionHooks.reassignPrototype = function reassignPrototype (
     Object.setPrototypeOf(instance, constr.prototype)
   // eslint-disable-next-line no-proto
   } else if (instance.__proto__) {
-    // eslint-disable-line no-proto
     instance.__proto__ = constr.prototype // eslint-disable-line no-proto
   }
 }
