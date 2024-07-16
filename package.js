@@ -8,7 +8,7 @@ Package.describe({
 })
 
 Package.onUse(function (api) {
-  api.versionsFrom(['2.8.0', '3.0-rc.4'])
+  api.versionsFrom(['2.8.1', '3.0-rc.10'])
 
   api.use([
     'mongo',
@@ -29,7 +29,7 @@ Package.onUse(function (api) {
 })
 
 Package.onTest(function (api) {
-  api.versionsFrom(['2.8.0', '3.0-rc.4'])
+  api.versionsFrom(['2.8.0', '3.0-rc.10'])
 
   api.use([
     'matb33:collection-hooks',
