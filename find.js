@@ -12,7 +12,7 @@ CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects
       if (r === false) abort = true
     })
 
-    if (abort) return instance.find(undefined)
+    if (abort) return instance.direct.find(undefined)
   }
 
   const after = (cursor) => {
