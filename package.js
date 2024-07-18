@@ -8,7 +8,7 @@ Package.describe({
 })
 
 Package.onUse(function (api) {
-  api.versionsFrom(['2.14', '3.0'])
+  api.versionsFrom(['2.8.1', '3.0'])
 
   api.use([
     'mongo',
