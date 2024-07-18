@@ -11,11 +11,27 @@ const advices = {}
 
 export const CollectionHooks = {
   defaults: {
-    before: { insert: {}, update: {}, remove: {}, upsert: {}, find: {}, findOne: {}, all: {} },
-    after: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} },
+    before: {
+      insert: {},
+      update: {},
+      remove: {},
+      upsert: {},
+      find: {},
+      findOne: {},
+      all: {}
+    },
+    after: {
+      insert: {},
+      update: {},
+      remove: {},
+      find: {},
+      findOne: {},
+      all: {}
+    },
     all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
+  // TODO(v3): withValue returns a promise now
   directOp (func) {
     return this.directEnv.withValue(true, func)
   },
@@ -24,7 +40,10 @@ export const CollectionHooks = {
   }
 }
 
-CollectionHooks.extendCollectionInstance = function extendCollectionInstance (self, constructor) {
+CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
+  self,
+  constructor
+) {
   // Offer a public API to allow the user to define aspects
   // Example: collection.before.insert(func);
   ['before', 'after'].forEach(function (pointcut) {
@@ -48,7 +67,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
             // replacing is done by determining the actual index of a given target
             // and replace this with the new one
             const src = self._hookAspects[method][pointcut]
-            const targetIndex = src.findIndex(entry => entry === target)
+            const targetIndex = src.findIndex((entry) => entry === target)
             const newTarget = {
               aspect,
               options: CollectionHooks.initOptions(options, pointcut, method)
@@ -61,7 +80,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
             // removing a hook is done by determining the actual index of a given target
             // and removing it form the source array
             const src = self._hookAspects[method][pointcut]
-            const targetIndex = src.findIndex(entry => entry === target)
+            const targetIndex = src.findIndex((entry) => entry === target)
             self._hookAspects[method][pointcut].splice(targetIndex, 1)
           }
         }
@@ -76,10 +95,13 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
   // Wrap mutator methods, letting the defined advice do the work
   Object.entries(advices).forEach(function ([method, advice]) {
-    const collection = Meteor.isClient || method === 'upsert' ? self : self._collection
+    // For client side, it wraps around minimongo LocalCollection
+    // For server side, it wraps around mongo Collection._collection (i.e. driver directly)
+    const collection =
+      Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
-    const _super = collection[method]
+    // const _super = collection[method]
 
     Meteor._ensure(self, 'direct', method)
     self.direct[method] = function (...args) {
@@ -90,6 +112,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
 
     const asyncMethod = method + 'Async'
 
+    // TODO(v3): don't understand why this is necessary. Maybe related to Meteor 2.x and async?
     if (constructor.prototype[asyncMethod]) {
       self.direct[asyncMethod] = function (...args) {
         return CollectionHooks.directOp(function () {
@@ -98,43 +121,69 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (se
       }
     }
 
-    collection[method] = function (...args) {
-      if (CollectionHooks.directEnv.get() === true) {
-        return _super.apply(collection, args)
+    function getWrappedMethod (_super) {
+      return function wrappedMethod (...args) {
+        // TODO(v2): not quite sure why _super in the first updateAsync call points to LocalCollection's wrapped async method which
+        // will then again call this wrapped method
+        if (
+          (method === 'update' && this.update.isCalledFromAsync) ||
+          (method === 'remove' && this.remove.isCalledFromAsync) ||
+          CollectionHooks.directEnv.get() === true
+        ) {
+          return _super.apply(collection, args)
+        }
+
+        // NOTE: should we decide to force `update` with `{upsert:true}` to use
+        // the `upsert` hooks, this is what will accomplish it. It's important to
+        // realize that Meteor won't distinguish between an `update` and an
+        // `insert` though, so we'll end up with `after.update` getting called
+        // even on an `insert`. That's why we've chosen to disable this for now.
+        // if (method === "update" && Object(args[2]) === args[2] && args[2].upsert) {
+        //   method = "upsert";
+        //   advice = CollectionHooks.getAdvice(method);
+        // }
+
+        return advice.call(
+          this,
+          CollectionHooks.getUserId(),
+          _super,
+          self,
+          method === 'upsert'
+            ? {
+                insert: self._hookAspects.insert || {},
+                update: self._hookAspects.update || {},
+                upsert: self._hookAspects.upsert || {}
+              }
+            : self._hookAspects[method] || {},
+          function (doc) {
+            return typeof self._transform === 'function'
+              ? function (d) {
+                return self._transform(d || doc)
+              }
+              : function (d) {
+                return d || doc
+              }
+          },
+          args,
+          false
+        )
       }
-
-      // NOTE: should we decide to force `update` with `{upsert:true}` to use
-      // the `upsert` hooks, this is what will accomplish it. It's important to
-      // realize that Meteor won't distinguish between an `update` and an
-      // `insert` though, so we'll end up with `after.update` getting called
-      // even on an `insert`. That's why we've chosen to disable this for now.
-      // if (method === "update" && Object(args[2]) === args[2] && args[2].upsert) {
-      //   method = "upsert";
-      //   advice = CollectionHooks.getAdvice(method);
-      // }
-
-      return advice.call(this,
-        CollectionHooks.getUserId(),
-        _super,
-        self,
-        method === 'upsert'
-          ? {
-              insert: self._hookAspects.insert || {},
-              update: self._hookAspects.update || {},
-              upsert: self._hookAspects.upsert || {}
-            }
-          : self._hookAspects[method] || {},
-        function (doc) {
-          return (
-            typeof self._transform === 'function'
-              ? function (d) { return self._transform(d || doc) }
-              : function (d) { return d || doc }
-          )
-        },
-        args,
-        false
-      )
     }
+
+    // TODO(v3): it appears this is necessary
+    // In Meteor 2 *Async methods call the non-async methods
+    if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
+      const _superAsync = collection[asyncMethod]
+      collection[asyncMethod] = getWrappedMethod(_superAsync)
+    } else if (method === 'find') {
+      // find is returning a cursor and is a sync method
+      const _superMethod = collection[method]
+      collection[method] = getWrappedMethod(_superMethod)
+    }
+
+    // Don't do this for v3 since we need to keep client methods sync.
+    // With v3, it wraps the sync method with async resulting in errors.
+    // collection[method] = getWrappedMethod(_super)
   })
 }
 
@@ -142,15 +191,31 @@ CollectionHooks.defineAdvice = (method, advice) => {
   advices[method] = advice
 }
 
-CollectionHooks.getAdvice = method => advices[method]
+CollectionHooks.getAdvice = (method) => advices[method]
 
 CollectionHooks.initOptions = (options, pointcut, method) =>
-  CollectionHooks.extendOptions(CollectionHooks.defaults, options, pointcut, method)
+  CollectionHooks.extendOptions(
+    CollectionHooks.defaults,
+    options,
+    pointcut,
+    method
+  )
 
-CollectionHooks.extendOptions = (source, options, pointcut, method) =>
-  ({ ...options, ...source.all.all, ...source[pointcut].all, ...source.all[method], ...source[pointcut][method] })
+CollectionHooks.extendOptions = (source, options, pointcut, method) => ({
+  ...options,
+  ...source.all.all,
+  ...source[pointcut].all,
+  ...source.all[method],
+  ...source[pointcut][method]
+})
 
-CollectionHooks.getDocs = function getDocs (collection, selector, options, fetchFields = {}, { useDirect = false } = {}) {
+CollectionHooks.getDocs = function getDocs (
+  collection,
+  selector,
+  options,
+  fetchFields = {},
+  { useDirect = false } = {}
+) {
   const findOptions = { transform: null, reactive: false }
 
   if (Object.keys(fetchFields).length > 0) {
@@ -183,12 +248,18 @@ CollectionHooks.getDocs = function getDocs (collection, selector, options, fetch
 
   // Unlike validators, we iterate over multiple docs, so use
   // find instead of findOne:
-  return (useDirect ? collection.direct : collection).find(selector, findOptions)
+  return (useDirect ? collection.direct : collection).find(
+    selector,
+    findOptions
+  )
 }
 
 // This function normalizes the selector (converting it to an Object)
 CollectionHooks.normalizeSelector = function (selector) {
-  if (typeof selector === 'string' || (selector && selector.constructor === Mongo.ObjectID)) {
+  if (
+    typeof selector === 'string' ||
+    (selector && selector.constructor === Mongo.ObjectID)
+  ) {
     return {
       _id: selector
     }
@@ -225,7 +296,7 @@ CollectionHooks.getFields = function getFields (mutator) {
   Object.entries(mutator).forEach(function ([op, params]) {
     // ====ADDED START=======================
     if (operators.includes(op)) {
-    // ====ADDED END=========================
+      // ====ADDED END=========================
       Object.keys(params).forEach(function (field) {
         // treat dotted fields as if they are replacing their
         // top-level part
@@ -248,7 +319,10 @@ CollectionHooks.getFields = function getFields (mutator) {
   return fields
 }
 
-CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr) {
+CollectionHooks.reassignPrototype = function reassignPrototype (
+  instance,
+  constr
+) {
   const hasSetPrototypeOf = typeof Object.setPrototypeOf === 'function'
   constr = constr || Mongo.Collection
 
@@ -256,14 +330,15 @@ CollectionHooks.reassignPrototype = function reassignPrototype (instance, constr
   // Note: Assigning a prototype dynamically has performance implications
   if (hasSetPrototypeOf) {
     Object.setPrototypeOf(instance, constr.prototype)
-  } else if (instance.__proto__) { // eslint-disable-line no-proto
+  // eslint-disable-next-line no-proto
+  } else if (instance.__proto__) {
     instance.__proto__ = constr.prototype // eslint-disable-line no-proto
   }
 }
 
 CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
   if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
-  if (!as._CollectionPrototype) as._CollectionPrototype = new as.Collection(null)
+  if (!as._CollectionPrototype) { as._CollectionPrototype = new as.Collection(null) }
 
   const constructor = ns._NewCollectionContructor || as._CollectionConstructor
   const proto = as._CollectionPrototype

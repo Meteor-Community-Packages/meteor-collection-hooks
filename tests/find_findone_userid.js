@@ -66,7 +66,7 @@ if (Meteor.isServer) {
     test.equal(CollectionHooks.isWithinPublish(), false)
   })
 
-  Meteor.publish('test_publish_for_find_findone_userid', function () {
+  Meteor.publish('test_publish_for_find_findone_userid', async function () {
     // Reset test values on each connection
     publishContext = null
 
@@ -84,8 +84,8 @@ if (Meteor.isServer) {
     publishContext = this
 
     // Trigger hooks
-    collection.find({}, { test: 1 })
-    collection.findOne({}, { test: 1 })
+    await collection.findOneAsync({}, { test: 1 })
+    await collection.findOneAsync({}, { test: 1 })
 
     if (!serverTestsAdded) {
       serverTestsAdded = true

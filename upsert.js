@@ -3,7 +3,7 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = a => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
+CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
   args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
 
   const ctx = { context: this, _super, args }
@@ -21,7 +21,8 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
   if (!suppressAspects) {
     if (!isEmpty(aspectGroup.upsert.before) || !isEmpty(aspectGroup.update.after)) {
-      docs = CollectionHooks.getDocs.call(this, instance, selector, options).fetch()
+      const cursor = await CollectionHooks.getDocs.call(this, instance, selector, options)
+      docs = await cursor.fetch()
       docIds = docs.map(doc => doc._id)
     }
 
@@ -40,51 +41,52 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
     }
 
     // before
-    aspectGroup.upsert.before.forEach((o) => {
-      const r = o.aspect.call(ctx, userId, selector, mutator, options)
+    for (const fn of aspectGroup.upsert.before) {
+      const r = await fn.aspect.call(ctx, userId, selector, mutator, options)
       if (r === false) abort = true
-    })
+    }
 
     if (abort) return { numberAffected: 0 }
   }
 
-  const afterUpdate = (affected, err) => {
+  const afterUpdate = async (affected, err) => {
     if (!suppressAspects && !isEmpty(aspectGroup.update.after)) {
       const fields = CollectionHooks.getFields(mutator)
-      const docs = CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options).fetch()
+      const docs = await CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options).fetchAsync()
 
-      aspectGroup.update.after.forEach((o) => {
-        docs.forEach((doc) => {
-          o.aspect.call({
+      for (const o of aspectGroup.update.after) {
+        for (const doc of docs) {
+          await o.aspect.call({
             transform: getTransform(doc),
             previous: prev.docs && prev.docs[doc._id],
             affected,
             err,
             ...ctx
           }, userId, doc, fields, prev.mutator, prev.options)
-        })
-      })
+        }
+      }
     }
   }
 
-  const afterInsert = (_id, err) => {
+  const afterInsert = async (_id, err) => {
     if (!suppressAspects && !isEmpty(aspectGroup.insert.after)) {
-      const doc = CollectionHooks.getDocs.call(this, instance, { _id }, selector, {}).fetch()[0] // 3rd argument passes empty object which causes magic logic to imply limit:1
+      const docs = await CollectionHooks.getDocs.call(this, instance, { _id }, selector, {}).fetchAsync() // 3rd argument passes empty object which causes magic logic to imply limit:1
+      const doc = docs[0]
       const lctx = { transform: getTransform(doc), _id, err, ...ctx }
 
-      aspectGroup.insert.after.forEach((o) => {
-        o.aspect.call(lctx, userId, doc)
-      })
+      for (const o of aspectGroup.insert.after) {
+        await o.aspect.call(lctx, userId, doc)
+      }
     }
   }
 
   if (async) {
-    const wrappedCallback = function (err, ret) {
+    const wrappedCallback = async function (err, ret) {
       if (err || (ret && ret.insertedId)) {
         // Send any errors to afterInsert
-        afterInsert(ret.insertedId, err)
+        await afterInsert(ret.insertedId, err)
       } else {
-        afterUpdate(ret && ret.numberAffected, err) // Note that err can never reach here
+        await afterUpdate(ret && ret.numberAffected, err) // Note that err can never reach here
       }
 
       return CollectionHooks.hookedOp(function () {
@@ -94,12 +96,12 @@ CollectionHooks.defineAdvice('upsert', function (userId, _super, instance, aspec
 
     return CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, wrappedCallback))
   } else {
-    const ret = CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback))
+    const ret = await CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback))
 
     if (ret && ret.insertedId) {
-      afterInsert(ret.insertedId)
+      await afterInsert(ret.insertedId)
     } else {
-      afterUpdate(ret && ret.numberAffected)
+      await afterUpdate(ret && ret.numberAffected)
     }
 
     return ret

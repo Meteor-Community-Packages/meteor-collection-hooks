@@ -1,3 +1,4 @@
+import './utils.js'
 import './insert_local.js'
 import './insert_both.js'
 import './insert_allow.js'

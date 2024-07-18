@@ -1,53 +1,70 @@
+import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
-Tinytest.addAsync('findone - selector should be {} when called without arguments', function (test, next) {
+Tinytest.addAsync('findone - selector should be {} when called without arguments', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  collection.before.findOne(function (userId, selector, options) {
+  let called = false
+  collection.before.findOne(async function (userId, selector, options) {
     test.equal(selector, {})
-    next()
+    called = true
   })
 
-  collection.findOne()
+  await collection.findOneAsync()
+  test.equal(called, true)
 })
 
-Tinytest.addAsync('findone - selector should have extra property', function (test, next) {
+Tinytest.addAsync('findone - selector should have extra property', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  collection.before.findOne(function (userId, selector, options) {
+  collection.before.findOne(async function (userId, selector, options) {
     if (options && options.test) {
       delete selector.bogus_value
       selector.before_findone = true
     }
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ start_value: true, before_findone: true }, function (err, id) {
-      if (err) throw err
-      test.notEqual(collection.findOne({ start_value: true, bogus_value: true }, { test: 1 }), undefined)
-      next()
-    })
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true, before_findone: true })
+    test.notEqual(await collection.findOneAsync({ start_value: true, bogus_value: true }, { test: 1 }), undefined)
   })
 })
 
-Tinytest.addAsync('findone - tmp variable should have property added after the find', function (test, next) {
+Tinytest.addAsync('findone - tmp variable should have property added after the find', async function (test) {
   const collection = new Mongo.Collection(null)
   const tmp = {}
 
-  collection.after.findOne(function (userId, selector, options) {
+  collection.after.findOne(async function (userId, selector, options) {
     if (options && options.test) {
       tmp.after_findone = true
     }
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ start_value: true }, function (err, id) {
-      if (err) throw err
-      collection.findOne({ start_value: true }, { test: 1 })
-      test.equal(tmp.after_findone, true)
-      next()
-    })
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true })
+
+    await collection.findOneAsync({ start_value: true }, { test: 1 })
+    test.equal(tmp.after_findone, true)
   })
 })
+
+const collection = new Mongo.Collection('collection_for_findone_sync_call')
+if (Meteor.isClient) {
+  Tinytest.add('findone - hooks are not called for sync methods', async function (test) {
+    let beforeCalled = false
+    let afterCalled = false
+    collection.before.findOne(function (userId, selector, options) {
+      beforeCalled = true
+    })
+    collection.after.findOne(function (userId, selector, options) {
+      afterCalled = true
+    })
+
+    collection.findOne({ test: 1 })
+
+    test.equal(beforeCalled, false)
+    test.equal(afterCalled, false)
+  })
+}
