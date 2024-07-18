@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         meteorRelease:
-          - '--release 2.8.1'
+          - '--release 2.14'
           - '--release 3.0.1'
           # Latest version
     steps:
