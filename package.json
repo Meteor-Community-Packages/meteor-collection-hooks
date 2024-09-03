@@ -6,7 +6,7 @@
     "start": "meteor test-packages ./",
     "tools:lint": "./node_modules/eslint/bin/eslint.js *.js tests",
     "tools:lintfix": "./node_modules/eslint/bin/eslint.js *.js tests --fix",
-    "publish": "meteor npm i && npm prune --production && meteor publish && meteor npm i",
+    "publish": "meteor npm i && npm prune --omit=dev && meteor publish && meteor npm i",
     "test": "meteor test-packages ./"
   },
   "description": "Extends Mongo.Collection with before/after hooks for insert/update/remove/find/findOne",
@@ -22,18 +22,18 @@
   "homepage": "https://github.com/Meteor-Community-Packages/meteor-collection-hooks",
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
-    "@eslint/js": "^9.7.0",
-    "eslint": "^9.7.0",
+    "@eslint/js": "^9.9.1",
+    "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-import-resolver-meteor": "^0.4.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^17.9.0",
-    "eslint-plugin-promise": "^6.4.0",
-    "eslint-plugin-react": "^7.34.4",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
+    "eslint-plugin-react": "^7.35.1",
     "eslint-plugin-standard": "^4.1.0",
     "spacejam": "^1.6.1"
   },
   "volta": {
-    "node": "20.15.1"
+    "node": "20.17.0"
   }
 }
