@@ -3,16 +3,16 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = (a) => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineAdvice(
+CollectionHooks.defineWrapper(
   'update',
   async function (
     userId,
     _super,
     instance,
-    aspects,
+    hooks,
     getTransform,
     args,
-    suppressAspects
+    suppressHooks
   ) {
     const ctx = { context: this, _super, args }
     let [selector, mutator, options, callback] = args
@@ -27,15 +27,14 @@ CollectionHooks.defineAdvice(
     let abort
     const prev = {}
 
-    if (!suppressAspects) {
+    if (!suppressHooks) {
       try {
-        // NOTE: fetching the full documents before when fetchPrevious is false and no before hooks are defined is wildly inefficient.
-        const shouldFetchForBefore = !isEmpty(aspects.before)
-        const shouldFetchForAfter = !isEmpty(aspects.after)
+        const shouldFetchForBefore = !isEmpty(hooks.before)
+        const shouldFetchForAfter = !isEmpty(hooks.after)
         let shouldFetchForPrevious = false
         if (shouldFetchForAfter) {
           shouldFetchForPrevious =
-            Object.values(aspects.after).some(
+            Object.values(hooks.after).some(
               (o) => o.options.fetchPrevious !== false
             ) &&
             CollectionHooks.extendOptions(
@@ -48,13 +47,13 @@ CollectionHooks.defineAdvice(
         fields = CollectionHooks.getFields(args[1])
         const fetchFields = {}
         if (shouldFetchForPrevious || shouldFetchForBefore) {
-          const afterAspectFetchFields = shouldFetchForPrevious
-            ? Object.values(aspects.after).map(
+          const afterHookFetchFields = shouldFetchForPrevious
+            ? Object.values(hooks.after).map(
               (o) => (o.options || {}).fetchFields || {}
             )
             : []
-          const beforeAspectFetchFields = shouldFetchForBefore
-            ? Object.values(aspects.before).map(
+          const beforeHookFetchFields = shouldFetchForBefore
+            ? Object.values(hooks.before).map(
               (o) => (o.options || {}).fetchFields || {}
             )
             : []
@@ -78,8 +77,8 @@ CollectionHooks.defineAdvice(
             fetchFields,
             afterGlobal,
             beforeGlobal,
-            ...afterAspectFetchFields,
-            ...beforeAspectFetchFields
+            ...afterHookFetchFields,
+            ...beforeHookFetchFields
           )
         }
         const cursor = await CollectionHooks.getDocs.call(
@@ -105,9 +104,9 @@ CollectionHooks.defineAdvice(
         }
 
         // before
-        for (const o of aspects.before) {
+        for (const o of hooks.before) {
           for (const doc of docs) {
-            const r = await o.aspect.call(
+            const r = await o.hook.call(
               { transform: getTransform(doc), ...ctx },
               userId,
               doc,
@@ -127,13 +126,13 @@ CollectionHooks.defineAdvice(
     }
 
     const after = async (affected, err) => {
-      if (!suppressAspects) {
+      if (!suppressHooks) {
         let docs
         let fields
-        if (!isEmpty(aspects.after)) {
+        if (!isEmpty(hooks.after)) {
           fields = CollectionHooks.getFields(args[1])
           const fetchFields = {}
-          const aspectFetchFields = Object.values(aspects.after).map(
+          const hookFetchFields = Object.values(hooks.after).map(
             (o) => (o.options || {}).fetchFields || {}
           )
           const globalFetchFields = CollectionHooks.extendOptions(
@@ -142,11 +141,11 @@ CollectionHooks.defineAdvice(
             'after',
             'update'
           ).fetchFields
-          if (aspectFetchFields || globalFetchFields) {
+          if (hookFetchFields || globalFetchFields) {
             Object.assign(
               fetchFields,
               globalFetchFields || {},
-              ...aspectFetchFields.map((a) => a.fetchFields)
+              ...hookFetchFields.map((a) => a.fetchFields)
             )
           }
 
@@ -162,9 +161,9 @@ CollectionHooks.defineAdvice(
           docs = await cursor.fetch()
         }
 
-        for (const o of aspects.after) {
+        for (const o of hooks.after) {
           for (const doc of docs) {
-            await o.aspect.call(
+            await o.hook.call(
               {
                 transform: getTransform(doc),
                 previous: prev.docs && prev.docs[doc._id],

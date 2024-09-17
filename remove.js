@@ -3,16 +3,16 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = (a) => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineAdvice(
+CollectionHooks.defineWrapper(
   'remove',
   async function (
     userId,
     _super,
     instance,
-    aspects,
+    hooks,
     getTransform,
     args,
-    suppressAspects
+    suppressHooks
   ) {
     const ctx = { context: this, _super, args }
     const [selector, callback] = args
@@ -21,9 +21,9 @@ CollectionHooks.defineAdvice(
     let abort
     const prev = []
 
-    if (!suppressAspects) {
+    if (!suppressHooks) {
       try {
-        if (!isEmpty(aspects.before) || !isEmpty(aspects.after)) {
+        if (!isEmpty(hooks.before) || !isEmpty(hooks.after)) {
           const cursor = await CollectionHooks.getDocs.call(
             this,
             instance,
@@ -33,14 +33,14 @@ CollectionHooks.defineAdvice(
         }
 
         // copy originals for convenience for the 'after' pointcut
-        if (!isEmpty(aspects.after)) {
+        if (!isEmpty(hooks.after)) {
           docs.forEach((doc) => prev.push(EJSON.clone(doc)))
         }
 
         // before
-        for (const o of aspects.before) {
+        for (const o of hooks.before) {
           for (const doc of docs) {
-            const r = await o.aspect.call(
+            const r = await o.hook.call(
               { transform: getTransform(doc), ...ctx },
               userId,
               doc
@@ -64,10 +64,10 @@ CollectionHooks.defineAdvice(
     }
 
     async function after (err) {
-      if (!suppressAspects) {
-        for (const o of aspects.after) {
+      if (!suppressHooks) {
+        for (const o of hooks.after) {
           for (const doc of prev) {
-            await o.aspect.call(
+            await o.hook.call(
               { transform: getTransform(doc), err, ...ctx },
               userId,
               doc

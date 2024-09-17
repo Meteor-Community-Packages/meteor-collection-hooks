@@ -3,11 +3,11 @@ import { Mongo } from 'meteor/mongo'
 import { EJSON } from 'meteor/ejson'
 import { LocalCollection } from 'meteor/minimongo'
 
-// Relevant AOP terminology:
-// Aspect: User code that runs before/after (hook)
-// Advice: Wrapper code that knows when to call user code (aspects)
-// Pointcut: before/after
-const advices = {}
+// Hooks terminology:
+// Hook: User-defined function that runs before/after collection operations
+// Wrapper: Code that knows when to call user-defined hooks
+// Timing: before/after
+const wrappers = {}
 
 export const CollectionHooks = {
   defaults: {
@@ -44,33 +44,33 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
   self,
   constructor
 ) {
-  // Offer a public API to allow the user to define aspects
+  // Offer a public API to allow the user to define hooks
   // Example: collection.before.insert(func);
-  ['before', 'after'].forEach(function (pointcut) {
-    Object.entries(advices).forEach(function ([method, advice]) {
-      if (advice === 'upsert' && pointcut === 'after') return
+  ['before', 'after'].forEach(function (timing) {
+    Object.entries(wrappers).forEach(function ([method, wrapper]) {
+      if (wrapper === 'upsert' && timing === 'after') return
 
-      Meteor._ensure(self, pointcut, method)
-      Meteor._ensure(self, '_hookAspects', method)
+      Meteor._ensure(self, timing, method)
+      Meteor._ensure(self, '_hooks', method)
 
-      self._hookAspects[method][pointcut] = []
-      self[pointcut][method] = function (aspect, options) {
+      self._hooks[method][timing] = []
+      self[timing][method] = function (hook, options) {
         let target = {
-          aspect,
-          options: CollectionHooks.initOptions(options, pointcut, method)
+          hook,
+          options: CollectionHooks.initOptions(options, timing, method)
         }
         // adding is simply pushing it to the array
-        self._hookAspects[method][pointcut].push(target)
+        self._hooks[method][timing].push(target)
 
         return {
-          replace (aspect, options) {
+          replace (hook, options) {
             // replacing is done by determining the actual index of a given target
             // and replace this with the new one
-            const src = self._hookAspects[method][pointcut]
+            const src = self._hooks[method][timing]
             const targetIndex = src.findIndex((entry) => entry === target)
             const newTarget = {
-              aspect,
-              options: CollectionHooks.initOptions(options, pointcut, method)
+              hook,
+              options: CollectionHooks.initOptions(options, timing, method)
             }
             src.splice(targetIndex, 1, newTarget)
             // update the target to get the correct index in future calls
@@ -79,9 +79,9 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
           remove () {
             // removing a hook is done by determining the actual index of a given target
             // and removing it form the source array
-            const src = self._hookAspects[method][pointcut]
+            const src = self._hooks[method][timing]
             const targetIndex = src.findIndex((entry) => entry === target)
-            self._hookAspects[method][pointcut].splice(targetIndex, 1)
+            self._hooks[method][timing].splice(targetIndex, 1)
           }
         }
       }
@@ -93,8 +93,8 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
   // Example: collection.hookOptions.after.update = {fetchPrevious: false};
   self.hookOptions = EJSON.clone(CollectionHooks.defaults)
 
-  // Wrap mutator methods, letting the defined advice do the work
-  Object.entries(advices).forEach(function ([method, advice]) {
+  // Wrap mutator methods, letting the defined wrapper do the work
+  Object.entries(wrappers).forEach(function ([method, wrapper]) {
     // For client side, it wraps around minimongo LocalCollection
     // For server side, it wraps around mongo Collection._collection (i.e. driver directly)
     const collection =
@@ -140,21 +140,21 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
         // even on an `insert`. That's why we've chosen to disable this for now.
         // if (method === "update" && Object(args[2]) === args[2] && args[2].upsert) {
         //   method = "upsert";
-        //   advice = CollectionHooks.getAdvice(method);
+        //   wrapper = CollectionHooks.getWrapper(method);
         // }
 
-        return advice.call(
+        return wrapper.call(
           this,
           CollectionHooks.getUserId(),
           _super,
           self,
           method === 'upsert'
             ? {
-                insert: self._hookAspects.insert || {},
-                update: self._hookAspects.update || {},
-                upsert: self._hookAspects.upsert || {}
+                insert: self._hooks.insert || {},
+                update: self._hooks.update || {},
+                upsert: self._hooks.upsert || {}
               }
-            : self._hookAspects[method] || {},
+            : self._hooks[method] || {},
           function (doc) {
             return typeof self._transform === 'function'
               ? function (d) {
@@ -187,26 +187,26 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
   })
 }
 
-CollectionHooks.defineAdvice = (method, advice) => {
-  advices[method] = advice
+CollectionHooks.defineWrapper = (method, wrapper) => {
+  wrappers[method] = wrapper
 }
 
-CollectionHooks.getAdvice = (method) => advices[method]
+CollectionHooks.getWrapper = (method) => wrappers[method]
 
-CollectionHooks.initOptions = (options, pointcut, method) =>
+CollectionHooks.initOptions = (options, timing, method) =>
   CollectionHooks.extendOptions(
     CollectionHooks.defaults,
     options,
-    pointcut,
+    timing,
     method
   )
 
-CollectionHooks.extendOptions = (source, options, pointcut, method) => ({
+CollectionHooks.extendOptions = (source, options, timing, method) => ({
   ...options,
   ...source.all.all,
-  ...source[pointcut].all,
+  ...source[timing].all,
   ...source.all[method],
-  ...source[pointcut][method]
+  ...source[timing][method]
 })
 
 CollectionHooks.getDocs = function getDocs (

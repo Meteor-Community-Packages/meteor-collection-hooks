@@ -3,7 +3,7 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = a => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance, aspectGroup, getTransform, args, suppressAspects) {
+CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance, hookGroup, getTransform, args, suppressHooks) {
   args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
 
   const ctx = { context: this, _super, args }
@@ -19,16 +19,16 @@ CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance,
   let abort
   const prev = {}
 
-  if (!suppressAspects) {
-    if (!isEmpty(aspectGroup.upsert.before) || !isEmpty(aspectGroup.update.after)) {
+  if (!suppressHooks) {
+    if (!isEmpty(hookGroup.upsert.before) || !isEmpty(hookGroup.update.after)) {
       const cursor = await CollectionHooks.getDocs.call(this, instance, selector, options)
       docs = await cursor.fetch()
       docIds = docs.map(doc => doc._id)
     }
 
     // copy originals for convenience for the 'after' pointcut
-    if (!isEmpty(aspectGroup.update.after)) {
-      if (aspectGroup.update.after.some(o => o.options.fetchPrevious !== false) &&
+    if (!isEmpty(hookGroup.update.after)) {
+      if (hookGroup.update.after.some(o => o.options.fetchPrevious !== false) &&
         CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
         prev.mutator = EJSON.clone(mutator)
         prev.options = EJSON.clone(options)
@@ -41,7 +41,7 @@ CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance,
     }
 
     // before
-    for (const fn of aspectGroup.upsert.before) {
+    for (const fn of hookGroup.upsert.before) {
       const r = await fn.aspect.call(ctx, userId, selector, mutator, options)
       if (r === false) abort = true
     }
@@ -50,11 +50,11 @@ CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance,
   }
 
   const afterUpdate = async (affected, err) => {
-    if (!suppressAspects && !isEmpty(aspectGroup.update.after)) {
+    if (!suppressHooks && !isEmpty(hookGroup.update.after)) {
       const fields = CollectionHooks.getFields(mutator)
       const docs = await CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options).fetchAsync()
 
-      for (const o of aspectGroup.update.after) {
+      for (const o of hookGroup.update.after) {
         for (const doc of docs) {
           await o.aspect.call({
             transform: getTransform(doc),
@@ -69,12 +69,12 @@ CollectionHooks.defineAdvice('upsert', async function (userId, _super, instance,
   }
 
   const afterInsert = async (_id, err) => {
-    if (!suppressAspects && !isEmpty(aspectGroup.insert.after)) {
+    if (!suppressHooks && !isEmpty(hookGroup.insert.after)) {
       const docs = await CollectionHooks.getDocs.call(this, instance, { _id }, selector, {}).fetchAsync() // 3rd argument passes empty object which causes magic logic to imply limit:1
       const doc = docs[0]
       const lctx = { transform: getTransform(doc), _id, err, ...ctx }
 
-      for (const o of aspectGroup.insert.after) {
+      for (const o of hookGroup.insert.after) {
         await o.aspect.call(lctx, userId, doc)
       }
     }

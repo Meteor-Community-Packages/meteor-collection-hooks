@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { CollectionHooks } from './collection-hooks'
 
-import './advices'
+import './wrappers'
 
 const publishUserId = new Meteor.EnvironmentVariable()
 

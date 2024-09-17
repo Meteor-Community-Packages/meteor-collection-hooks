@@ -2,7 +2,7 @@ import { EJSON } from 'meteor/ejson'
 import { Mongo } from 'meteor/mongo'
 import { CollectionHooks } from './collection-hooks'
 
-CollectionHooks.defineAdvice('insert', async function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
+CollectionHooks.defineWrapper('insert', async function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
   const ctx = { context: this, _super, args }
   let doc = args[0]
   let callback
@@ -15,14 +15,12 @@ CollectionHooks.defineAdvice('insert', async function (userId, _super, instance,
   let ret
 
   // before
-  if (!suppressAspects) {
+  if (!suppressHooks) {
     try {
-      for (const o of aspects.before) {
-        const r = await o.aspect.call({ transform: getTransform(doc), ...ctx }, userId, doc)
+      for (const o of hooks.before) {
+        const r = await o.hook.call({ transform: getTransform(doc), ...ctx }, userId, doc)
         if (r === false) {
           abort = true
-          // TODO(v3): before it was before.forEach() so break was not possible
-          // maybe we need to keep it that way?
           break
         }
       }
@@ -49,11 +47,11 @@ CollectionHooks.defineAdvice('insert', async function (userId, _super, instance,
       doc = EJSON.clone(doc)
       doc._id = id
     }
-    if (!suppressAspects) {
+    if (!suppressHooks) {
       const lctx = { transform: getTransform(doc), _id: id, err, ...ctx }
 
-      for (const o of aspects.after) {
-        await o.aspect.call(lctx, userId, doc)
+      for (const o of hooks.after) {
+        await o.hook.call(lctx, userId, doc)
       }
     }
     return id

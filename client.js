@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { CollectionHooks } from './collection-hooks.js'
 
-import './advices'
+import './wrappers.js'
 
 CollectionHooks.getUserId = function getUserId () {
   let userId
