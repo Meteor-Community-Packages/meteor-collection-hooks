@@ -24,7 +24,6 @@ Tinytest.addAsync('find - selector should have extra property', async function (
       delete selector.bogus_value
       selector.before_find = true
     }
-    return;
   })
 
   await InsecureLogin.ready(async function () {
