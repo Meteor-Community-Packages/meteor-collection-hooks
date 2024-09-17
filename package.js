@@ -29,7 +29,7 @@ Package.onUse(function (api) {
 })
 
 Package.onTest(function (api) {
-  api.versionsFrom(['2.14', '3.0.2'])
+  api.versionsFrom(['2.14', '3.0.3'])
 
   api.use([
     'matb33:collection-hooks',
