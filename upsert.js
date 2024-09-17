@@ -42,7 +42,7 @@ CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance
 
     // before
     for (const fn of hookGroup.upsert.before) {
-      const r = await fn.aspect.call(ctx, userId, selector, mutator, options)
+      const r = await fn.hook.call(ctx, userId, selector, mutator, options)
       if (r === false) abort = true
     }
 
@@ -56,7 +56,7 @@ CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance
 
       for (const o of hookGroup.update.after) {
         for (const doc of docs) {
-          await o.aspect.call({
+          await o.hook.call({
             transform: getTransform(doc),
             previous: prev.docs && prev.docs[doc._id],
             affected,
@@ -75,7 +75,7 @@ CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance
       const lctx = { transform: getTransform(doc), _id, err, ...ctx }
 
       for (const o of hookGroup.insert.after) {
-        await o.aspect.call(lctx, userId, doc)
+        await o.hook.call(lctx, userId, doc)
       }
     }
   }
