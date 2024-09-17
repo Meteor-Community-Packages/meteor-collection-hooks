@@ -19,28 +19,28 @@ CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks,
   // Wrap async cursor methods
   ASYNC_METHODS.forEach((method) => {
     if (cursor[method]) {
-      const originalMethod = cursor[method];
+      const originalMethod = cursor[method]
       cursor[method] = async function (...args) {
-        let abort = false;
+        let abort = false
         for (const hook of hooks.before) {
-          const result = await hook.hook.call(this, userId, selector, options);
+          const result = await hook.hook.call(this, userId, selector, options)
           if (result === false) {
-            abort = true;
+            abort = true
           }
         }
 
         // Modify the existing cursor instead of creating a new one
-        this.selector = abort ? undefined : selector;
-        this.options = options;
+        this.selector = abort ? undefined : selector
+        this.options = options
 
-        const result = await originalMethod.apply(this, args);
+        const result = await originalMethod.apply(this, args)
 
         for (const hook of hooks.after) {
-          await hook.hook.call(this, userId, selector, options, this);
+          await hook.hook.call(this, userId, selector, options, this)
         }
 
-        return result;
-      };
+        return result
+      }
     }
   })
 
