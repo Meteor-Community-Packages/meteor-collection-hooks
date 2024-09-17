@@ -19,7 +19,7 @@ Tinytest.addAsync('find - selector should be {} when called without arguments', 
 Tinytest.addAsync('find - selector should have extra property', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  collection.before.find(async function (userId, selector, options) {
+  collection.before.find(function (userId, selector, options) {
     if (options && options.test) {
       delete selector.bogus_value
       selector.before_find = true
@@ -28,7 +28,9 @@ Tinytest.addAsync('find - selector should have extra property', async function (
 
   await InsecureLogin.ready(async function () {
     await collection.insertAsync({ start_value: true, before_find: true })
-    test.equal(await collection.find({ start_value: true, bogus_value: true }, { test: 1 }).countAsync(), 1)
+    const result = await collection.find({ start_value: true, bogus_value: true }, { test: 1 }).fetchAsync()
+    test.equal(result.length, 1)
+    test.equal(result[0].before_find, true)
   })
 })
 

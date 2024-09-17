@@ -10,9 +10,15 @@ const ASYNC_METHODS = ['countAsync', 'fetchAsync', 'forEachAsync', 'mapAsync']
  * within these wrapped methods with selector and options updated by before hooks.
  */
 CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
-  // const ctx = { context: this, _super, args }
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
+
+  // Apply synchronous before hooks
+  hooks.before.forEach(hook => {
+    if (!hook.hook.constructor.name.includes('Async')) {
+      hook.hook.call(this, userId, selector, options)
+    }
+  })
 
   const cursor = _super.call(this, selector, options)
 
@@ -21,22 +27,22 @@ CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks,
     if (cursor[method]) {
       const originalMethod = cursor[method]
       cursor[method] = async function (...args) {
-        let abort = false
+        // Apply asynchronous before hooks
         for (const hook of hooks.before) {
-          const result = await hook.hook.call(this, userId, selector, options)
-          if (result === false) {
-            abort = true
+          if (hook.hook.constructor.name.includes('Async')) {
+            await hook.hook.call(this, userId, selector, options)
           }
         }
 
-        // Modify the existing cursor instead of creating a new one
-        this.selector = abort ? undefined : selector
-        this.options = options
-
         const result = await originalMethod.apply(this, args)
 
+        // Apply after hooks
         for (const hook of hooks.after) {
-          await hook.hook.call(this, userId, selector, options, this)
+          if (hook.hook.constructor.name.includes('Async')) {
+            await hook.hook.call(this, userId, selector, options, this)
+          } else {
+            hook.hook.call(this, userId, selector, options, this)
+          }
         }
 
         return result
