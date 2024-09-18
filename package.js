@@ -8,7 +8,7 @@ Package.describe({
 })
 
 Package.onUse(function (api) {
-  api.versionsFrom(['3.0.3'])
+  api.versionsFrom(['3.0.2'])
 
   api.use([
     'mongo',
@@ -29,12 +29,12 @@ Package.onUse(function (api) {
 })
 
 Package.onTest(function (api) {
-  api.versionsFrom(['3.0.3'])
+  api.versionsFrom(['3.0.2'])
 
   api.use([
     'matb33:collection-hooks',
     'accounts-base',
-    'accounts-password@3.0.1',
+    'accounts-password',
     'mongo',
     'ddp',
     'tinytest',
