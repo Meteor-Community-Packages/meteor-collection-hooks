@@ -1,0 +1,32 @@
+# the test suite runs the tests (headless, server+client) for multiple Meteor releases
+name: Test suite
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        meteorRelease:
+          - '--release 3.0.2'
+          # Latest version
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install Dependencies
+        run: |
+          curl https://install.meteor.com | /bin/sh
+          npm i -g @zodern/mtest
+      - name: Run Tests
+        run: |
+          mtest --package ./ --once ${{ matrix.meteorRelease }}

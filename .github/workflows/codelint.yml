@@ -1,0 +1,26 @@
+# this CI script lints the packages code independent of running the tests
+name: Code lint
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+      - name: Run Lint
+        run: |
+          npm run tools:lint
