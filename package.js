@@ -40,7 +40,8 @@ Package.onTest(function (api) {
     'tinytest',
     'test-helpers',
     'ecmascript',
-    'jquery'
+    'jquery',
+    'dburles:mongo-collection-instances'
   ])
 
   api.mainModule('tests/client/main.js', 'client')
