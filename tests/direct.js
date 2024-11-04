@@ -135,7 +135,7 @@ function createTest (cname, conntype) {
     )})`,
     async function (test) {
       if (Mongo.Collection.get(cname)) return
-      
+
       const collection = new Mongo.Collection(cname, conntype)
       // Full permissions on collection
       collection.allow({

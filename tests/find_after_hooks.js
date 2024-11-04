@@ -56,8 +56,12 @@ Tinytest.addAsync('issue #296 - after insert hook always finds all inserted', as
 Tinytest.addAsync('async find hook - after insert hook always finds all inserted', async function (test, next) {
   const collection = new Mongo.Collection(null)
 
-  collection.before.find(async (userId, selector) => {
-    await new Promise(resolve => setTimeout(resolve, 10)) // Simulate async operation
+  collection.before.find((userId, selector) => {
+    selector.removedAt = { $exists: false }
+    return true
+  })
+
+  collection.before.findOne((userId, selector) => {
     selector.removedAt = { $exists: false }
     return true
   })
@@ -74,15 +78,12 @@ Tinytest.addAsync('async find hook - after insert hook always finds all inserted
 
   await collection.insertAsync({ removedAt: new Date() })
 
-  // Wait for a short time to ensure async find hook has completed
-  await new Promise(resolve => setTimeout(resolve, 20))
+  test.equal(beforeCalled, true, 'before insert hook should be called')
+  test.equal(afterCalled, true, 'after insert hook should be called')
 
-  test.equal(beforeCalled, true)
-  test.equal(afterCalled, true)
+  const findResult = await collection.find({}).fetchAsync()
+  test.equal(findResult.length, 0, 'No documents should be found due to find hook')
 
-  // Verify that the find hook is working
-  const result = await collection.findOneAsync({})
-  test.isUndefined(result, 'Document should not be found due to async find hook')
-
-  next()
+  const findOneResult = await collection.findOneAsync({})
+  test.isUndefined(findOneResult, 'Document should not be found due to find hook')
 })

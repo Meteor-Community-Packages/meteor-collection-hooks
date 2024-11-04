@@ -14,6 +14,7 @@ let beforeFindWithinPublish
 let afterFindWithinPublish
 let beforeFindOneWithinPublish
 let afterFindOneWithinPublish
+let serverCleanup
 
 // Don't declare hooks in publish method, as it is problematic
 // eslint-disable-next-line array-callback-return
@@ -62,6 +63,14 @@ if (Meteor.isServer) {
   let serverTestsAdded = false
   let publishContext = null
 
+  serverCleanup = () => {
+    beforeFindOneUserId = null
+    afterFindOneUserId = null
+    beforeFindOneWithinPublish = false
+    afterFindOneWithinPublish = false
+    publishContext = null
+  }
+
   Tinytest.add('general - isWithinPublish is false outside of publish function', function (test) {
     test.equal(CollectionHooks.isWithinPublish(), false)
   })
@@ -106,11 +115,13 @@ if (Meteor.isServer) {
       })
 
       Tinytest.add('findone - userId available to before findOne hook when within publish context', function (test) {
+        serverCleanup()
         test.notEqual(beforeFindOneUserId, null)
         test.equal(beforeFindOneWithinPublish, true)
       })
 
       Tinytest.add('findone - userId available to after findOne hook when within publish context', function (test) {
+        serverCleanup()
         test.notEqual(afterFindOneUserId, null)
         test.equal(afterFindOneWithinPublish, true)
       })
