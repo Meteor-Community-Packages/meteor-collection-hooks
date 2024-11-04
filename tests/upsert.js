@@ -16,7 +16,6 @@ Tinytest.addAsync('upsert - hooks should all fire the appropriate number of time
       insert: 0,
       update: 0,
       remove: 0,
-      upsert: 0
     }
   }
 
@@ -28,7 +27,6 @@ Tinytest.addAsync('upsert - hooks should all fire the appropriate number of time
   collection.after.insert(function () { counts.after.insert++ })
   collection.after.update(function () { counts.after.update++ })
   collection.after.remove(function () { counts.after.remove++ })
-  collection.after.upsert(function () { counts.after.upsert++ })
 
   await InsecureLogin.ready(async function () {
     await collection.removeAsync({ test: true })
@@ -42,7 +40,6 @@ Tinytest.addAsync('upsert - hooks should all fire the appropriate number of time
     test.equal(counts.after.insert, 1, 'after.insert should be 1')
     test.equal(counts.after.update, 1, 'after.update should be 1')
     test.equal(counts.after.remove, 0, 'after.remove should be 0')
-    test.equal(counts.after.upsert, 0, 'after.upsert should be 0')
 
     // TODO(v3): callbacks are not working as expected, not passed to collection-hooks. Need to investigate
     // await collection.removeAsync({ test: true }, async function (err) {
@@ -81,7 +78,6 @@ if (Meteor.isServer) {
         insert: 0,
         update: 0,
         remove: 0,
-        upsert: 0
       }
     }
 
@@ -93,7 +89,6 @@ if (Meteor.isServer) {
     collection.after.insert(function () { counts.after.insert++ })
     collection.after.update(function () { counts.after.update++ })
     collection.after.remove(function () { counts.after.remove++ })
-    collection.after.upsert(function () { counts.after.upsert++ })
 
     await collection.removeAsync({ test: true })
     const obj = await collection.upsertAsync({ test: true }, { test: true, step: 'insert' })
@@ -106,7 +101,6 @@ if (Meteor.isServer) {
     test.equal(counts.after.insert, 1, 'after.insert should be 1')
     test.equal(counts.after.update, 1, 'after.update should be 1')
     test.equal(counts.after.remove, 0, 'after.remove should be 0')
-    test.equal(counts.after.upsert, 0, 'after.upsert should be 0')
   })
 }
 
@@ -182,12 +176,8 @@ if (Meteor.isClient) {
   const collectionForSync = new Mongo.Collection(null)
   Tinytest.add('upsert - hooks are not called for sync methods', function (test) {
     let beforeCalled = false
-    let afterCalled = false
     collectionForSync.before.upsert(function (userId, selector, options) {
       beforeCalled = true
-    })
-    collectionForSync.after.upsert(function (userId, selector, options) {
-      afterCalled = true
     })
 
     const result = collectionForSync.upsert({ test: 1 }, {
@@ -197,6 +187,5 @@ if (Meteor.isClient) {
     test.equal(result.numberAffected, 1)
 
     test.equal(beforeCalled, false)
-    test.equal(afterCalled, false)
   })
 }

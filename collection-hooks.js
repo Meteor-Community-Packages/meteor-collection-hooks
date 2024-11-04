@@ -48,7 +48,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
   // Example: collection.before.insert(func);
   ['before', 'after'].forEach(function (timing) {
     Object.entries(wrappers).forEach(function ([method, wrapper]) {
-      if (wrapper === 'upsert' && timing === 'after') return
+      if (method === 'upsert' && timing === 'after') return
 
       Meteor._ensure(self, timing, method)
       Meteor._ensure(self, '_hooks', method)
