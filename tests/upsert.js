@@ -15,7 +15,7 @@ Tinytest.addAsync('upsert - hooks should all fire the appropriate number of time
     after: {
       insert: 0,
       update: 0,
-      remove: 0,
+      remove: 0
     }
   }
 
@@ -77,7 +77,7 @@ if (Meteor.isServer) {
       after: {
         insert: 0,
         update: 0,
-        remove: 0,
+        remove: 0
       }
     }
 
