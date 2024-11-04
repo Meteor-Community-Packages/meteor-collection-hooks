@@ -195,7 +195,9 @@ test.before.find(function (userId, selector, options) {
 });
 ```
 
-__Important:__ This hook does not get called for `after.update` hooks (see https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297).
+__Important:__ 
+- The function used as `before.find` hook cannot be async
+- This hook does not get called for `after.update` hooks (see https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297).
 
 --------------------------------------------------------------------------------
 

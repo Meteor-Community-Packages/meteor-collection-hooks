@@ -6,8 +6,9 @@ Tinytest.addAsync('find - selector should be {} when called without arguments', 
   const collection = new Mongo.Collection(null)
 
   let findSelector = null
-  collection.before.find(async function (userId, selector, options) {
+  collection.before.find(function (userId, selector, options) {
     findSelector = selector
+    return true
   })
 
   // hooks won't be triggered on find() alone, we must call fetchAsync()

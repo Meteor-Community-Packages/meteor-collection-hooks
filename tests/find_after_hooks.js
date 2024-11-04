@@ -53,7 +53,7 @@ Tinytest.addAsync('issue #296 - after insert hook always finds all inserted', as
   test.equal(afterCalled, true)
 })
 
-Tinytest.addAsync('async find hook - after insert hook always finds all inserted', async function (test, next) {
+Tinytest.addAsync('find hook - after insert hook always finds all inserted', async function (test, next) {
   const collection = new Mongo.Collection(null)
 
   collection.before.find((userId, selector) => {
