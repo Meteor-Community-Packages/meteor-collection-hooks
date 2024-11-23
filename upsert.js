@@ -82,11 +82,12 @@ CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance
 
   if (async) {
     const wrappedCallback = async function (err, ret) {
-      if (err || (ret && ret.insertedId)) {
+      const { insertedId, numberAffected } = (ret ?? {})
+      if (err || insertedId) {
         // Send any errors to afterInsert
-        await afterInsert(ret.insertedId, err)
+        await afterInsert(insertedId, err)
       } else {
-        await afterUpdate(ret && ret.numberAffected, err) // Note that err can never reach here
+        await afterUpdate(numberAffected, err) // Note that err can never reach here
       }
 
       return CollectionHooks.hookedOp(function () {
@@ -97,11 +98,12 @@ CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance
     return CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, wrappedCallback))
   } else {
     const ret = await CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback))
+    const { insertedId, numberAffected } = (ret ?? {})
 
-    if (ret && ret.insertedId) {
-      await afterInsert(ret.insertedId)
+    if (insertedId) {
+      await afterInsert(insertedId)
     } else {
-      await afterUpdate(ret && ret.numberAffected)
+      await afterUpdate(numberAffected)
     }
 
     return ret
