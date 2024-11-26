@@ -17,6 +17,8 @@ CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks,
   hooks.before.forEach(hook => {
     if (!hook.hook.constructor.name.includes('Async')) {
       hook.hook.call(this, userId, selector, options)
+    } else {
+      throw new Error('Cannot use async function as before.find hook')
     }
   })
 
@@ -27,13 +29,7 @@ CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks,
     if (cursor[method]) {
       const originalMethod = cursor[method]
       cursor[method] = async function (...args) {
-        // Apply asynchronous before hooks
-        for (const hook of hooks.before) {
-          if (hook.hook.constructor.name.includes('Async')) {
-            await hook.hook.call(this, userId, selector, options)
-          }
-        }
-
+        // Do not try to apply asynchronous before hooks here because they act on the cursor which is already defined
         const result = await originalMethod.apply(this, args)
 
         // Apply after hooks
