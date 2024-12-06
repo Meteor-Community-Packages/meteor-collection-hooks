@@ -2,7 +2,7 @@ import { EJSON } from 'meteor/ejson'
 import { Mongo } from 'meteor/mongo'
 import { CollectionHooks } from './collection-hooks'
 
-CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
+CollectionHooks.defineWrapper('insert', async function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
   const ctx = { context: this, _super, args }
   let doc = args[0]
   let callback
@@ -15,12 +15,15 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
   let ret
 
   // before
-  if (!suppressAspects) {
+  if (!suppressHooks) {
     try {
-      aspects.before.forEach((o) => {
-        const r = o.aspect.call({ transform: getTransform(doc), ...ctx }, userId, doc)
-        if (r === false) abort = true
-      })
+      for (const o of hooks.before) {
+        const r = await o.hook.call({ transform: getTransform(doc), ...ctx }, userId, doc)
+        if (r === false) {
+          abort = true
+          break
+        }
+      }
 
       if (abort) return
     } catch (e) {
@@ -29,7 +32,7 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
     }
   }
 
-  const after = (id, err) => {
+  const after = async (id, err) => {
     if (id) {
       // In some cases (namely Meteor.users on Meteor 1.4+), the _id property
       // is a raw mongo _id object. We need to extract the _id from this object
@@ -44,23 +47,25 @@ CollectionHooks.defineAdvice('insert', function (userId, _super, instance, aspec
       doc = EJSON.clone(doc)
       doc._id = id
     }
-    if (!suppressAspects) {
+    if (!suppressHooks) {
       const lctx = { transform: getTransform(doc), _id: id, err, ...ctx }
-      aspects.after.forEach((o) => {
-        o.aspect.call(lctx, userId, doc)
-      })
+
+      for (const o of hooks.after) {
+        await o.hook.call(lctx, userId, doc)
+      }
     }
     return id
   }
 
   if (async) {
-    const wrappedCallback = function (err, obj, ...args) {
-      after((obj && obj[0] && obj[0]._id) || obj, err)
+    const wrappedCallback = async function (err, obj, ...args) {
+      await after((obj && obj[0] && obj[0]._id) || obj, err)
       return callback.call(this, err, obj, ...args)
     }
     return _super.call(this, doc, wrappedCallback)
   } else {
-    ret = _super.call(this, doc, callback)
-    return after((ret && ret.insertedId) || (ret && ret[0] && ret[0]._id) || ret)
+    ret = await _super.call(this, doc, callback)
+
+    return (await after((ret && ret.insertedId) || (ret && ret[0] && ret[0]._id) || ret))
   }
 })

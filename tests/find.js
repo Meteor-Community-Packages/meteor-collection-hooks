@@ -2,55 +2,54 @@ import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
-Tinytest.addAsync('find - selector should be {} when called without arguments', function (test, next) {
+Tinytest.addAsync('find - selector should be {} when called without arguments', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  // eslint-disable-next-line array-callback-return
+  let findSelector = null
   collection.before.find(function (userId, selector, options) {
-    test.equal(selector, {})
-    next()
+    findSelector = selector
+    return true
   })
 
-  collection.find()
+  // hooks won't be triggered on find() alone, we must call fetchAsync()
+  await collection.find().fetchAsync()
+
+  test.equal(findSelector, {})
 })
 
-Tinytest.addAsync('find - selector should have extra property', function (test, next) {
+Tinytest.addAsync('find - selector should have extra property', async function (test) {
   const collection = new Mongo.Collection(null)
 
-  // eslint-disable-next-line array-callback-return
   collection.before.find(function (userId, selector, options) {
     if (options && options.test) {
       delete selector.bogus_value
       selector.before_find = true
     }
+    return true
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ start_value: true, before_find: true }, function (err, id) {
-      if (err) throw err
-      test.equal(collection.find({ start_value: true, bogus_value: true }, { test: 1 }).count(), 1)
-      next()
-    })
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true, before_find: true })
+    const result = await collection.find({ start_value: true, bogus_value: true }, { test: 1 }).fetchAsync()
+    test.equal(result.length, 1)
+    test.equal(result[0].before_find, true)
   })
 })
 
-Tinytest.addAsync('find - tmp variable should have property added after the find', function (test, next) {
+Tinytest.addAsync('find - tmp variable should have property added after the find', async function (test) {
   const collection = new Mongo.Collection(null)
   const tmp = {}
 
-  // eslint-disable-next-line array-callback-return
-  collection.after.find(function (userId, selector, options) {
+  collection.after.find(async function (userId, selector, options) {
     if (options && options.test) {
       tmp.after_find = true
     }
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ start_value: true }, function (err, id) {
-      if (err) throw err
-      collection.find({ start_value: true }, { test: 1 })
-      test.equal(tmp.after_find, true)
-      next()
-    })
+  await InsecureLogin.ready(async function () {
+    await collection.insertAsync({ start_value: true })
+    await collection.find({ start_value: true }, { test: 1 }).fetchAsync()
+
+    test.equal(tmp.after_find, true)
   })
 })

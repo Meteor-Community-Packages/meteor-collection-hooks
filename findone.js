@@ -1,31 +1,33 @@
 import { CollectionHooks } from './collection-hooks'
 
-CollectionHooks.defineAdvice('findOne', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
+CollectionHooks.defineWrapper('findOne', async function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
   const ctx = { context: this, _super, args }
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
   let abort
 
   // before
-  if (!suppressAspects) {
-    aspects.before.forEach((o) => {
-      const r = o.aspect.call(ctx, userId, selector, options)
-      if (r === false) abort = true
-    })
+  if (!suppressHooks) {
+    for (const o of hooks.before) {
+      const r = await o.hook.call(ctx, userId, selector, options)
+      if (r === false) {
+        abort = true
+        break
+      }
+    }
 
     if (abort) return
   }
 
-  function after (doc) {
-    if (!suppressAspects) {
-      aspects.after.forEach((o) => {
-        o.aspect.call(ctx, userId, selector, options, doc)
-      })
+  async function after (doc) {
+    if (!suppressHooks) {
+      for (const o of hooks.after) {
+        await o.hook.call(ctx, userId, selector, options, doc)
+      }
     }
   }
 
-  const ret = _super.call(this, selector, options)
-  after(ret)
-
+  const ret = await _super.call(this, selector, options)
+  await after(ret)
   return ret
 })

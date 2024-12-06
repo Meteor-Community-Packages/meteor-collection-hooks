@@ -7,31 +7,36 @@ if (Meteor.isServer) {
   const collection1 = new Mongo.Collection('test_remove_collection1')
   let external = false
 
-  Tinytest.addAsync('remove - collection1 document should affect external variable before it is removed', function (test, next) {
-    const tmp = {}
+  Tinytest.addAsync(
+    'remove - collection1 document should affect external variable before it is removed',
+    async function (test) {
+      const tmp = {}
 
-    function start (nil, id) {
-      collection1.before.remove(function (userId, doc) {
-        // There should be no userId because the remove was initiated
-        // on the server -- there's no correlation to any specific user
-        tmp.userId = userId // HACK: can't test here directly otherwise refreshing test stops execution here
-        tmp.doc_start_value = doc.start_value // HACK: can't test here directly otherwise refreshing test stops execution here
-        external = true
-      })
+      async function start (id) {
+        collection1.before.remove(function (userId, doc) {
+          // There should be no userId because the remove was initiated
+          // on the server -- there's no correlation to any specific user
+          tmp.userId = userId // HACK: can't test here directly otherwise refreshing test stops execution here
+          tmp.doc_start_value = doc.start_value // HACK: can't test here directly otherwise refreshing test stops execution here
+          external = true
+        })
 
-      collection1.remove({ _id: id }, function (err) {
-        if (err) throw err
-        test.equal(collection1.find({ start_value: true }).count(), 0)
+        await collection1.removeAsync({ _id: id })
+
+        test.equal(
+          await collection1.find({ start_value: true }).countAsync(),
+          0
+        )
         test.equal(external, true)
         test.equal(tmp.userId, undefined)
         test.equal(tmp.doc_start_value, true)
-        next()
-      })
-    }
+      }
 
-    collection1.remove({})
-    collection1.insert({ start_value: true }, start)
-  })
+      await collection1.removeAsync({})
+      const id = await collection1.insertAsync({ start_value: true })
+      await start(id)
+    }
+  )
 }
 
 const collection2 = new Mongo.Collection('test_remove_collection2')
@@ -39,14 +44,20 @@ const collection2 = new Mongo.Collection('test_remove_collection2')
 if (Meteor.isServer) {
   // full client-side access
   collection2.allow({
-    insert: function () { return true },
-    update: function () { return true },
-    remove: function () { return true }
+    insertAsync: function () {
+      return true
+    },
+    updateAsync: function () {
+      return true
+    },
+    removeAsync: function () {
+      return true
+    }
   })
 
   Meteor.methods({
     test_remove_reset_collection2: function () {
-      collection2.remove({})
+      return collection2.removeAsync({})
     }
   })
 
@@ -87,48 +98,74 @@ if (Meteor.isServer) {
 if (Meteor.isClient) {
   Meteor.subscribe('test_remove_publish_collection2')
 
-  Tinytest.addAsync('remove - collection2 document should affect external variable before and after it is removed', function (test, next) {
-    let external = 0
-    let c = 0
-    const n = () => {
-      if (++c === 2) {
-        test.equal(external, 2)
-        next()
+  Tinytest.add(
+    'remove - collection2 document should affect external variable before and after it is removed',
+    async function (test) {
+      let external = 0
+      let c = 0
+
+      const n = () => {
+        ++c
       }
-    }
 
-    function start (err, id) {
-      if (err) throw err
-
-      collection2.before.remove(function (userId, doc) {
-        // Remove is initiated on the client, a userId must be present
-        test.notEqual(userId, undefined)
-
-        test.equal(doc._id, id)
-        test.equal(doc.start_value, true)
-        external++
-      })
-
-      collection2.after.remove(function (userId, doc) {
-        // Remove is initiated on the client, a userId must be present
-        test.notEqual(userId, undefined)
-
-        external++
-        test.equal(doc._id, id)
-        n()
-      })
-
-      collection2.remove({ _id: id }, function (err) {
+      async function start (err, id) {
         if (err) throw err
+
+        collection2.before.remove(function (userId, doc) {
+          // Remove is initiated on the client, a userId must be present
+          test.notEqual(userId, undefined)
+
+          test.equal(doc._id, id)
+          test.equal(doc.start_value, true)
+          external++
+        })
+
+        collection2.after.remove(function (userId, doc) {
+          // Remove is initiated on the client, a userId must be present
+          test.notEqual(userId, undefined)
+
+          external++
+          test.equal(doc._id, id)
+          n()
+        })
+
+        // TODO(v3): required by allow-deny
+        await collection2.removeAsync({ _id: id })
+
         test.equal(collection2.find({ start_value: true }).count(), 0)
         n()
-      })
-    }
+      }
 
-    InsecureLogin.ready(function () {
-      Meteor.call('test_remove_reset_collection2', function (nil, result) {
-        collection2.insert({ start_value: true }, start)
+      await InsecureLogin.ready(async function () {
+        await Meteor.callAsync('test_remove_reset_collection2')
+        const id = await collection2.insertAsync({ start_value: true })
+        await start(null, id)
       })
+
+      test.equal(external, 2)
+      test.equal(c, 2, 'should be called twice')
+    }
+  )
+}
+
+if (Meteor.isClient) {
+  const collectionForSync = new Mongo.Collection(null)
+  Tinytest.add('remove - hooks are not called for sync methods', function (test) {
+    let beforeCalled = false
+    let afterCalled = false
+    collectionForSync.before.remove(function (userId, selector, options) {
+      beforeCalled = true
     })
+    collectionForSync.after.remove(function (userId, selector, options) {
+      afterCalled = true
+    })
+
+    const id = collectionForSync.insert({ test: 1 })
+
+    const result = collectionForSync.remove(id)
+    test.equal(result, 1)
+
+    test.equal(beforeCalled, false)
+    test.equal(afterCalled, false)
   })
 }

@@ -7,17 +7,17 @@ const collection1 = new Mongo.Collection('test_insert_mongoid_collection1', { id
 
 if (Meteor.isServer) {
   collection.allow({
-    insert: function () { return true },
+    insertAsync: function () { return true },
     update: function () { return true },
-    remove: function () { return true }
+    removeAsync: function () { return true }
   })
   collection1.allow({
-    insert: function () { return true },
-    remove: function () { return true }
+    insertAsync: function () { return true },
+    removeAsync: function () { return true }
   })
 }
 
-Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with object _id with ops property in Meteor 1.4', function (test, next) {
+Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with object _id with ops property in Meteor 1.4', async function (test) {
   const key = Date.now()
 
   const aspect1 = collection.after.insert(function (nil, doc) {
@@ -27,37 +27,28 @@ Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to c
     }
   })
 
-  collection.insert({ key: key }, function (err, id) {
-    if (err) throw err
-
-    // clean-up
-    collection.remove({ _id: id })
-    aspect1.remove()
-
-    next()
-  })
+  const id = await collection.insertAsync({ key })
+  // clean-up
+  await collection.removeAsync({ _id: id })
+  aspect1.remove()
 })
 
-Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with Mongo.ObjectID _id with _str property in Meteor 1.4', function (test, next) {
+Tinytest.addAsync('meteor_1_4_id_object - after insert hooks should be able to cope with Mongo.ObjectID _id with _str property in Meteor 1.4', async function (test) {
   const key = Date.now()
 
-  const aspect1 = collection1.after.insert(function (nil, doc) {
+  const aspect1 = collection1.after.insert(async function (nil, doc) {
     if (doc && doc.key && doc.key === key) {
       let foundDoc = null
       try {
-        foundDoc = collection1.direct.findOne({ _id: doc._id })
+        foundDoc = await collection1.direct.findOneAsync({ _id: doc._id })
       } catch (exception) {}
       test.isNotNull(foundDoc)
     }
   })
 
-  collection1.insert({ key: key }, function (err, id) {
-    if (err) throw err
+  const id = await collection1.insertAsync({ key })
 
-    // clean-up
-    collection1.remove({ _id: id })
-    aspect1.remove()
-
-    next()
-  })
+  // clean-up
+  await collection1.removeAsync({ _id: id })
+  aspect1.remove()
 })

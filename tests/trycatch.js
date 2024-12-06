@@ -1,8 +1,10 @@
+import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tinytest } from 'meteor/tinytest'
 import { InsecureLogin } from './insecure_login'
 
-Tinytest.addAsync('try-catch - should call error callback on insert hook exception', function (test, next) {
+// TODO(v2): .insert() won't work with async insert advice
+Tinytest.addAsync('try-catch - should call error callback on insert hook exception async', async function (test) {
   const collection = new Mongo.Collection(null)
   const msg = 'insert hook test error'
 
@@ -10,19 +12,17 @@ Tinytest.addAsync('try-catch - should call error callback on insert hook excepti
     throw new Error(msg)
   })
 
-  InsecureLogin.ready(function () {
-    test.throws(function () {
-      collection.insert({ test: 1 })
-    }, msg)
-
-    collection.insert({ test: 1 }, function (err, id) {
+  await InsecureLogin.ready(async function () {
+    try {
+      await collection.insertAsync({ test: 1 })
+      test.fail('Should not insert successfully')
+    } catch (err) {
       test.equal(err && err.message, msg)
-      next()
-    })
+    }
   })
 })
 
-Tinytest.addAsync('try-catch - should call error callback on update hook exception', function (test, next) {
+Tinytest.addAsync('try-catch - should call error callback on update hook exception', async function (test) {
   const collection = new Mongo.Collection(null)
   const msg = 'update hook test error'
 
@@ -30,21 +30,25 @@ Tinytest.addAsync('try-catch - should call error callback on update hook excepti
     throw new Error(msg)
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ test: 1 }, function (nil, id) {
-      test.throws(function () {
-        collection.update(id, { test: 2 })
-      }, msg)
+  await InsecureLogin.ready(async function () {
+    const id = await collection.insertAsync({ test: 1 })
 
-      collection.update(id, { test: 3 }, function (err) {
+    try {
+      await collection.updateAsync(id, { test: 2 })
+      test.fail('Update must throw an error')
+    } catch (e) {
+      test.equal(e.message, msg, 'Should throw correct error message')
+    }
+    // Callback only works on client
+    if (Meteor.isClient) {
+      await collection.updateAsync(id, { test: 3 }, {}, function (err) {
         test.equal(err && err.message, msg)
-        next()
       })
-    })
+    }
   })
 })
 
-Tinytest.addAsync('try-catch - should call error callback on remove hook exception', function (test, next) {
+Tinytest.addAsync('try-catch - should call error callback on remove hook exception', async function (test) {
   const collection = new Mongo.Collection(null)
   const msg = 'remove hook test error'
 
@@ -52,16 +56,20 @@ Tinytest.addAsync('try-catch - should call error callback on remove hook excepti
     throw new Error(msg)
   })
 
-  InsecureLogin.ready(function () {
-    collection.insert({ test: 1 }, function (nil, id) {
-      test.throws(function () {
-        collection.remove(id)
-      }, msg)
+  await InsecureLogin.ready(async function () {
+    const id = await collection.insert({ test: 1 })
+    try {
+      await collection.removeAsync(id)
+      test.fail('Delete must throw an error')
+    } catch (e) {
+      test.equal(e.message, msg, 'Should throw correct error message')
+    }
 
-      collection.remove(id, function (err) {
+    // Callback only works on client
+    if (Meteor.isClient) {
+      await collection.removeAsync(id, function (err) {
         test.equal(err && err.message, msg)
-        next()
       })
-    })
+    }
   })
 })

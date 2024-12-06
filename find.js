@@ -1,30 +1,50 @@
 import { CollectionHooks } from './collection-hooks'
 
-CollectionHooks.defineAdvice('find', function (userId, _super, instance, aspects, getTransform, args, suppressAspects) {
-  const ctx = { context: this, _super, args }
+const ASYNC_METHODS = ['countAsync', 'fetchAsync', 'forEachAsync', 'mapAsync']
+
+/**
+ * With Meteor v3 this behaves differently than with Meteor v2.
+ * We cannot use async hooks on find() directly because in Meteor it is a sync method that returns cursor instance.
+ *
+ * That's why we need to wrap all async methods of cursor instance. We're doing this by creating another cursor
+ * within these wrapped methods with selector and options updated by before hooks.
+ */
+CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
-  let abort
-  // before
-  if (!suppressAspects) {
-    aspects.before.forEach((o) => {
-      const r = o.aspect.call(ctx, userId, selector, options)
-      if (r === false) abort = true
-    })
 
-    if (abort) return instance.direct.find(undefined)
-  }
-
-  const after = (cursor) => {
-    if (!suppressAspects) {
-      aspects.after.forEach((o) => {
-        o.aspect.call(ctx, userId, selector, options, cursor)
-      })
+  // Apply synchronous before hooks
+  hooks.before.forEach(hook => {
+    if (!hook.hook.constructor.name.includes('Async')) {
+      hook.hook.call(this, userId, selector, options)
+    } else {
+      throw new Error('Cannot use async function as before.find hook')
     }
-  }
+  })
 
-  const ret = _super.call(this, selector, options)
-  after(ret)
+  const cursor = _super.call(this, selector, options)
 
-  return ret
+  // Wrap async cursor methods
+  ASYNC_METHODS.forEach((method) => {
+    if (cursor[method]) {
+      const originalMethod = cursor[method]
+      cursor[method] = async function (...args) {
+        // Do not try to apply asynchronous before hooks here because they act on the cursor which is already defined
+        const result = await originalMethod.apply(this, args)
+
+        // Apply after hooks
+        for (const hook of hooks.after) {
+          if (hook.hook.constructor.name.includes('Async')) {
+            await hook.hook.call(this, userId, selector, options, this)
+          } else {
+            hook.hook.call(this, userId, selector, options, this)
+          }
+        }
+
+        return result
+      }
+    }
+  })
+
+  return cursor
 })

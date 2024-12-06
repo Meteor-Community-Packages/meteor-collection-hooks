@@ -6,10 +6,10 @@ import { InsecureLogin } from './insecure_login'
 const collection1 = new Mongo.Collection('test_update_collection1')
 
 if (Meteor.isServer) {
-  Tinytest.addAsync('update - collection1 document should have extra property added to it before it is updated', function (test, next) {
+  Tinytest.addAsync('update - collection1 document should have extra property added to it before it is updated', async function (test) {
     const tmp = {}
 
-    function start () {
+    async function start () {
       collection1.before.update(function (userId, doc, fieldNames, modifier) {
         // There should be no userId because the update was initiated
         // on the server -- there's no correlation to any specific user
@@ -17,22 +17,18 @@ if (Meteor.isServer) {
         modifier.$set.before_update_value = true
       })
 
-      collection1.update({ start_value: true }, { $set: { update_value: true } }, { multi: true }, function (err) {
-        if (err) throw err
-        test.equal(collection1.find({ start_value: true, update_value: true, before_update_value: true }).count(), 2)
-        test.equal(tmp.userId, undefined)
-        next()
-      })
+      await collection1.updateAsync({ start_value: true }, { $set: { update_value: true } }, { multi: true })
+
+      test.equal(await collection1.find({ start_value: true, update_value: true, before_update_value: true }).countAsync(), 2)
+      test.equal(tmp.userId, undefined)
     }
 
-    collection1.remove({})
+    await collection1.removeAsync({})
 
     // Add two documents
-    collection1.insert({ start_value: true }, function () {
-      collection1.insert({ start_value: true }, function () {
-        start()
-      })
-    })
+    await collection1.insertAsync({ start_value: true })
+    await collection1.insertAsync({ start_value: true })
+    await start()
   })
 }
 
@@ -42,13 +38,15 @@ if (Meteor.isServer) {
   // full client-side access
   collection2.allow({
     insert () { return true },
+    insertAsync () { return true },
     update () { return true },
+    updateAsync () { return true },
     remove () { return true }
   })
 
   Meteor.methods({
     test_update_reset_collection2 () {
-      collection2.remove({})
+      return collection2.removeAsync({})
     }
   })
 
@@ -64,7 +62,11 @@ if (Meteor.isClient) {
 
   Tinytest.addAsync('update - collection2 document should have client-added and server-added extra properties added to it before it is updated', function (test, next) {
     let c = 0
-    const n = () => { if (++c === 2) { next() } }
+    const n = () => {
+      if (++c === 2) {
+        next()
+      }
+    }
 
     function start (err, id) {
       if (err) throw err
@@ -82,20 +84,61 @@ if (Meteor.isClient) {
       collection2.after.update(function (userId, doc, fieldNames, modifier) {
         test.equal(doc.update_value, true)
         test.equal(Object.prototype.hasOwnProperty.call(this.previous, 'update_value'), false)
+
         n()
       })
 
-      collection2.update({ _id: id }, { $set: { update_value: true } }, function (err) {
-        if (err) throw err
+      // TODO(v3): had to change to updateAsync since update caused a server-side error with allow-deny
+      // W20240224-16:43:38.768(1)? (STDERR) Error: findOne +  is not available on the server. Please use findOneAsync() instead.
+      // W20240224-16:43:38.768(1)? (STDERR)     at Object.ret.<computed> (packages/mongo/remote_collection_driver.js:52:15)
+      // W20240224-16:43:38.769(1)? (STDERR)     at Object.<anonymous> (packages/matb33:collection-hooks/findone.js:27:28)
+      // W20240224-16:43:38.769(1)? (STDERR)     at Object.wrappedMethod [as findOne] (packages/matb33:collection-hooks/collection-hooks.js:118:23)
+      // W20240224-16:43:38.769(1)? (STDERR)     at ns.Collection.CollectionPrototype._validatedUpdate (packages/allow-deny/allow-deny.js:485:32)
+      // W20240224-16:43:38.769(1)? (STDERR)     at MethodInvocation.m.<computed> (packages/allow-deny/allow-deny.js:193:46)
+      // W20240224-16:43:38.769(1)? (STDERR)     at maybeAuditArgumentChecks (packages/ddp-server/livedata_server.js:1990:12)
+      // W20240224-16:43:38.769(1)? (STDERR)     at DDP._CurrentMethodInvocation.withValue.name (packages/ddp-server/livedata_server.js:829:15)
+      // W20240224-16:43:38.769(1)? (STDERR)     at EnvironmentVariableAsync.<anonymous> (packages/meteor.js:1285:23)
+      // W20240224-16:43:38.769(1)? (STDERR)     at packages/meteor.js:771:17
+      // W20240224-16:43:38.770(1)? (STDERR)     at AsyncLocalStorage.run (node:async_hooks:346:14)
+      // W20240224-16:43:38.770(1)? (STDERR)     at Object.Meteor._runAsync (packages/meteor.js:768:28)
+      // W20240224-16:43:38.770(1)? (STDERR)     at EnvironmentVariableAsync.withValue (packages/meteor.js:1276:19)
+      // W20240224-16:43:38.770(1)? (STDERR)     at getCurrentMethodInvocationResult (packages/ddp-server/livedata_server.js:826:40)
+      // W20240224-16:43:38.770(1)? (STDERR)     at EnvironmentVariableAsync.<anonymous> (packages/meteor.js:1285:23)
+      // W20240224-16:43:38.770(1)? (STDERR)     at packages/meteor.js:771:17
+      // W20240224-16:43:38.770(1)? (STDERR)     at AsyncLocalStorage.run (node:async_hooks:346:14)
+      collection2.updateAsync({ _id: id }, { $set: { update_value: true } }).then(async function () {
+        // TODO(v3): this is required for Meteor v2 to work
+        await new Promise(resolve => setTimeout(resolve, 100))
         test.equal(collection2.find({ start_value: true, client_value: true, server_value: true }).count(), 1)
         n()
       })
     }
 
     InsecureLogin.ready(function () {
-      Meteor.call('test_update_reset_collection2', function (nil, result) {
+      Meteor.callAsync('test_update_reset_collection2').then(function (nil, result) {
         collection2.insert({ start_value: true }, start)
       })
     })
+  })
+}
+
+if (Meteor.isClient) {
+  const collectionForSync = new Mongo.Collection(null)
+  Tinytest.add('update - hooks are not called for sync methods', function (test) {
+    let beforeCalled = false
+    let afterCalled = false
+    collectionForSync.before.update(function (userId, selector, options) {
+      beforeCalled = true
+    })
+    collectionForSync.after.update(function (userId, selector, options) {
+      afterCalled = true
+    })
+
+    const id = collectionForSync.insert({ test: 1 })
+    const res = collectionForSync.update({ _id: id }, { $set: { test: 2 } })
+    test.equal(res, 1)
+
+    test.equal(beforeCalled, false)
+    test.equal(afterCalled, false)
   })
 }

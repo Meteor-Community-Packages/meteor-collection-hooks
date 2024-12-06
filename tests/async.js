@@ -50,24 +50,25 @@ if (Mongo.Collection.prototype.insertAsync) {
     next()
   })
 
-  Tinytest.addAsync('async - before - findAsync', async (test, next) => {
-    const collection = new Mongo.Collection(null)
+  // NOTE: v3 does not support async find hooks
+  // Tinytest.addAsync('async - before - findAsync', async (test, next) => {
+  //   const collection = new Mongo.Collection(null)
 
-    let called = false
+  //   let called = false
 
-    // eslint-disable-next-line array-callback-return
-    collection.before.find(() => {
-      called = true
-    })
+  //   // eslint-disable-next-line array-callback-return
+  //   collection.before.find(() => {
+  //     called = true
+  //   })
 
-    const id = await collection.insertAsync({ test: true })
+  //   const id = await collection.insertAsync({ test: true })
 
-    await collection.find(id).fetchAsync()
+  //   await collection.find(id).fetchAsync()
 
-    test.isTrue(called)
+  //   test.isTrue(called)
 
-    next()
-  })
+  //   next()
+  // })
 
   Tinytest.addAsync('async - before - updateAsync', async (test, next) => {
     const collection = new Mongo.Collection(null)
@@ -205,24 +206,25 @@ if (Mongo.Collection.prototype.insertAsync) {
     next()
   })
 
-  Tinytest.addAsync('async - after - findAsync', async (test, next) => {
-    const collection = new Mongo.Collection(null)
+  // NOTE: v3 does not support async find hooks
+  // Tinytest.addAsync('async - after - findAsync', async (test, next) => {
+  //   const collection = new Mongo.Collection(null)
 
-    let called = false
+  //   let called = false
 
-    // eslint-disable-next-line array-callback-return
-    collection.after.find(() => {
-      called = true
-    })
+  //   // eslint-disable-next-line array-callback-return
+  //   collection.after.find(() => {
+  //     called = true
+  //   })
 
-    const id = await collection.insertAsync({ test: true })
+  //   const id = await collection.insertAsync({ test: true })
 
-    await collection.find(id).fetchAsync()
+  //   await collection.find(id).fetchAsync()
 
-    test.isTrue(called)
+  //   test.isTrue(called)
 
-    next()
-  })
+  //   next()
+  // })
 
   Tinytest.addAsync('async - after - updateAsync', async (test, next) => {
     const collection = new Mongo.Collection(null)

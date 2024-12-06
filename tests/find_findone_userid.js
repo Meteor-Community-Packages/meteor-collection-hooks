@@ -14,6 +14,7 @@ let beforeFindWithinPublish
 let afterFindWithinPublish
 let beforeFindOneWithinPublish
 let afterFindOneWithinPublish
+let serverCleanup
 
 // Don't declare hooks in publish method, as it is problematic
 // eslint-disable-next-line array-callback-return
@@ -62,11 +63,19 @@ if (Meteor.isServer) {
   let serverTestsAdded = false
   let publishContext = null
 
+  serverCleanup = () => {
+    beforeFindOneUserId = null
+    afterFindOneUserId = null
+    beforeFindOneWithinPublish = false
+    afterFindOneWithinPublish = false
+    publishContext = null
+  }
+
   Tinytest.add('general - isWithinPublish is false outside of publish function', function (test) {
     test.equal(CollectionHooks.isWithinPublish(), false)
   })
 
-  Meteor.publish('test_publish_for_find_findone_userid', function () {
+  Meteor.publish('test_publish_for_find_findone_userid', async function () {
     // Reset test values on each connection
     publishContext = null
 
@@ -84,8 +93,8 @@ if (Meteor.isServer) {
     publishContext = this
 
     // Trigger hooks
-    collection.find({}, { test: 1 })
-    collection.findOne({}, { test: 1 })
+    await collection.findOneAsync({}, { test: 1 })
+    await collection.findOneAsync({}, { test: 1 })
 
     if (!serverTestsAdded) {
       serverTestsAdded = true
@@ -106,11 +115,13 @@ if (Meteor.isServer) {
       })
 
       Tinytest.add('findone - userId available to before findOne hook when within publish context', function (test) {
+        serverCleanup()
         test.notEqual(beforeFindOneUserId, null)
         test.equal(beforeFindOneWithinPublish, true)
       })
 
       Tinytest.add('findone - userId available to after findOne hook when within publish context', function (test) {
+        serverCleanup()
         test.notEqual(afterFindOneUserId, null)
         test.equal(afterFindOneWithinPublish, true)
       })

@@ -5,5 +5,5 @@ import './upsert.js'
 import './find.js'
 import './findone.js'
 
-// Load after all advices have been defined
+// Load after all wrappers have been defined
 import './users-compat.js'

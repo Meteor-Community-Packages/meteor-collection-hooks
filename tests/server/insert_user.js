@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Tinytest } from 'meteor/tinytest'
 
-Tinytest.addAsync('insert - Meteor.users collection document should have extra property added before being inserted and properly provide inserted _id in after hook', function (test, next) {
+Tinytest.addAsync('insert - Meteor.users collection document should have extra property added before being inserted and properly provide inserted _id in after hook', async function (test) {
   const collection = Meteor.users
 
   const aspect1 = collection.before.insert(function (nil, doc) {
@@ -17,12 +17,10 @@ Tinytest.addAsync('insert - Meteor.users collection document should have extra p
     }
   })
 
-  collection.insert({ start_value: true, test: 1 }, function (err, id) {
-    if (err) throw err
-    test.notEqual(collection.find({ start_value: true, before_insert_value: true }).count(), 0)
-    collection.remove({ _id: id })
-    aspect1.remove()
-    aspect2.remove()
-    next()
-  })
+  const id = await collection.insertAsync({ start_value: true, test: 1 })
+
+  test.notEqual(await collection.find({ start_value: true, before_insert_value: true }).countAsync(), 0)
+  await collection.removeAsync({ _id: id })
+  aspect1.remove()
+  aspect2.remove()
 })

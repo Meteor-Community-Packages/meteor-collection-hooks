@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { CollectionHooks } from './collection-hooks'
 
-import './advices'
+import './wrappers'
 
 const publishUserId = new Meteor.EnvironmentVariable()
 
@@ -28,10 +28,10 @@ CollectionHooks.getUserId = function getUserId () {
 
 const _publish = Meteor.publish
 Meteor.publish = function (name, handler, options) {
-  return _publish.call(this, name, function (...args) {
+  return publishUserId.withValue(this && this.userId, () => _publish.call(this, name, function (...args) {
     // This function is called repeatedly in publications
-    return publishUserId.withValue(this && this.userId, () => handler.apply(this, args))
-  }, options)
+    return handler.apply(this, args)
+  }, options))
 }
 
 // Make the above available for packages with hooks that want to determine

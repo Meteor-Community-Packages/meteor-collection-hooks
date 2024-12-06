@@ -12,10 +12,7 @@ jobs:
     strategy:
       matrix:
         meteorRelease:
-          - '--release 2.3'
-          - '--release 2.8.1'
-          - '--release 2.14'
-          # Latest version
+          - '--release 3.0.4'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,6 +26,7 @@ jobs:
         run: |
           curl https://install.meteor.com | /bin/sh
           npm i -g @zodern/mtest
+
       - name: Run Tests
         run: |
           mtest --package ./ --once ${{ matrix.meteorRelease }}
