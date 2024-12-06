@@ -13,6 +13,7 @@ jobs:
       matrix:
         meteorRelease:
           - '--release 3.0.4'
+          - '--release 3.1'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,7 +21,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
 
       - name: Install Dependencies
         run: |

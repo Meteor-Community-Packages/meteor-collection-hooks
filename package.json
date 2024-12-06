@@ -21,19 +21,19 @@
   },
   "homepage": "https://github.com/Meteor-Community-Packages/meteor-collection-hooks",
   "devDependencies": {
-    "@eslint/eslintrc": "^3.1.0",
-    "@eslint/js": "^9.9.1",
-    "eslint": "^8.57.0",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.16.0",
+    "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
     "eslint-import-resolver-meteor": "^0.4.0",
-    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
-    "eslint-plugin-react": "^7.35.1",
+    "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-standard": "^4.1.0",
     "spacejam": "^1.6.1"
   },
   "volta": {
-    "node": "20.17.0"
+    "node": "22.12.0"
   }
 }
