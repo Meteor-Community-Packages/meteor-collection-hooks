@@ -97,10 +97,12 @@ if (Meteor.isClient) {
       const n = () => {
         ++c
       }
+      const originalUserId = Meteor.userId
+      const originalUser = Meteor.user  
 
-      // Mock getUserId to return a fake userId for hooks
-      const originalGetUserId = CollectionHooks.getUserId
-      CollectionHooks.getUserId = () => 'mock-user-id'
+      // Mock a test user
+      Meteor.userId = () => 'remove-both-user-id'
+      Meteor.user = () => ({ _id: 'remove-both-user-id', username: 'test-user' })
 
       try {
         async function start (err, id) {
@@ -133,7 +135,8 @@ if (Meteor.isClient) {
         expect(c).toBe(2, 'should be called twice')
       } finally {
         // Restore original function
-        CollectionHooks.getUserId = originalGetUserId
+        Meteor.userId = originalUserId
+        Meteor.user = originalUser
       }
     })
   })
