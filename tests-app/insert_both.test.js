@@ -66,18 +66,28 @@ if (Meteor.isServer) {
 }
 
 if (Meteor.isClient) {
-  // Mock getUserId to return a fake userId for client-side hooks
-  const originalGetUserId = CollectionHooks.getUserId
-  CollectionHooks.getUserId = () => 'mock-user-id'
 
   Meteor.subscribe('test_insert_publish_collection2')
 
   describe('insert - client side', function () {
+
+    let originalUserId
+    let originalUser
+    
+    before(() => {
+      
+      originalUserId = Meteor.userId
+      originalUser = Meteor.user
+
+      // Mock a test user
+      Meteor.userId = () => 'insert-both-user-id'
+      Meteor.user = () => ({ _id: 'insert-both-user-id', username: 'test-user' })
+    })
+
     it('collection2 document on client should have client-added and server-added extra properties added to it before it is inserted', async function () {
       collection2.before.insert(function (userId, doc) {
-        // console.log('test_insert_collection2 BEFORE INSERT', userId, doc)
-        expect(userId).not.toBe(undefined)
-        expect(userId).toBe('mock-user-id') // Verify our mock is working
+        console.log('test_insert_collection2 BEFORE INSERT', userId, doc)
+        expect(userId).toBe('insert-both-user-id') // Verify our mock is working
         expect(collection2.find({ start_value: true }).count()).toBe(0)
         doc.client_value = true
       })
@@ -101,9 +111,7 @@ if (Meteor.isClient) {
           .count()
       ).toBe(1)
     })
-  })
-
-  describe('insert - sync methods', function () {
+  
     it('hooks are not called for sync methods', function () {
       const collectionForSync = new Mongo.Collection(null)
       let beforeCalled = false
@@ -122,10 +130,10 @@ if (Meteor.isClient) {
       expect(beforeCalled).toBe(false)
       expect(afterCalled).toBe(false)
     })
-  })
-
-  // Clean up mock after client tests
-  after(function () {
-    CollectionHooks.getUserId = originalGetUserId
+  
+    after(() => {
+      Meteor.userId = originalUserId
+      Meteor.user = originalUser
+    })
   })
 }
