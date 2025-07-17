@@ -142,7 +142,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
         //   method = "upsert";
         //   wrapper = CollectionHooks.getWrapper(method);
         // }
-        
+
         return wrapper.call(
           this,
           CollectionHooks.getUserId(),
@@ -170,28 +170,13 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
       }
     }
 
-    // In collection-hooks.js, replace the current wrapping logic:
-
+    // TODO(v3): it appears this is necessary
+    // In Meteor 2 *Async methods call the non-async methods
     if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
       const _superAsync = collection[asyncMethod]
-      const _superSync = collection[method]
-      
-      if (Meteor.isServer) {
-        // Server: Only wrap async methods (Meteor 3 requirement)
-        if (_superAsync) {
-          collection[asyncMethod] = getWrappedMethod(_superAsync)
-        }
-      } else {
-        // Client: Wrap BOTH sync and async methods for full compatibility
-        if (_superSync) {
-          collection[method] = getWrappedMethod(_superSync)
-        }
-        if (_superAsync) {
-          collection[asyncMethod] = getWrappedMethod(_superAsync)
-        }
-      }
+      collection[asyncMethod] = getWrappedMethod(_superAsync)
     } else if (method === 'find') {
-      // find works the same on both client/server
+      // find is returning a cursor and is a sync method
       const _superMethod = collection[method]
       collection[method] = getWrappedMethod(_superMethod)
     }
