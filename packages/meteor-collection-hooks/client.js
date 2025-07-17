@@ -6,8 +6,6 @@ import './wrappers.js'
 
 CollectionHooks.getUserId = function getUserId () {
   let userId
-
-  console.log('getUserId', Meteor.userId && Meteor.userId())
   
   Tracker.nonreactive(() => {
     userId = Meteor.userId && Meteor.userId()
