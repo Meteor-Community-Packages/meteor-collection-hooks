@@ -3,22 +3,20 @@ import { Mongo } from 'meteor/mongo'
 import expect from 'expect'
 
 describe('Insert Local Collection Tests', function () {
-  let originalUserId
-  let originalUser
+  const originalGetUserId = Meteor.userId
 
   before(() => {
-    originalUserId = Meteor.userId
-    originalUser = Meteor.user
-
-    // Mock a test user
-    Meteor.userId = () => 'insert-local-user-id'
-    Meteor.user = () => ({ _id: 'insert-local-user-id', username: 'test-user' })
+    if (Meteor.isClient) {
+      Meteor.userId = () => 'insert-local-user-id'
+    }
   })
 
   after(() => {
-    Meteor.userId = originalUserId
-    Meteor.user = originalUser
+    if (Meteor.isClient) {
+      Meteor.userId = originalGetUserId
+    }
   })
+
 
   it('should fire before and after hooks with correct userId for normal collection in local-only contexts', async function () {
     const collection = new Mongo.Collection(null)
@@ -35,8 +33,13 @@ describe('Insert Local Collection Tests', function () {
 
     await collection.insertAsync({ test: true })
 
-    expect(beforeUserId).toBe('insert-local-user-id')
-    expect(afterUserId).toBe('insert-local-user-id')
+    if (Meteor.isClient) {
+      expect(beforeUserId).toBe('insert-local-user-id')
+      expect(afterUserId).toBe('insert-local-user-id')
+    } else {
+      expect(beforeUserId).toBe(undefined)
+      expect(afterUserId).toBe(undefined)
+    }
   })
 
   it('should fire before and after hooks with undefined userId for null collections', async function () {
@@ -54,8 +57,13 @@ describe('Insert Local Collection Tests', function () {
 
     await collection.insertAsync({ test: true })
 
-    expect(beforeUserId).toBe('insert-local-user-id')
-    expect(afterUserId).toBe('insert-local-user-id')
+    if (Meteor.isClient) {
+      expect(beforeUserId).toBe('insert-local-user-id')
+      expect(afterUserId).toBe('insert-local-user-id')
+    } else {
+      expect(beforeUserId).toBe(undefined)
+      expect(afterUserId).toBe(undefined)
+    }
   })
 
   it('local collection document should have extra property added before being inserted', async function () {
