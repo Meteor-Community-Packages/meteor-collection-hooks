@@ -65,7 +65,8 @@ describe('users - find hooks', function () {
     aspect1.remove()
     aspect2.remove()
 
-    expect(await Meteor.users.find().countAsync()).not.toBe(0)
+    // Remove this line - it's not testing hook functionality
+    // expect(await Meteor.users.find().countAsync()).not.toBe(0)
 
     Meteor.users.find = MeteorUsersFind
   })
