@@ -114,17 +114,18 @@ if (Meteor.isServer) {
     })
   })
 
-  describe('find - server side within publish context', function () {
-    it('userId available to before find hook when within publish context', function () {
-      expect(beforeFindUserId).not.toBe(null)
-      expect(beforeFindWithinPublish).toBe(true)
-    })
+  // v2.0.0 find hooks have been removed, check the history for the changes
+  // describe('find - server side within publish context', function () {
+  //   it('userId available to before find hook when within publish context', function () {
+  //     expect(beforeFindUserId).not.toBe(null)
+  //     expect(beforeFindWithinPublish).toBe(true)
+  //   })
 
-    it('userId available to after find hook when within publish context', function () {
-      expect(afterFindUserId).not.toBe(null)
-      expect(afterFindWithinPublish).toBe(true)
-    })
-  })
+  //   it('userId available to after find hook when within publish context', function () {
+  //     expect(afterFindUserId).not.toBe(null)
+  //     expect(afterFindWithinPublish).toBe(true)
+  //   })
+  // })
 
   describe('findone - server side within publish context', function () {
     it('userId available to before findOne hook when within publish context', function () {
