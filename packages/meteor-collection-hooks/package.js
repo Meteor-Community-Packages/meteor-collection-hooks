@@ -38,7 +38,6 @@ Package.onTest(function (api) {
     'accounts-password',
     'mongo',
     'ddp',
-    'tinytest',
     'test-helpers',
     'ecmascript',
     'jquery',
