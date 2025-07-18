@@ -16,7 +16,8 @@ Package.onUse(function (api) {
     'tracker',
     'ejson',
     'minimongo',
-    'ecmascript'
+    'ecmascript',
+    'lai:collection-extensions'
   ])
 
   api.use('zodern:types@1.0.13', 'server')
@@ -37,10 +38,7 @@ Package.onTest(function (api) {
     'accounts-base',
     'accounts-password',
     'mongo',
-    'ddp',
-    'test-helpers',
     'ecmascript',
     'jquery'
-  ]);
-
+  ])
 })

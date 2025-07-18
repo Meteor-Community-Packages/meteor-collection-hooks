@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { EJSON } from 'meteor/ejson'
 import { LocalCollection } from 'meteor/minimongo'
+import { CollectionExtensions } from 'meteor/lai:collection-extensions'
 
 // Hooks terminology:
 // Hook: User-defined function that runs before/after collection operations
@@ -336,38 +337,18 @@ CollectionHooks.reassignPrototype = function reassignPrototype (
   }
 }
 
-CollectionHooks.wrapCollection = function wrapCollection (ns, as) {
-  if (!as._CollectionConstructor) as._CollectionConstructor = as.Collection
-  if (!as._CollectionPrototype) { as._CollectionPrototype = new as.Collection(null) }
+// Use lai:collection-extensions for clean collection constructor extension
+CollectionExtensions.addExtension(function (collection, options) {
+  // This function is called whenever new Mongo.Collection() is created
+  // 'collection' is the collection instance (passed as first parameter)
+  // 'options' are the options passed to the constructor
 
-  const constructor = ns._NewCollectionContructor || as._CollectionConstructor
-  const proto = as._CollectionPrototype
-
-  ns.Collection = function (...args) {
-    const ret = constructor.apply(this, args)
-    CollectionHooks.extendCollectionInstance(this, constructor)
-    return ret
-  }
-  // Retain a reference to the new constructor to allow further wrapping.
-  ns._NewCollectionContructor = ns.Collection
-
-  ns.Collection.prototype = proto
-  ns.Collection.prototype.constructor = ns.Collection
-
-  for (const prop of Object.keys(constructor)) {
-    ns.Collection[prop] = constructor[prop]
+  // Skip extension if collection instance is null (can happen with special collections)
+  if (!collection) {
+    return
   }
 
-  // Meteor overrides the apply method which is copied from the constructor in the loop above. Replace it with the
-  // default method which we need if we were to further wrap ns.Collection.
-  ns.Collection.apply = Function.prototype.apply
-}
+  CollectionHooks.extendCollectionInstance(collection, Mongo.Collection)
+})
 
 CollectionHooks.modify = LocalCollection._modify
-
-if (typeof Mongo !== 'undefined') {
-  CollectionHooks.wrapCollection(Meteor, Mongo)
-  CollectionHooks.wrapCollection(Mongo, Mongo)
-} else {
-  CollectionHooks.wrapCollection(Meteor, Meteor)
-}
