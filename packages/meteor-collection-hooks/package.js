@@ -3,7 +3,7 @@
 Package.describe({
   name: 'matb33:collection-hooks',
   summary: 'Extends Mongo.Collection with before/after hooks for insert/update/upsert/remove/find/findOne',
-  version: '2.1.0-beta.2',
+  version: '2.1.0-beta.3',
   documentation: '../../README.md',
   git: 'https://github.com/Meteor-Community-Packages/meteor-collection-hooks'
 })
