@@ -40,8 +40,7 @@ Package.onTest(function (api) {
     'ddp',
     'test-helpers',
     'ecmascript',
-    'jquery',
-    'dburles:mongo-collection-instances'
+    'jquery'
   ]);
 
 })
