@@ -6,7 +6,6 @@
 * Improved options merging logic with clear precedence documentation
 * Enhanced hook controller implementation using factory functions
 * Maintained backward compatibility with Meteor 2.16+
-* Continued support for find/findOne hooks (contrary to v2.0.0 notes)
 
 ## v2.0.0
 
