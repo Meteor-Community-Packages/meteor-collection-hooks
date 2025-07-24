@@ -61,6 +61,54 @@ export const CollectionHooks = {
 }
 
 /**
+ * Creates a hook controller object for managing individual hooks
+ * @param {Array} hooksArray - The array containing hooks for this method/timing
+ * @param {Object} initialTarget - The initial hook target object
+ * @param {string} timing - The timing type ('before' or 'after')
+ * @param {string} method - The method name ('insert', 'update', etc.)
+ * @returns {Object} Controller with replace and remove methods
+ */
+function createHookController (hooksArray, initialTarget, timing, method) {
+  let currentTarget = initialTarget
+
+  return {
+    replace (hook, options) {
+      const targetIndex = hooksArray.findIndex((entry) => entry === currentTarget)
+      if (targetIndex === -1) {
+        throw new Error(`Hook not found in ${timing}.${method} hooks array`)
+      }
+
+      const newTarget = {
+        hook,
+        options: CollectionHooks.initOptions(options, timing, method)
+      }
+
+      // Replace the target in the array
+      hooksArray.splice(targetIndex, 1, newTarget)
+
+      // Update our internal reference
+      currentTarget = newTarget
+
+      return this // Allow method chaining
+    },
+
+    remove () {
+      const targetIndex = hooksArray.findIndex((entry) => entry === currentTarget)
+      if (targetIndex === -1) {
+        throw new Error(`Hook not found in ${timing}.${method} hooks array`)
+      }
+
+      hooksArray.splice(targetIndex, 1)
+
+      // Mark as removed to prevent further operations
+      currentTarget = null
+
+      return true
+    }
+  }
+}
+
+/**
  * Sets up hook registration methods on collection instance
  * Creates methods like collection.before.insert() and collection.after.update()
  */
@@ -74,35 +122,16 @@ function setupHookRegistrationMethods (collection) {
 
       collection._hooks[method][timing] = []
       collection[timing][method] = function (hook, options) {
-        let target = {
+        const target = {
           hook,
           options: CollectionHooks.initOptions(options, timing, method)
         }
-        // adding is simply pushing it to the array
-        collection._hooks[method][timing].push(target)
+        
+        const hooksArray = collection._hooks[method][timing]
+        hooksArray.push(target)
 
-        return {
-          replace (hook, options) {
-            // replacing is done by determining the actual index of a given target
-            // and replace this with the new one
-            const src = collection._hooks[method][timing]
-            const targetIndex = src.findIndex((entry) => entry === target)
-            const newTarget = {
-              hook,
-              options: CollectionHooks.initOptions(options, timing, method)
-            }
-            src.splice(targetIndex, 1, newTarget)
-            // update the target to get the correct index in future calls
-            target = newTarget
-          },
-          remove () {
-            // removing a hook is done by determining the actual index of a given target
-            // and removing it form the source array
-            const src = collection._hooks[method][timing]
-            const targetIndex = src.findIndex((entry) => entry === target)
-            collection._hooks[method][timing].splice(targetIndex, 1)
-          }
-        }
+        // Use factory function instead of inline object
+        return createHookController(hooksArray, target, timing, method)
       }
     })
   })
