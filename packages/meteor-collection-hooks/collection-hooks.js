@@ -60,33 +60,32 @@ export const CollectionHooks = {
   }
 }
 
-CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
-  self,
-  constructor
-) {
-  // Offer a public API to allow the user to define hooks
-  // Example: collection.before.insert(func);
+/**
+ * Sets up hook registration methods on collection instance
+ * Creates methods like collection.before.insert() and collection.after.update()
+ */
+function setupHookRegistrationMethods (collection) {
   TIMING_TYPES.forEach(function (timing) {
     Object.entries(wrappers).forEach(function ([method, wrapper]) {
       if (method === 'upsert' && timing === 'after') return
 
-      Meteor._ensure(self, timing, method)
-      Meteor._ensure(self, '_hooks', method)
+      Meteor._ensure(collection, timing, method)
+      Meteor._ensure(collection, '_hooks', method)
 
-      self._hooks[method][timing] = []
-      self[timing][method] = function (hook, options) {
+      collection._hooks[method][timing] = []
+      collection[timing][method] = function (hook, options) {
         let target = {
           hook,
           options: CollectionHooks.initOptions(options, timing, method)
         }
         // adding is simply pushing it to the array
-        self._hooks[method][timing].push(target)
+        collection._hooks[method][timing].push(target)
 
         return {
           replace (hook, options) {
             // replacing is done by determining the actual index of a given target
             // and replace this with the new one
-            const src = self._hooks[method][timing]
+            const src = collection._hooks[method][timing]
             const targetIndex = src.findIndex((entry) => entry === target)
             const newTarget = {
               hook,
@@ -99,34 +98,37 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
           remove () {
             // removing a hook is done by determining the actual index of a given target
             // and removing it form the source array
-            const src = self._hooks[method][timing]
+            const src = collection._hooks[method][timing]
             const targetIndex = src.findIndex((entry) => entry === target)
-            self._hooks[method][timing].splice(targetIndex, 1)
+            collection._hooks[method][timing].splice(targetIndex, 1)
           }
         }
       }
     })
   })
+}
 
+/**
+ * Sets up hook options object on collection instance
+ * Creates collection.hookOptions with default values
+ */
+function setupHookOptions (collection) {
   // Offer a publicly accessible object to allow the user to define
   // collection-wide hook options.
   // Example: collection.hookOptions.after.update = {fetchPrevious: false};
-  self.hookOptions = EJSON.clone(CollectionHooks.defaults)
+  collection.hookOptions = EJSON.clone(CollectionHooks.defaults)
+}
 
-  // Wrap mutator methods, letting the defined wrapper do the work
+/**
+ * Sets up direct methods on collection instance
+ * Creates methods like collection.direct.insert() that bypass hooks
+ */
+function setupDirectMethods (collection, constructor) {
   Object.entries(wrappers).forEach(function ([method, wrapper]) {
-    // For client side, it wraps around minimongo LocalCollection
-    // For server side, it wraps around mongo Collection._collection (i.e. driver directly)
-    const collection =
-      Meteor.isClient || method === 'upsert' ? self : self._collection
-
-    // Store a reference to the original mutator method
-    // const originalMethod = collection[method]
-
-    Meteor._ensure(self, 'direct', method)
-    self.direct[method] = function (...args) {
+    Meteor._ensure(collection, 'direct', method)
+    collection.direct[method] = function (...args) {
       return CollectionHooks.directOp(function () {
-        return constructor.prototype[method].apply(self, args)
+        return constructor.prototype[method].apply(collection, args)
       })
     }
 
@@ -134,12 +136,27 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
 
     // TODO(v3): don't understand why this is necessary. Maybe related to Meteor 2.x and async?
     if (constructor.prototype[asyncMethod]) {
-      self.direct[asyncMethod] = function (...args) {
+      collection.direct[asyncMethod] = function (...args) {
         return CollectionHooks.directOp(function () {
-          return constructor.prototype[asyncMethod].apply(self, args)
+          return constructor.prototype[asyncMethod].apply(collection, args)
         })
       }
     }
+  })
+}
+
+/**
+ * Wraps collection methods with hook functionality
+ * This intercepts method calls and ensures hooks are executed
+ */
+function wrapCollectionMethods (collection, constructor) {
+  Object.entries(wrappers).forEach(function ([method, wrapper]) {
+    // For client side, it wraps around minimongo LocalCollection
+    // For server side, it wraps around mongo Collection._collection (i.e. driver directly)
+    const targetCollection =
+      Meteor.isClient || method === 'upsert' ? collection : collection._collection
+
+    const asyncMethod = method + 'Async'
 
     /**
      * Determines if we should bypass hooks and call the original method directly
@@ -158,7 +175,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
         // TODO(v2): not quite sure why originalMethod in the first updateAsync call points to LocalCollection's wrapped async method which
         // will then again call this wrapped method
         if (shouldBypassHooks(method, this)) {
-          return originalMethod.apply(collection, args)
+          return originalMethod.apply(targetCollection, args)
         }
 
         // NOTE: should we decide to force `update` with `{upsert:true}` to use
@@ -175,18 +192,18 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
           this,
           CollectionHooks.getUserId(),
           originalMethod,
-          self,
+          collection,
           method === 'upsert'
             ? {
-                insert: self._hooks.insert || {},
-                update: self._hooks.update || {},
-                upsert: self._hooks.upsert || {}
+                insert: collection._hooks.insert || {},
+                update: collection._hooks.update || {},
+                upsert: collection._hooks.upsert || {}
               }
-            : self._hooks[method] || {},
+            : collection._hooks[method] || {},
           function (doc) {
-            return typeof self._transform === 'function'
+            return typeof collection._transform === 'function'
               ? function (d) {
-                return self._transform(d || doc)
+                return collection._transform(d || doc)
               }
               : function (d) {
                 return d || doc
@@ -201,18 +218,35 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
     // TODO(v3): it appears this is necessary
     // In Meteor 2 *Async methods call the non-async methods
     if (ASYNC_METHODS.includes(method)) {
-      const originalAsyncMethod = collection[asyncMethod]
-      collection[asyncMethod] = getWrappedMethod(originalAsyncMethod)
+      const originalAsyncMethod = targetCollection[asyncMethod]
+      targetCollection[asyncMethod] = getWrappedMethod(originalAsyncMethod)
     } else if (method === 'find') {
       // find is returning a cursor and is a sync method
-      const originalMethod = collection[method]
-      collection[method] = getWrappedMethod(originalMethod)
+      const originalMethod = targetCollection[method]
+      targetCollection[method] = getWrappedMethod(originalMethod)
     }
 
     // Don't do this for v3 since we need to keep client methods sync.
     // With v3, it wraps the sync method with async resulting in errors.
-    // collection[method] = getWrappedMethod(originalMethod)
+    // targetCollection[method] = getWrappedMethod(originalMethod)
   })
+}
+
+CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
+  self,
+  constructor
+) {
+  // Set up hook registration methods (before.insert, after.update, etc.)
+  setupHookRegistrationMethods(self)
+
+  // Set up hook options object
+  setupHookOptions(self)
+
+  // Set up direct methods that bypass hooks
+  setupDirectMethods(self, constructor)
+
+  // Wrap mutator methods with hook functionality
+  wrapCollectionMethods(self, constructor)
 }
 
 CollectionHooks.defineWrapper = (method, wrapper) => {
