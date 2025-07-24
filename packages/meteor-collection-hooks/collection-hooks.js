@@ -29,6 +29,11 @@ const MONGODB_OPERATORS = [
   '$unset'
 ]
 
+// Magic strings used throughout the codebase
+const HOOKS_PROPERTY = '_hooks'
+const DIRECT_PROPERTY = 'direct'
+const ASYNC_CALL_FLAG = 'isCalledFromAsync'
+
 export const CollectionHooks = {
   defaults: {
     before: {
@@ -118,16 +123,16 @@ function setupHookRegistrationMethods (collection) {
       if (method === 'upsert' && timing === 'after') return
 
       Meteor._ensure(collection, timing, method)
-      Meteor._ensure(collection, '_hooks', method)
+      Meteor._ensure(collection, HOOKS_PROPERTY, method)
 
-      collection._hooks[method][timing] = []
+      collection[HOOKS_PROPERTY][method][timing] = []
       collection[timing][method] = function (hook, options) {
         const target = {
           hook,
           options: CollectionHooks.initOptions(options, timing, method)
         }
         
-        const hooksArray = collection._hooks[method][timing]
+        const hooksArray = collection[HOOKS_PROPERTY][method][timing]
         hooksArray.push(target)
 
         // Use factory function instead of inline object
@@ -154,8 +159,8 @@ function setupHookOptions (collection) {
  */
 function setupDirectMethods (collection, constructor) {
   Object.entries(wrappers).forEach(function ([method, wrapper]) {
-    Meteor._ensure(collection, 'direct', method)
-    collection.direct[method] = function (...args) {
+    Meteor._ensure(collection, DIRECT_PROPERTY, method)
+    collection[DIRECT_PROPERTY][method] = function (...args) {
       return CollectionHooks.directOp(function () {
         return constructor.prototype[method].apply(collection, args)
       })
@@ -165,7 +170,7 @@ function setupDirectMethods (collection, constructor) {
 
     // TODO(v3): don't understand why this is necessary. Maybe related to Meteor 2.x and async?
     if (constructor.prototype[asyncMethod]) {
-      collection.direct[asyncMethod] = function (...args) {
+      collection[DIRECT_PROPERTY][asyncMethod] = function (...args) {
         return CollectionHooks.directOp(function () {
           return constructor.prototype[asyncMethod].apply(collection, args)
         })
@@ -194,8 +199,8 @@ function wrapCollectionMethods (collection, constructor) {
      * - Direct operations are explicitly requested via directEnv
      */
     function shouldBypassHooks (method, context) {
-      return (method === 'update' && context.update.isCalledFromAsync) ||
-             (method === 'remove' && context.remove.isCalledFromAsync) ||
+      return (method === 'update' && context.update[ASYNC_CALL_FLAG]) ||
+             (method === 'remove' && context.remove[ASYNC_CALL_FLAG]) ||
              CollectionHooks.directEnv.get() === true
     }
 
@@ -224,11 +229,11 @@ function wrapCollectionMethods (collection, constructor) {
           collection,
           method === 'upsert'
             ? {
-                insert: collection._hooks.insert || {},
-                update: collection._hooks.update || {},
-                upsert: collection._hooks.upsert || {}
+                insert: collection[HOOKS_PROPERTY].insert || {},
+                update: collection[HOOKS_PROPERTY].update || {},
+                upsert: collection[HOOKS_PROPERTY].upsert || {}
               }
-            : collection._hooks[method] || {},
+            : collection[HOOKS_PROPERTY][method] || {},
           function (doc) {
             return typeof collection._transform === 'function'
               ? function (d) {
@@ -292,12 +297,28 @@ CollectionHooks.initOptions = (options, timing, method) =>
     method
   )
 
+/**
+ * Merges hook options with a clear precedence hierarchy
+ *
+ * Precedence order (highest to lowest priority):
+ * 1. Method+timing specific (e.g., source.before.insert)
+ * 2. Method-specific across all timings (e.g., source.all.insert)
+ * 3. Timing-specific across all methods (e.g., source.before.all)
+ * 4. Global defaults (source.all.all)
+ * 5. User provided options (lowest priority - gets overridden)
+ *
+ * @param {Object} source - The source object containing default options
+ * @param {Object} options - User provided options
+ * @param {string} timing - The timing type ('before' or 'after')
+ * @param {string} method - The method name ('insert', 'update', etc.)
+ * @returns {Object} Merged options object
+ */
 CollectionHooks.extendOptions = (source, options, timing, method) => ({
-  ...options,
-  ...source.all.all,
-  ...source[timing].all,
-  ...source.all[method],
-  ...source[timing][method]
+  ...options, // 5. User options (lowest priority)
+  ...source.all.all, // 4. Global defaults
+  ...source[timing].all, // 3. Timing-specific defaults
+  ...source.all[method], // 2. Method-specific defaults
+  ...source[timing][method] // 1. Method+timing specific (highest priority)
 })
 
 CollectionHooks.getDocs = function getDocs (
@@ -339,7 +360,7 @@ CollectionHooks.getDocs = function getDocs (
 
   // Unlike validators, we iterate over multiple docs, so use
   // find instead of findOne:
-  return (useDirect ? collection.direct : collection).find(
+  return (useDirect ? collection[DIRECT_PROPERTY] : collection).find(
     selector,
     findOptions
   )
