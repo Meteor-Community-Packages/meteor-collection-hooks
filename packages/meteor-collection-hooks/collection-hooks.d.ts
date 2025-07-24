@@ -50,6 +50,7 @@ declare module 'meteor/mongo' {
         type THookAfterUpdate<T,O = void> = (this: THookThisWithTransformAndPrevious<T, Collection<T>["update"]> & { previous: T, transform: (doc: T) => T }, userId: string|undefined, doc: T, fieldNames: string[], modifier: any, options: any) => O
         type THookRemove<T,O = void> = (this: THookThisWithTransform<T, Collection<T>["remove"]>, userId: string|undefined, doc: T) => O
         type THookUpsert<T,O = void> = (this: THookThis<T, Collection<T>["upsert"]>, userId: string|undefined, selector: any, modifier: any, options: any) => O
+        // Note: before.find hooks cannot be async (will throw error in Meteor 3)
         type THookBeforeFind<T,O = void> = (this: THookThis<T, Collection<T>["find"]>, userId: string|undefined, selector: any, options: any) => O
         type THookAfterFind<T> = (this: THookThis<T, Collection<T>["find"]>, userId: string|undefined, selector: any, options: any, cursor: Cursor<T>) => void
         type THookBeforeFindOne<T,O = void> = (this: THookThis<T, Collection<T>["findOne"]>, userId: string|undefined, selector: any, options: any) => O
@@ -58,21 +59,27 @@ declare module 'meteor/mongo' {
 
         interface Collection<T, U = T> {
             hookOptions: CollectionHooks["GlobalOptions"]
-            direct: Pick<Collection<T, U>, "insert"|"insertAsync"|"update"|"updateAsync"|"find"|"findOne"|"findOneAsync"|"remove"|"removeAsync">
+            // Note: Added missing upsert and upsertAsync direct methods
+            direct: Pick<Collection<T, U>, "insert"|"insertAsync"|"update"|"updateAsync"|"upsert"|"upsertAsync"|"find"|"findOne"|"findOneAsync"|"remove"|"removeAsync">
             before: {
                 insert<Fn = THookBeforeInsert<T,void|false>>(fn: Fn): THandler<Fn>
                 update<Fn = THookBeforeUpdate<T,void|false>>(fn: Fn): THandler<Fn>
                 remove<Fn = THookRemove<T,void|false>>(fn: Fn): THandler<Fn>
                 upsert<Fn = THookUpsert<T,void|false>>(fn: Fn): THandler<Fn>
+                // LIMITATION: Cannot be async function (will throw error in Meteor 3)
+                // Only triggers on cursor async methods (fetchAsync, countAsync, etc.)
                 find<Fn = THookBeforeFind<T,void|false>>(fn: Fn): THandler<Fn>
+                // Only triggers on findOneAsync(), not sync findOne()
                 findOne<Fn = THookBeforeFindOne<T,void|false>>(fn: Fn): THandler<Fn>
             }
             after: {
                 insert<Fn = THookAfterInsert<T>>(fn: Fn): THandler<Fn>
                 update<Fn = THookAfterUpdate<T>>(fn: Fn, options?: { fetchPrevious?: boolean }): THandler<Fn>
                 remove<Fn = THookRemove<T>>(fn: Fn): THandler<Fn>
-                upsert<Fn = THookUpsert<T>>(fn: Fn): THandler<Fn>
+                // Note: No after.upsert hook exists - upsert calls either after.insert or after.update
+                // Only triggers on cursor async methods (fetchAsync, countAsync, etc.)  
                 find<Fn = THookAfterFind<T>>(fn: Fn): THandler<Fn>
+                // Only triggers on findOneAsync(), not sync findOne()
                 findOne<Fn = THookAfterFindOne<T>>(fn: Fn): THandler<Fn>
             }
         }
