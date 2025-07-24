@@ -141,15 +141,23 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
       }
     }
 
+    /**
+     * Determines if we should bypass hooks and call the original method directly
+     * This happens when:
+     * - Async methods are being called from their sync counterparts to avoid recursion
+     * - Direct operations are explicitly requested via directEnv
+     */
+    function shouldBypassHooks (method, context) {
+      return (method === 'update' && context.update.isCalledFromAsync) ||
+             (method === 'remove' && context.remove.isCalledFromAsync) ||
+             CollectionHooks.directEnv.get() === true
+    }
+
     function getWrappedMethod (originalMethod) {
       return function wrappedMethod (...args) {
         // TODO(v2): not quite sure why originalMethod in the first updateAsync call points to LocalCollection's wrapped async method which
         // will then again call this wrapped method
-        if (
-          (method === 'update' && this.update.isCalledFromAsync) ||
-          (method === 'remove' && this.remove.isCalledFromAsync) ||
-          CollectionHooks.directEnv.get() === true
-        ) {
+        if (shouldBypassHooks(method, this)) {
           return originalMethod.apply(collection, args)
         }
 
