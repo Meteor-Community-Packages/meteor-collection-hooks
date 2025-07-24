@@ -131,7 +131,7 @@ function setupHookRegistrationMethods (collection) {
           hook,
           options: CollectionHooks.initOptions(options, timing, method)
         }
-        
+
         const hooksArray = collection[HOOKS_PROPERTY][method][timing]
         hooksArray.push(target)
 

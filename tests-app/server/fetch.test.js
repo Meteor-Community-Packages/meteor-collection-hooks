@@ -12,14 +12,14 @@ if (Meteor.isServer) {
 
       function start (nil, id) {
         const fields = ['fetch_value1', 'fetch_value2']
-    
+
         collection.after.update(function (userId, doc, fieldNames, modifier) {
           const { _id, ...docKeys } = Object.keys(doc)
           expect(same(docKeys, fields)).toBe(true)
         }, {
           fetch: fields
         })
-    
+
         collection.update({ _id: id }, { $set: { update_value: true } })
       }
 

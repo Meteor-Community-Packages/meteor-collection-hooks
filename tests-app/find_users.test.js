@@ -6,7 +6,7 @@ import expect from 'expect'
 // When running in isolation, both tests pass
 // When running only one, both work, too
 describe('users - find hooks', function () {
-  // it('should be capable of being used on special Meteor.users collection', async function () {      
+  // it('should be capable of being used on special Meteor.users collection', async function () {
 
   //   const aspect1 = Meteor.users.before.find(function (userId, selector, options) {
   //     if (selector && selector.test) {
@@ -21,9 +21,9 @@ describe('users - find hooks', function () {
   //   })
 
   //   const selector = { test: 1 }
-    
+
   //   const cursor = Meteor.users.find(selector)
-    
+
   //   expect(Object.prototype.hasOwnProperty.call(selector, 'a')).toBe(true)
   //   expect(Object.prototype.hasOwnProperty.call(selector, 'b')).toBe(true)
   //   aspect1.remove()

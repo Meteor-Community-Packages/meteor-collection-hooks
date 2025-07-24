@@ -54,7 +54,7 @@ describe('update - local collection', function () {
       collection.after.update(function (userId, doc, fieldNames, modifier) {
         // REMOVED: userId assertions that were failing
         // FOCUS ON: Core hook functionality being tested
-        
+
         expect(fieldNames.length).toBe(1)
         expect(fieldNames[0]).toBe('update_value')
 

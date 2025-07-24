@@ -18,46 +18,45 @@ let afterFindOneUserId
 // Don't declare hooks in publish method, as it is problematic
 // eslint-disable-next-line array-callback-return
 collection.before.find(function (userId, selector, options) {
-    if (options && options.test) { // ignore other calls to find (caused by insert/update)
-      beforeFindUserId = userId
-  
-      if (CollectionHooks.isWithinPublish) {
-        beforeFindWithinPublish = CollectionHooks.isWithinPublish()
-      }
-    }
-  })
-  
-  // eslint-disable-next-line array-callback-return
-  collection.after.find(function (userId, selector, options, result) {
-    if (options && options.test) { // ignore other calls to find (caused by insert/update)
-      afterFindUserId = userId
-  
-      if (CollectionHooks.isWithinPublish) {
-        afterFindWithinPublish = CollectionHooks.isWithinPublish()
-      }
-    }
-  })
-  
-  collection.before.findOne(function (userId, selector, options) {
-    if (options && options.test) { // ignore other calls to find (caused by insert/update)
-      beforeFindOneUserId = userId
-  
-      if (CollectionHooks.isWithinPublish) {
-        beforeFindOneWithinPublish = CollectionHooks.isWithinPublish()
-      }
-    }
-  })
-  
-  collection.after.findOne(function (userId, selector, options, result) {
-    if (options && options.test) { // ignore other calls to find (caused by insert/update)
-      afterFindOneUserId = userId
-  
-      if (CollectionHooks.isWithinPublish) {
-        afterFindOneWithinPublish = CollectionHooks.isWithinPublish()
-      }
-    }
-  })
+  if (options && options.test) { // ignore other calls to find (caused by insert/update)
+    beforeFindUserId = userId
 
+    if (CollectionHooks.isWithinPublish) {
+      beforeFindWithinPublish = CollectionHooks.isWithinPublish()
+    }
+  }
+})
+
+// eslint-disable-next-line array-callback-return
+collection.after.find(function (userId, selector, options, result) {
+  if (options && options.test) { // ignore other calls to find (caused by insert/update)
+    afterFindUserId = userId
+
+    if (CollectionHooks.isWithinPublish) {
+      afterFindWithinPublish = CollectionHooks.isWithinPublish()
+    }
+  }
+})
+
+collection.before.findOne(function (userId, selector, options) {
+  if (options && options.test) { // ignore other calls to find (caused by insert/update)
+    beforeFindOneUserId = userId
+
+    if (CollectionHooks.isWithinPublish) {
+      beforeFindOneWithinPublish = CollectionHooks.isWithinPublish()
+    }
+  }
+})
+
+collection.after.findOne(function (userId, selector, options, result) {
+  if (options && options.test) { // ignore other calls to find (caused by insert/update)
+    afterFindOneUserId = userId
+
+    if (CollectionHooks.isWithinPublish) {
+      afterFindOneWithinPublish = CollectionHooks.isWithinPublish()
+    }
+  }
+})
 
 if (Meteor.isServer) {
   let publishContext = null
@@ -68,33 +67,33 @@ if (Meteor.isServer) {
       const mockContext = {
         userId: 'test-user-id',
         connection: { id: 'test-connection' },
-        ready: function() {},
-        onStop: function() {},
-        error: function() {},
-        stop: function() {},
-        added: function() {},
-        changed: function() {},
-        removed: function() {}
+        ready: function () {},
+        onStop: function () {},
+        error: function () {},
+        stop: function () {},
+        added: function () {},
+        changed: function () {},
+        removed: function () {}
       }
 
       // Get the registered publish handler
-      const publishHandler = Meteor.server.publish_handlers['test_publish_for_find_findone_userid']
-      
+      const publishHandler = Meteor.server.publish_handlers.test_publish_for_find_findone_userid
+
       if (publishHandler) {
         // Import the publishUserId environment variable from collection-hooks
         const { CollectionHooks } = require('meteor/matb33:collection-hooks')
-        
+
         // Get access to the publishUserId environment variable
         // We need to look at the server.js file to see how this is structured
-        
+
         // Alternative: Mock CollectionHooks.getUserId directly
         const originalGetUserId = CollectionHooks.getUserId
         CollectionHooks.getUserId = () => 'test-user-id'
-        
+
         // Mock isWithinPublish
         const originalIsWithinPublish = CollectionHooks.isWithinPublish
         CollectionHooks.isWithinPublish = () => true
-        
+
         try {
           await publishHandler.call(mockContext)
         } finally {
@@ -155,9 +154,9 @@ if (Meteor.isServer) {
     afterFindOneWithinPublish = false
 
     // Trigger BOTH find and findOne hooks
-    collection.find({}, { test: 1 })      // This should trigger find hooks
-    await collection.findOneAsync({}, { test: 1 })  // This should trigger findOne hooks
-    
+    collection.find({}, { test: 1 }) // This should trigger find hooks
+    await collection.findOneAsync({}, { test: 1 }) // This should trigger findOne hooks
+
     // Return the cursor for the publish function
     return collection.find({})
   })

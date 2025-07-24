@@ -79,7 +79,7 @@ describe('direct - hooks should not be fired when using .direct', function () {
 
       // STEP 1: Record how many hooks fire with normal operations
       const initialHookCount = hookCount
-      
+
       collection.insert({ _id: 'test', test: 1 })
       collection.update({ _id: 'test' }, { $set: { test: 1 } }, { test: 1 })
       collection.find({}, { test: 1 })
@@ -87,7 +87,7 @@ describe('direct - hooks should not be fired when using .direct', function () {
       collection.remove({ _id: 'test' })
 
       const normalOperationsHookCount = hookCount
-      
+
       // STEP 2: Verify hooks were called for normal operations
       expect(normalOperationsHookCount).toBeGreaterThan(initialHookCount)
 

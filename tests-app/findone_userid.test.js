@@ -4,12 +4,12 @@ import expect from 'expect'
 
 if (Meteor.isClient) {
   describe('findone - client side', function () {
-    const originalMeteorUserId = Meteor.userId;
-    
+    const originalMeteorUserId = Meteor.userId
+
     before(function () {
-      Meteor.userId = () => 'findone-client-side-user-id';
+      Meteor.userId = () => 'findone-client-side-user-id'
     })
-    
+
     after(function () {
       Meteor.userId = originalMeteorUserId
     })
@@ -24,7 +24,7 @@ if (Meteor.isClient) {
         }
       })
 
-      await collection.findOneAsync({}, { test: 1 }) 
+      await collection.findOneAsync({}, { test: 1 })
       expect(beforeFindOneUserId).toBe('findone-client-side-user-id')
     })
 
@@ -38,8 +38,8 @@ if (Meteor.isClient) {
         }
       })
 
-      await collection.findOneAsync({}, { test: 1 })  
-        expect(afterFindOneUserId).toBe('findone-client-side-user-id')
-      })
+      await collection.findOneAsync({}, { test: 1 })
+      expect(afterFindOneUserId).toBe('findone-client-side-user-id')
+    })
   })
 }

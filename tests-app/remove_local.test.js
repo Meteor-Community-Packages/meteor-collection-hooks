@@ -25,8 +25,8 @@ describe('Remove Local Tests', function () {
     expect(afterUserId).toBe(undefined)
     expect(removedDoc).not.toBe(null)
     expect(removedDoc.test).toBe(true)
-    expect(removedDoc.value).toBe('test-data')  
-})
+    expect(removedDoc.value).toBe('test-data')
+  })
 
   it('should allow before.remove to prevent removal', async function () {
     const collection = new Mongo.Collection(null)

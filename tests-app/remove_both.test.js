@@ -98,7 +98,7 @@ if (Meteor.isClient) {
         ++c
       }
       const originalUserId = Meteor.userId
-      const originalUser = Meteor.user  
+      const originalUser = Meteor.user
 
       // Mock a test user
       Meteor.userId = () => 'remove-both-user-id'

@@ -66,16 +66,13 @@ if (Meteor.isServer) {
 }
 
 if (Meteor.isClient) {
-
   Meteor.subscribe('test_insert_publish_collection2')
 
   describe('insert - client side', function () {
-
     let originalUserId
     let originalUser
-    
+
     before(() => {
-      
       originalUserId = Meteor.userId
       originalUser = Meteor.user
 
@@ -111,16 +108,16 @@ if (Meteor.isClient) {
           .count()
       ).toBe(1)
     })
-  
+
     it('hooks are not called for sync methods', function () {
       const collectionForSync = new Mongo.Collection(null)
       let beforeCalled = false
       let afterCalled = false
-      
+
       collectionForSync.before.insert(function (userId, selector, options) {
         beforeCalled = true
       })
-      
+
       collectionForSync.after.insert(function (userId, selector, options) {
         afterCalled = true
       })
@@ -130,7 +127,7 @@ if (Meteor.isClient) {
       expect(beforeCalled).toBe(false)
       expect(afterCalled).toBe(false)
     })
-  
+
     after(() => {
       Meteor.userId = originalUserId
       Meteor.user = originalUser
