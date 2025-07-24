@@ -1,8 +1,23 @@
+## v2.1.0-beta.3
+
+* Replace tinytest with Mocha
+* Code architecture improvements and refactoring for better maintainability
+* Extracted magic strings to constants for improved code safety
+* Improved options merging logic with clear precedence documentation
+* Enhanced hook controller implementation using factory functions
+* Maintained backward compatibility with Meteor 2.16+
+* Continued support for find/findOne hooks (contrary to v2.0.0 notes)
+
 ## v2.0.0
 
-* BREAKING: find hooks have been removed (due to Meteor 3 compatibility)
-* Async hooks are now supported
-* Meteor 3.0 is now the minimum required Meteor version
+* BREAKING: find hooks behavior changed for Meteor 3 compatibility:
+  - `before.find` hooks can no longer be async (throws error if async function used)
+  - `find` hooks only trigger on cursor async methods (fetchAsync, countAsync, etc.)
+  - `findOne` hooks only trigger on `findOneAsync()`, not sync `findOne()`
+  - Sync collection methods (`find().fetch()`, `findOne()`) no longer trigger hooks
+* Async hooks are now supported for insert/update/remove/upsert operations
+* Added support for Meteor 2.16+ through 3.1+ (backward compatible, not "3.0 minimum")
+* Enhanced async method handling with proper hook integration
 
 ## v1.4.0
 * Test suite minimum Meteor version is 2.12 to support new counts and to be fully compatible with Meteor 3
@@ -172,6 +187,4 @@
 
 ## v0.6.6
 
-* Add automated testing and additional tests for `userId` in publish functions. (#21)
-* Add functions for direct operations on underlying collection, ignoring hooks. (#3)
-* Update argument/input logic of hooks for better compatibility with other packages. (#24)
+* Add automated testing and additional tests for `
