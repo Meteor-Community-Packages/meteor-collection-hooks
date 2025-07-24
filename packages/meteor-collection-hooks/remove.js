@@ -7,14 +7,14 @@ CollectionHooks.defineWrapper(
   'remove',
   async function (
     userId,
-    _super,
+    originalMethod,
     instance,
     hooks,
     getTransform,
     args,
     suppressHooks
   ) {
-    const ctx = { context: this, _super, args }
+    const ctx = { context: this, originalMethod, args }
     const [selector, callback] = args
     const async = typeof callback === 'function'
     let docs
@@ -82,9 +82,9 @@ CollectionHooks.defineWrapper(
         await after(err)
         return callback.call(this, err, ...args)
       }
-      return _super.call(this, selector, wrappedCallback)
+      return originalMethod.call(this, selector, wrappedCallback)
     } else {
-      const result = await _super.call(this, selector, callback)
+      const result = await originalMethod.call(this, selector, callback)
       await after()
       return result
     }

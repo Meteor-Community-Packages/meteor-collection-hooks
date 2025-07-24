@@ -2,8 +2,8 @@ import { EJSON } from 'meteor/ejson'
 import { Mongo } from 'meteor/mongo'
 import { CollectionHooks } from './collection-hooks'
 
-CollectionHooks.defineWrapper('insert', async function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
-  const ctx = { context: this, _super, args }
+CollectionHooks.defineWrapper('insert', async function (userId, originalMethod, instance, hooks, getTransform, args, suppressHooks) {
+  const ctx = { context: this, originalMethod, args }
   let doc = args[0]
   let callback
   if (typeof args[args.length - 1] === 'function') {
@@ -62,9 +62,9 @@ CollectionHooks.defineWrapper('insert', async function (userId, _super, instance
       await after((obj && obj[0] && obj[0]._id) || obj, err)
       return callback.call(this, err, obj, ...args)
     }
-    return _super.call(this, doc, wrappedCallback)
+    return originalMethod.call(this, doc, wrappedCallback)
   } else {
-    ret = await _super.call(this, doc, callback)
+    ret = await originalMethod.call(this, doc, callback)
 
     return (await after((ret && ret.insertedId) || (ret && ret[0] && ret[0]._id) || ret))
   }

@@ -3,10 +3,10 @@ import { CollectionHooks } from './collection-hooks'
 
 const isEmpty = a => !Array.isArray(a) || !a.length
 
-CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance, hookGroup, getTransform, args, suppressHooks) {
+CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, instance, hookGroup, getTransform, args, suppressHooks) {
   args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
 
-  const ctx = { context: this, _super, args }
+  const ctx = { context: this, originalMethod, args }
   let [selector, mutator, options, callback] = args
   if (typeof options === 'function') {
     callback = options
@@ -95,9 +95,9 @@ CollectionHooks.defineWrapper('upsert', async function (userId, _super, instance
       })
     }
 
-    return CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, wrappedCallback))
+    return CollectionHooks.directOp(() => originalMethod.call(this, selector, mutator, options, wrappedCallback))
   } else {
-    const ret = await CollectionHooks.directOp(() => _super.call(this, selector, mutator, options, callback))
+    const ret = await CollectionHooks.directOp(() => originalMethod.call(this, selector, mutator, options, callback))
     const { insertedId, numberAffected } = (ret ?? {})
 
     if (insertedId) {

@@ -9,7 +9,7 @@ const ASYNC_METHODS = ['countAsync', 'fetchAsync', 'forEachAsync', 'mapAsync']
  * That's why we need to wrap all async methods of cursor instance. We're doing this by creating another cursor
  * within these wrapped methods with selector and options updated by before hooks.
  */
-CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
+CollectionHooks.defineWrapper('find', function (userId, originalMethod, instance, hooks, getTransform, args, suppressHooks) {
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
 
@@ -22,7 +22,7 @@ CollectionHooks.defineWrapper('find', function (userId, _super, instance, hooks,
     }
   })
 
-  const cursor = _super.call(this, selector, options)
+  const cursor = originalMethod.call(this, selector, options)
 
   // Wrap async cursor methods
   ASYNC_METHODS.forEach((method) => {

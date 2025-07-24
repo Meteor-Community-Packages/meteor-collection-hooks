@@ -321,7 +321,7 @@ still continue to run even if the first hook returns `false`.
 - ~~If you wish to make `userId` available to a `find` query in a `publish`
 function, try the technique detailed in this [comment](https://github.com/matb33/meteor-collection-hooks/issues/7#issuecomment-24021616)~~ `userId` is available to `find` and `findOne` queries that were invoked within a `publish` function.
 
-- All hook callbacks have `this._super` available to them (the underlying
+- All hook callbacks have `this.originalMethod` available to them (the underlying
 method) as well as `this.context`, the equivalent of `this` to the underlying
 method. Additionally, `this.args` contain the original arguments passed to the
 method and can be modified by reference (for example, modifying a selector in a

@@ -7,14 +7,14 @@ CollectionHooks.defineWrapper(
   'update',
   async function (
     userId,
-    _super,
+    originalMethod,
     instance,
     hooks,
     getTransform,
     args,
     suppressHooks
   ) {
-    const ctx = { context: this, _super, args }
+    const ctx = { context: this, originalMethod, args }
     let [selector, mutator, options, callback] = args
     if (typeof options === 'function') {
       callback = options
@@ -187,9 +187,9 @@ CollectionHooks.defineWrapper(
         await after(affected, err)
         return callback.call(this, err, affected, ...args)
       }
-      return _super.call(this, selector, mutator, options, wrappedCallback)
+      return originalMethod.call(this, selector, mutator, options, wrappedCallback)
     } else {
-      const affected = await _super.call(
+      const affected = await originalMethod.call(
         this,
         selector,
         mutator,

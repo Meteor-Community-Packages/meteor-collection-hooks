@@ -30,7 +30,7 @@ declare module 'meteor/mongo' {
     module Mongo {
         type GenericFunction = (...args: any) => any
         type THookThis<T, UnderlyingMethod extends GenericFunction> = {
-            _super: UnderlyingMethod,
+            originalMethod: UnderlyingMethod,
             context: ThisType<UnderlyingMethod>,
             args: Parameters<UnderlyingMethod>
             transform: (doc: T) => T

@@ -10,6 +10,25 @@ import { CollectionExtensions } from 'meteor/lai:collection-extensions'
 // Timing: before/after
 const wrappers = {}
 
+// Constants for method configurations
+const ASYNC_METHODS = ['insert', 'update', 'upsert', 'remove', 'findOne']
+const TIMING_TYPES = ['before', 'after']
+const MONGODB_OPERATORS = [
+  '$addToSet',
+  '$bit',
+  '$currentDate',
+  '$inc',
+  '$max',
+  '$min',
+  '$pop',
+  '$pull',
+  '$pullAll',
+  '$push',
+  '$rename',
+  '$set',
+  '$unset'
+]
+
 export const CollectionHooks = {
   defaults: {
     before: {
@@ -47,7 +66,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
 ) {
   // Offer a public API to allow the user to define hooks
   // Example: collection.before.insert(func);
-  ['before', 'after'].forEach(function (timing) {
+  TIMING_TYPES.forEach(function (timing) {
     Object.entries(wrappers).forEach(function ([method, wrapper]) {
       if (method === 'upsert' && timing === 'after') return
 
@@ -102,7 +121,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
       Meteor.isClient || method === 'upsert' ? self : self._collection
 
     // Store a reference to the original mutator method
-    // const _super = collection[method]
+    // const originalMethod = collection[method]
 
     Meteor._ensure(self, 'direct', method)
     self.direct[method] = function (...args) {
@@ -122,16 +141,16 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
       }
     }
 
-    function getWrappedMethod (_super) {
+    function getWrappedMethod (originalMethod) {
       return function wrappedMethod (...args) {
-        // TODO(v2): not quite sure why _super in the first updateAsync call points to LocalCollection's wrapped async method which
+        // TODO(v2): not quite sure why originalMethod in the first updateAsync call points to LocalCollection's wrapped async method which
         // will then again call this wrapped method
         if (
           (method === 'update' && this.update.isCalledFromAsync) ||
           (method === 'remove' && this.remove.isCalledFromAsync) ||
           CollectionHooks.directEnv.get() === true
         ) {
-          return _super.apply(collection, args)
+          return originalMethod.apply(collection, args)
         }
 
         // NOTE: should we decide to force `update` with `{upsert:true}` to use
@@ -147,7 +166,7 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
         return wrapper.call(
           this,
           CollectionHooks.getUserId(),
-          _super,
+          originalMethod,
           self,
           method === 'upsert'
             ? {
@@ -173,18 +192,18 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
 
     // TODO(v3): it appears this is necessary
     // In Meteor 2 *Async methods call the non-async methods
-    if (['insert', 'update', 'upsert', 'remove', 'findOne'].includes(method)) {
-      const _superAsync = collection[asyncMethod]
-      collection[asyncMethod] = getWrappedMethod(_superAsync)
+    if (ASYNC_METHODS.includes(method)) {
+      const originalAsyncMethod = collection[asyncMethod]
+      collection[asyncMethod] = getWrappedMethod(originalAsyncMethod)
     } else if (method === 'find') {
       // find is returning a cursor and is a sync method
-      const _superMethod = collection[method]
-      collection[method] = getWrappedMethod(_superMethod)
+      const originalMethod = collection[method]
+      collection[method] = getWrappedMethod(originalMethod)
     }
 
     // Don't do this for v3 since we need to keep client methods sync.
     // With v3, it wraps the sync method with async resulting in errors.
-    // collection[method] = getWrappedMethod(_super)
+    // collection[method] = getWrappedMethod(originalMethod)
   })
 }
 
@@ -277,21 +296,7 @@ CollectionHooks.getFields = function getFields (mutator) {
   // compute modified fields
   const fields = []
   // ====ADDED START=======================
-  const operators = [
-    '$addToSet',
-    '$bit',
-    '$currentDate',
-    '$inc',
-    '$max',
-    '$min',
-    '$pop',
-    '$pull',
-    '$pullAll',
-    '$push',
-    '$rename',
-    '$set',
-    '$unset'
-  ]
+  const operators = MONGODB_OPERATORS
   // ====ADDED END=========================
 
   Object.entries(mutator).forEach(function ([op, params]) {

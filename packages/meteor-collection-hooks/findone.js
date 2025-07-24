@@ -1,11 +1,10 @@
 import { CollectionHooks } from './collection-hooks'
 
-CollectionHooks.defineWrapper('findOne', async function (userId, _super, instance, hooks, getTransform, args, suppressHooks) {
-  const ctx = { context: this, _super, args }
+CollectionHooks.defineWrapper('findOne', async function (userId, originalMethod, instance, hooks, getTransform, args, suppressHooks) {
+  const ctx = { context: this, originalMethod, args }
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
   let abort
-  
   // before
   if (!suppressHooks) {
     for (const o of hooks.before) {
@@ -27,7 +26,7 @@ CollectionHooks.defineWrapper('findOne', async function (userId, _super, instanc
     }
   }
 
-  const ret = await _super.call(this, selector, options)
+  const ret = await originalMethod.call(this, selector, options)
   await after(ret)
   return ret
 })
