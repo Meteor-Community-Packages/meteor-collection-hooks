@@ -42,14 +42,17 @@ if (Meteor.isClient) {
       Meteor.user = () => ({ _id: 'find-client-side-user-id', username: 'test-user' })
     })
 
-    it('userId available to before find hook', function () {
-      collection.find({}, { test: 1 })
+    it('userId available to before find hook', async function () {
+      // In Meteor 3, before.find hooks fire immediately when cursor is created
+      // but after.find hooks only fire on async cursor methods
+      await collection.find({}, { test: 1 }).fetchAsync()
       expect(beforeFindUserId).not.toBe(null)
       cleanup()
     })
 
-    it('userId available to after find hook', function () {
-      collection.find({}, { test: 1 })
+    it('userId available to after find hook', async function () {
+      // In Meteor 3, after.find hooks only fire on async cursor methods like fetchAsync()
+      await collection.find({}, { test: 1 }).fetchAsync()
       expect(afterFindUserId).not.toBe(null)
       cleanup()
     })
