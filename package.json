@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "meteor test-packages ./",
-    "tools:lint": "./node_modules/eslint/bin/eslint.js packages tests-app",
-    "tools:lintfix": "./node_modules/eslint/bin/eslint.js packages tests-app --fix",
+    "tools:lint": "./node_modules/eslint/bin/eslint.js packages tests-app --ignore-pattern='tests-app/.meteor/**'",
+    "tools:lintfix": "./node_modules/eslint/bin/eslint.js packages tests-app --ignore-pattern='tests-app/.meteor/**' --fix",
     "publish": "meteor npm i && npm prune --omit=dev && meteor publish && meteor npm i",
     "test": "meteor test-packages ./"
   },

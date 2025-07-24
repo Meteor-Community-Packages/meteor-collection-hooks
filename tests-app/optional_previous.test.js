@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import expect from 'expect'
+import { CollectionHooks } from 'meteor/matb33:collection-hooks'
 
 describe('optional-previous', function () {
   describe('update hook should not prefetch previous, via hook option param', function () {
