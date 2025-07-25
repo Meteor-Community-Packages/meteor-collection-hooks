@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import expect from 'expect'
