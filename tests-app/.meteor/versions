@@ -45,7 +45,7 @@ lai:collection-extensions@1.0.0
 launch-screen@2.0.1
 localstorage@1.2.1
 logging@1.3.6
-matb33:collection-hooks@2.1.0-beta.3
+matb33:collection-hooks@2.1.0-beta.4
 meteor@2.1.1
 meteor-base@1.5.2
 meteortesting:browser-tests@1.8.0
