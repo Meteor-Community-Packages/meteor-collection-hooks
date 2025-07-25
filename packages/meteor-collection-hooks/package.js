@@ -17,7 +17,7 @@ Package.onUse(function (api) {
     'ejson',
     'minimongo',
     'ecmascript',
-    'lai:collection-extensions'
+    'lai:collection-extensions@1.0.0'
   ])
 
   api.use('zodern:types@1.0.13', 'server')
