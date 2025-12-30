@@ -1,4 +1,5 @@
-## v2.1.0-beta.3
+
+## v2.1.0-beta.5
 
 * Replace tinytest with Mocha
 * Code architecture improvements and refactoring for better maintainability
@@ -6,6 +7,8 @@
 * Improved options merging logic with clear precedence documentation
 * Enhanced hook controller implementation using factory functions
 * Maintained backward compatibility with Meteor 2.16+
+* Fixed Tracker reactivity breaking when `before.findOne` hook is registered (GitHub Issue #323)
+  - Uses `Tracker.withComputation` to preserve reactive context across async boundaries
 
 ## v2.0.0
 
