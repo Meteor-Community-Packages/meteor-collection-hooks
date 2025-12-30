@@ -1,7 +1,6 @@
 import { EJSON } from 'meteor/ejson'
 import { CollectionHooks } from './collection-hooks'
-
-const isEmpty = (a) => !Array.isArray(a) || !a.length
+import { isEmpty } from './utils'
 
 CollectionHooks.defineWrapper(
   'update',
@@ -20,7 +19,7 @@ CollectionHooks.defineWrapper(
       callback = options
       options = {}
     }
-    const async = typeof callback === 'function'
+    const hasCallback = typeof callback === 'function'
     let docs
     let docIds
     let fields
@@ -120,7 +119,7 @@ CollectionHooks.defineWrapper(
 
         if (abort) return 0
       } catch (e) {
-        if (async) return callback.call(this, e)
+        if (hasCallback) return callback.call(this, e)
         throw e
       }
     }
@@ -183,7 +182,7 @@ CollectionHooks.defineWrapper(
       }
     }
 
-    if (async) {
+    if (hasCallback) {
       const wrappedCallback = async function (err, affected, ...args) {
         await after(affected, err)
         return callback.call(this, err, affected, ...args)

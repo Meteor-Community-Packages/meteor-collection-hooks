@@ -1,7 +1,6 @@
 import { EJSON } from 'meteor/ejson'
-import { CollectionHooks } from './collection-hooks'
-
-const isEmpty = (a) => !Array.isArray(a) || !a.length
+import { CollectionHooks } from './collection-hooks.js'
+import { isEmpty } from './utils.js'
 
 CollectionHooks.defineWrapper(
   'remove',
@@ -16,7 +15,7 @@ CollectionHooks.defineWrapper(
   ) {
     const ctx = { context: this, originalMethod, args }
     const [selector, callback] = args
-    const async = typeof callback === 'function'
+    const hasCallback = typeof callback === 'function'
     let docs
     let abort
     const prev = []
@@ -58,7 +57,7 @@ CollectionHooks.defineWrapper(
 
         if (abort) return 0
       } catch (e) {
-        if (async) return callback.call(this, e)
+        if (hasCallback) return callback.call(this, e)
         throw e
       }
     }
@@ -77,7 +76,7 @@ CollectionHooks.defineWrapper(
       }
     }
 
-    if (async) {
+    if (hasCallback) {
       const wrappedCallback = async function (err, ...args) {
         await after(err)
         return callback.call(this, err, ...args)

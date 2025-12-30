@@ -1,7 +1,6 @@
 import { EJSON } from 'meteor/ejson'
 import { CollectionHooks } from './collection-hooks'
-
-const isEmpty = a => !Array.isArray(a) || !a.length
+import { isEmpty } from './utils'
 
 CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, instance, hookGroup, getTransform, args, suppressHooks) {
   args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
@@ -13,7 +12,7 @@ CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, 
     options = {}
   }
 
-  const async = typeof callback === 'function'
+  const hasCallback = typeof callback === 'function'
   let docs
   let docIds
   let abort
@@ -82,7 +81,7 @@ CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, 
     }
   }
 
-  if (async) {
+  if (hasCallback) {
     const wrappedCallback = async function (err, ret) {
       const { insertedId, numberAffected } = (ret ?? {})
       if (err || insertedId) {

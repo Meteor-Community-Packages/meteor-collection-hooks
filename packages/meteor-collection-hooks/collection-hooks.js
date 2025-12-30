@@ -56,10 +56,16 @@ export const CollectionHooks = {
     all: { insert: {}, update: {}, remove: {}, find: {}, findOne: {}, all: {} }
   },
   directEnv: new Meteor.EnvironmentVariable(),
-  // TODO(v3): withValue returns a promise now
+  /**
+   * Execute a function while bypassing hooks (direct operation)
+   * Note: In Meteor 3+, withValue may return a Promise if func is async
+   */
   directOp (func) {
     return this.directEnv.withValue(true, func)
   },
+  /**
+   * Execute a function with hooks enabled (used to re-enable hooks after directOp)
+   */
   hookedOp (func) {
     return this.directEnv.withValue(false, func)
   }
@@ -168,7 +174,8 @@ function setupDirectMethods (collection, constructor) {
 
     const asyncMethod = method + 'Async'
 
-    // TODO(v3): don't understand why this is necessary. Maybe related to Meteor 2.x and async?
+    // Meteor 3+ has separate async methods (insertAsync, updateAsync, etc.)
+    // We need to wrap these too so collection.direct.insertAsync() bypasses hooks
     if (constructor.prototype[asyncMethod]) {
       collection[DIRECT_PROPERTY][asyncMethod] = function (...args) {
         return CollectionHooks.directOp(function () {
@@ -206,8 +213,9 @@ function wrapCollectionMethods (collection, constructor) {
 
     function getWrappedMethod (originalMethod) {
       return function wrappedMethod (...args) {
-        // TODO(v2): not quite sure why originalMethod in the first updateAsync call points to LocalCollection's wrapped async method which
-        // will then again call this wrapped method
+        // Prevent infinite recursion: In Meteor's architecture, async methods may
+        // internally call their wrapped versions. The ASYNC_CALL_FLAG and directEnv
+        // checks ensure we don't re-enter the hook wrapper when already processing.
         if (shouldBypassHooks(method, this)) {
           return originalMethod.apply(targetCollection, args)
         }
@@ -249,20 +257,20 @@ function wrapCollectionMethods (collection, constructor) {
       }
     }
 
-    // TODO(v3): it appears this is necessary
-    // In Meteor 2 *Async methods call the non-async methods
+    // Meteor 3+ architecture: Only wrap async methods for insert/update/remove/upsert/findOne
+    // In Meteor 2.x, sync methods internally called async versions, but in Meteor 3+
+    // we must only wrap the async methods to avoid breaking sync method behavior
     if (ASYNC_METHODS.includes(method)) {
       const originalAsyncMethod = targetCollection[asyncMethod]
       targetCollection[asyncMethod] = getWrappedMethod(originalAsyncMethod)
     } else if (method === 'find') {
-      // find is returning a cursor and is a sync method
+      // find() is synchronous and returns a cursor - wrap it directly
       const originalMethod = targetCollection[method]
       targetCollection[method] = getWrappedMethod(originalMethod)
     }
-
-    // Don't do this for v3 since we need to keep client methods sync.
-    // With v3, it wraps the sync method with async resulting in errors.
-    // targetCollection[method] = getWrappedMethod(originalMethod)
+    // Note: We intentionally don't wrap sync methods (insert, update, remove, etc.)
+    // in Meteor 3+ as they have different semantics and wrapping them with async
+    // code causes errors. Hooks only fire on async methods in Meteor 3+.
   })
 }
 

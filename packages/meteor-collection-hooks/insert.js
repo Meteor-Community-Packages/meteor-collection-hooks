@@ -10,7 +10,7 @@ CollectionHooks.defineWrapper('insert', async function (userId, originalMethod, 
     callback = args[args.length - 1]
   }
 
-  const async = typeof callback === 'function'
+  const hasCallback = typeof callback === 'function'
   let abort
   let ret
 
@@ -27,20 +27,23 @@ CollectionHooks.defineWrapper('insert', async function (userId, originalMethod, 
 
       if (abort) return
     } catch (e) {
-      if (async) return callback.call(this, e)
+      if (hasCallback) return callback.call(this, e)
       throw e
     }
   }
 
   const after = async (id, err) => {
     if (id) {
-      // In some cases (namely Meteor.users on Meteor 1.4+), the _id property
-      // is a raw mongo _id object. We need to extract the _id from this object
+      // MongoDB driver compatibility: Handle different return formats for inserted IDs
+      // - MongoDB 3.x driver returns { ops: [{ _id: ... }] } from insertOne
+      // - MongoDB 4.x+ driver returns { insertedId: ... }
+      // - Mongo.ObjectID has a _str property for string representation
       if (typeof id === 'object' && id.ops) {
-        // If _str then collection is using Mongo.ObjectID as ids
         if (doc._id._str) {
+          // Collection uses Mongo.ObjectID - reconstruct the ObjectID instance
           id = new Mongo.ObjectID(doc._id._str.toString())
         } else {
+          // Extract _id from the ops array (MongoDB 3.x driver format)
           id = id.ops && id.ops[0] && id.ops[0]._id
         }
       }
@@ -57,7 +60,7 @@ CollectionHooks.defineWrapper('insert', async function (userId, originalMethod, 
     return id
   }
 
-  if (async) {
+  if (hasCallback) {
     const wrappedCallback = async function (err, obj, ...args) {
       await after((obj && obj[0] && obj[0]._id) || obj, err)
       return callback.call(this, err, obj, ...args)

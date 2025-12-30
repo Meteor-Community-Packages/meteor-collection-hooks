@@ -1,5 +1,10 @@
-import { Meteor } from 'meteor/meteor'
+/**
+ * Shared utility functions for collection-hooks
+ */
 
-const METEOR_VERSION = Meteor.release.split('@')[1]
-
-export const IS_NO_FIBER_METEOR = METEOR_VERSION[0] > '2'
+/**
+ * Checks if an array is empty or not an array
+ * @param {any} a - The value to check
+ * @returns {boolean} True if not an array or empty array
+ */
+export const isEmpty = (a) => !Array.isArray(a) || !a.length
