@@ -28,10 +28,13 @@ CollectionHooks.getUserId = function getUserId () {
 
 const _publish = Meteor.publish
 Meteor.publish = function (name, handler, options) {
-  return publishUserId.withValue(this && this.userId, () => _publish.call(this, name, function (...args) {
-    // This function is called repeatedly in publications
-    return handler.apply(this, args)
-  }, options))
+  return _publish.call(this, name, function (...args) {
+    // 'this' here is the subscription context, which has userId
+    // Use withValue to make userId available to hooks within this publish handler
+    return publishUserId.withValue(this.userId, () => {
+      return handler.apply(this, args)
+    })
+  }, options)
 }
 
 // Make the above available for packages with hooks that want to determine

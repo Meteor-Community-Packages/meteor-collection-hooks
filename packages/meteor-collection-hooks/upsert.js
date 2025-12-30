@@ -70,7 +70,9 @@ CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, 
 
   const afterInsert = async (_id, err) => {
     if (!suppressHooks && !isEmpty(hookGroup.insert.after)) {
-      const docs = await CollectionHooks.getDocs.call(this, instance, { _id }, selector, {}).fetchAsync() // 3rd argument passes empty object which causes magic logic to imply limit:1
+      // getDocs signature: (collection, selector, options, fetchFields)
+      // Pass empty options {} to trigger limit:1 behavior (see getDocs implementation)
+      const docs = await CollectionHooks.getDocs.call(this, instance, { _id }, {}, {}).fetchAsync()
       const doc = docs[0]
       const lctx = { transform: getTransform(doc), _id, err, ...ctx }
 

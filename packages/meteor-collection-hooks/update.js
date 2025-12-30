@@ -141,11 +141,12 @@ CollectionHooks.defineWrapper(
             'after',
             'update'
           ).fetchFields
-          if (hookFetchFields || globalFetchFields) {
+          if (hookFetchFields.length || globalFetchFields) {
+            // hookFetchFields already contains the fetchFields objects from each hook
             Object.assign(
               fetchFields,
               globalFetchFields || {},
-              ...hookFetchFields.map((a) => a.fetchFields)
+              ...hookFetchFields
             )
           }
 
