@@ -46,7 +46,8 @@ declare module 'meteor/mongo' {
         }
         type THookBeforeInsert<T,O = void> = (this: THookThis<T, Collection<T>["insert"]>, userId: string|undefined, doc: T) => O;
         type THookAfterInsert<T,O = void> = (this: THookThisWithId<T, Collection<T>["insert"]>, userId: string|undefined, doc: T) => O;
-        type THookBeforeUpdate<T,O = void> = (this: THookThis<T, Collection<T>["update"]> & { previous: T, transform: (doc: T) => T }, userId: string|undefined, doc: T, fieldNames: string[], modifier: any, options: any) => O
+        // Note: before.update does NOT have access to 'previous' - only after.update does
+        type THookBeforeUpdate<T,O = void> = (this: THookThis<T, Collection<T>["update"]> & { transform: (doc: T) => T }, userId: string|undefined, doc: T, fieldNames: string[], modifier: any, options: any) => O
         type THookAfterUpdate<T,O = void> = (this: THookThisWithTransformAndPrevious<T, Collection<T>["update"]> & { previous: T, transform: (doc: T) => T }, userId: string|undefined, doc: T, fieldNames: string[], modifier: any, options: any) => O
         type THookRemove<T,O = void> = (this: THookThisWithTransform<T, Collection<T>["remove"]>, userId: string|undefined, doc: T) => O
         type THookUpsert<T,O = void> = (this: THookThis<T, Collection<T>["upsert"]>, userId: string|undefined, selector: any, modifier: any, options: any) => O
@@ -55,7 +56,11 @@ declare module 'meteor/mongo' {
         type THookAfterFind<T> = (this: THookThis<T, Collection<T>["find"]>, userId: string|undefined, selector: any, options: any, cursor: Cursor<T>) => void
         type THookBeforeFindOne<T,O = void> = (this: THookThis<T, Collection<T>["findOne"]>, userId: string|undefined, selector: any, options: any) => O
         type THookAfterFindOne<T> = (this: THookThis<T, Collection<T>["findOne"]>, userId: string|undefined, selector: any, options: any, doc: T) => void
-        type THandler<F> = {remove(): void, replace(callback: F, options: any): void}
+        // Handler returned when registering a hook - allows removing or replacing the hook
+        type THandler<F> = {
+            remove(): boolean,
+            replace(callback: F, options?: any): THandler<F>  // Returns this for chaining
+        }
 
         interface Collection<T, U = T> {
             hookOptions: CollectionHooks["GlobalOptions"]
