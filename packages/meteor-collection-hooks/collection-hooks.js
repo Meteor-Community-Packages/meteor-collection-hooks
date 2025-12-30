@@ -274,6 +274,13 @@ function wrapCollectionMethods (collection, constructor) {
   })
 }
 
+/**
+ * Extends a collection instance with hook functionality
+ * This is called automatically for each new Mongo.Collection via lai:collection-extensions
+ *
+ * @param {Mongo.Collection} self - The collection instance to extend
+ * @param {Function} constructor - The collection constructor (usually Mongo.Collection)
+ */
 CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
   self,
   constructor
@@ -291,12 +298,33 @@ CollectionHooks.extendCollectionInstance = function extendCollectionInstance (
   wrapCollectionMethods(self, constructor)
 }
 
+/**
+ * Registers a wrapper function for a collection method
+ * Wrappers intercept collection operations and execute before/after hooks
+ *
+ * @param {string} method - The method name ('insert', 'update', 'remove', etc.)
+ * @param {Function} wrapper - The wrapper function that handles hook execution
+ */
 CollectionHooks.defineWrapper = (method, wrapper) => {
   wrappers[method] = wrapper
 }
 
+/**
+ * Gets the wrapper function for a collection method
+ *
+ * @param {string} method - The method name
+ * @returns {Function} The wrapper function
+ */
 CollectionHooks.getWrapper = (method) => wrappers[method]
 
+/**
+ * Initializes hook options by merging with defaults
+ *
+ * @param {Object} options - User provided options
+ * @param {string} timing - The timing type ('before' or 'after')
+ * @param {string} method - The method name
+ * @returns {Object} Merged options object
+ */
 CollectionHooks.initOptions = (options, timing, method) =>
   CollectionHooks.extendOptions(
     CollectionHooks.defaults,
@@ -329,6 +357,18 @@ CollectionHooks.extendOptions = (source, options, timing, method) => ({
   ...source[timing][method] // 1. Method+timing specific (highest priority)
 })
 
+/**
+ * Fetches documents matching the selector for use in hooks
+ * Used internally by update/remove/upsert hooks to get affected documents
+ *
+ * @param {Mongo.Collection} collection - The collection to query
+ * @param {Object|string} selector - The MongoDB selector
+ * @param {Object} options - Query options (multi, etc.)
+ * @param {Object} fetchFields - Fields to fetch (projection)
+ * @param {Object} config - Configuration options
+ * @param {boolean} config.useDirect - If true, uses collection.direct to bypass hooks
+ * @returns {Mongo.Cursor} A cursor for the matching documents
+ */
 CollectionHooks.getDocs = function getDocs (
   collection,
   selector,
@@ -374,7 +414,13 @@ CollectionHooks.getDocs = function getDocs (
   )
 }
 
-// This function normalizes the selector (converting it to an Object)
+/**
+ * Normalizes a selector to always be an object
+ * Converts string IDs and Mongo.ObjectID to { _id: value } format
+ *
+ * @param {Object|string|Mongo.ObjectID} selector - The selector to normalize
+ * @returns {Object} The normalized selector object
+ */
 CollectionHooks.normalizeSelector = function (selector) {
   if (
     typeof selector === 'string' ||
@@ -388,10 +434,15 @@ CollectionHooks.normalizeSelector = function (selector) {
   }
 }
 
-// This function contains a snippet of code pulled and modified from:
-// ~/.meteor/packages/mongo-livedata/collection.js
-// It's contained in these utility functions to make updates easier for us in
-// case this code changes.
+/**
+ * Extracts the list of fields being modified by an update mutator
+ * Handles both MongoDB operators ($set, $inc, etc.) and replacement documents
+ *
+ * Based on code from meteor/mongo-livedata/collection.js
+ *
+ * @param {Object} mutator - The update mutator object
+ * @returns {string[]} Array of top-level field names being modified
+ */
 CollectionHooks.getFields = function getFields (mutator) {
   // compute modified fields
   const fields = []
@@ -425,6 +476,13 @@ CollectionHooks.getFields = function getFields (mutator) {
   return fields
 }
 
+/**
+ * Reassigns the prototype of a collection instance
+ * Used for custom collection classes that need hook functionality
+ *
+ * @param {Object} instance - The collection instance
+ * @param {Function} [constr=Mongo.Collection] - The constructor whose prototype to use
+ */
 CollectionHooks.reassignPrototype = function reassignPrototype (
   instance,
   constr
@@ -436,8 +494,7 @@ CollectionHooks.reassignPrototype = function reassignPrototype (
   // Note: Assigning a prototype dynamically has performance implications
   if (hasSetPrototypeOf) {
     Object.setPrototypeOf(instance, constr.prototype)
-  // eslint-disable-next-line no-proto
-  } else if (instance.__proto__) {
+  } else if (instance.__proto__) { // eslint-disable-line no-proto
     instance.__proto__ = constr.prototype // eslint-disable-line no-proto
   }
 }
