@@ -2,6 +2,8 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Test suite
+permissions:
+  contents: read
 
 on: [push, pull_request]
 
