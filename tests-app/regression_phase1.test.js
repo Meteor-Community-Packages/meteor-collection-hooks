@@ -161,6 +161,97 @@ describe('Phase 1 Bug Fix Regressions', function () {
  *
  * Note: This test runs only on server as it requires Meteor.publish
  */
+/**
+ * Bug #323: findOne hooks breaking Tracker reactivity
+ * Fix: Use Tracker.withComputation to preserve reactive context across await boundaries
+ *
+ * Note: This test runs only on client as it requires Tracker
+ */
+if (Meteor.isClient) {
+  const { Tracker } = require('meteor/tracker')
+
+  describe('findOne Tracker reactivity (Issue #323)', function () {
+    it('should preserve Tracker reactivity when before.findOne hook is registered', function (done) {
+      const collection = new Mongo.Collection(null)
+      let autorunCount = 0
+      let lastDoc = null
+
+      // Register a before.findOne hook
+      const hookHandle = collection.before.findOne(function (userId, selector, options) {
+        // Simple hook that doesn't modify anything
+      })
+
+      // Insert initial document
+      const docId = collection.insert({ name: 'initial', value: 1 })
+
+      // Set up autorun to track findOne reactivity
+      const computation = Tracker.autorun(async (comp) => {
+        autorunCount++
+        // Use Tracker.withComputation to ensure reactivity is preserved
+        lastDoc = await Tracker.withComputation(comp, () =>
+          collection.findOneAsync(docId)
+        )
+      })
+
+      // Wait a bit for initial run, then update the document
+      Meteor.setTimeout(async () => {
+        expect(autorunCount).toBeGreaterThanOrEqual(1)
+        expect(lastDoc).not.toBe(null)
+        expect(lastDoc.name).toBe('initial')
+
+        // Update the document - this should trigger autorun to re-run
+        await collection.updateAsync(docId, { $set: { name: 'updated', value: 2 } })
+
+        // Wait for reactive update
+        Meteor.setTimeout(() => {
+          computation.stop()
+          hookHandle.remove()
+
+          // The autorun should have run at least twice (initial + update)
+          expect(autorunCount).toBeGreaterThanOrEqual(2)
+          expect(lastDoc.name).toBe('updated')
+          done()
+        }, 100)
+      }, 100)
+    })
+
+    it('should work with after.findOne hooks without breaking reactivity', function (done) {
+      const collection = new Mongo.Collection(null)
+      let hookCalledCount = 0
+      let autorunCount = 0
+
+      // Register an after.findOne hook
+      const hookHandle = collection.after.findOne(function (userId, selector, options, doc) {
+        hookCalledCount++
+      })
+
+      // Insert document
+      const docId = collection.insert({ test: true })
+
+      const computation = Tracker.autorun(async (comp) => {
+        autorunCount++
+        await Tracker.withComputation(comp, () =>
+          collection.findOneAsync(docId)
+        )
+      })
+
+      Meteor.setTimeout(async () => {
+        await collection.updateAsync(docId, { $set: { test: false } })
+
+        Meteor.setTimeout(() => {
+          computation.stop()
+          hookHandle.remove()
+
+          // Hook should have been called for each findOne
+          expect(hookCalledCount).toBeGreaterThanOrEqual(1)
+          expect(autorunCount).toBeGreaterThanOrEqual(2)
+          done()
+        }, 100)
+      }, 100)
+    })
+  })
+}
+
 if (Meteor.isServer) {
   describe('server.js publish userId timing', function () {
     const { CollectionHooks } = require('meteor/matb33:collection-hooks')
