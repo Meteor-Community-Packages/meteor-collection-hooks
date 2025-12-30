@@ -37,9 +37,9 @@ CollectionHooks.defineWrapper(
         }
 
         // before
-        for (const o of hooks.before) {
+        for (const hookEntry of hooks.before) {
           for (const doc of docs) {
-            const r = await o.hook.call(
+            const r = await hookEntry.fn.call(
               { transform: getTransform(doc), ...ctx },
               userId,
               doc
@@ -64,9 +64,9 @@ CollectionHooks.defineWrapper(
 
     async function after (err) {
       if (!suppressHooks) {
-        for (const o of hooks.after) {
+        for (const hookEntry of hooks.after) {
           for (const doc of prev) {
-            await o.hook.call(
+            await hookEntry.fn.call(
               { transform: getTransform(doc), err, ...ctx },
               userId,
               doc

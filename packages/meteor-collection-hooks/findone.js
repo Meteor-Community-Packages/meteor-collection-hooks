@@ -7,8 +7,8 @@ CollectionHooks.defineWrapper('findOne', async function (userId, originalMethod,
   let abort
   // before
   if (!suppressHooks) {
-    for (const o of hooks.before) {
-      const r = await o.hook.call(ctx, userId, selector, options)
+    for (const hookEntry of hooks.before) {
+      const r = await hookEntry.fn.call(ctx, userId, selector, options)
       if (r === false) {
         abort = true
         break
@@ -20,8 +20,8 @@ CollectionHooks.defineWrapper('findOne', async function (userId, originalMethod,
 
   async function after (doc) {
     if (!suppressHooks) {
-      for (const o of hooks.after) {
-        await o.hook.call(ctx, userId, selector, options, doc)
+      for (const hookEntry of hooks.after) {
+        await hookEntry.fn.call(ctx, userId, selector, options, doc)
       }
     }
   }

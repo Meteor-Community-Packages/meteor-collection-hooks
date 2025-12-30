@@ -10,22 +10,35 @@ const ASYNC_METHODS = ['countAsync', 'fetchAsync', 'forEachAsync', 'mapAsync']
 const isAsyncFunction = (fn) => fn?.constructor?.name === 'AsyncFunction'
 
 /**
- * With Meteor v3 this behaves differently than with Meteor v2.
- * We cannot use async hooks on find() directly because in Meteor it is a sync method that returns cursor instance.
+ * Find hook wrapper for collection.find() operations.
  *
- * That's why we need to wrap all async methods of cursor instance. We're doing this by creating another cursor
- * within these wrapped methods with selector and options updated by before hooks.
+ * IMPORTANT: Async Limitation for before.find hooks
+ * -------------------------------------------------
+ * before.find hooks CANNOT be async functions. This is a fundamental limitation:
+ *
+ * 1. find() must return a cursor synchronously - this is how MongoDB cursors work
+ * 2. If before.find were async, we'd have to await it before returning the cursor
+ * 3. This would make find() return a Promise instead of a cursor, breaking all code
+ *    that expects: collection.find().fetch(), collection.find().forEach(), etc.
+ *
+ * after.find hooks CAN be async because they fire on cursor async methods
+ * (fetchAsync, countAsync, etc.) which already return Promises.
+ *
+ * With Meteor v3 this behaves differently than with Meteor v2.
+ * We cannot use async hooks on find() directly because in Meteor it is a sync method
+ * that returns cursor instance. That's why we wrap async cursor methods and fire
+ * after hooks when those methods are called.
  */
 CollectionHooks.defineWrapper('find', function (userId, originalMethod, instance, hooks, getTransform, args, suppressHooks) {
   const selector = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
   const options = instance._getFindOptions(args)
 
   // Apply synchronous before hooks (async before.find hooks are not allowed)
-  hooks.before.forEach(hook => {
-    if (isAsyncFunction(hook.hook)) {
+  hooks.before.forEach(hookEntry => {
+    if (isAsyncFunction(hookEntry.fn)) {
       throw new Error('Cannot use async function as before.find hook')
     }
-    hook.hook.call(this, userId, selector, options)
+    hookEntry.fn.call(this, userId, selector, options)
   })
 
   const cursor = originalMethod.call(this, selector, options)
@@ -39,11 +52,11 @@ CollectionHooks.defineWrapper('find', function (userId, originalMethod, instance
         const result = await originalMethod.apply(this, args)
 
         // Apply after hooks (supports both sync and async)
-        for (const hook of hooks.after) {
-          if (isAsyncFunction(hook.hook)) {
-            await hook.hook.call(this, userId, selector, options, this)
+        for (const hookEntry of hooks.after) {
+          if (isAsyncFunction(hookEntry.fn)) {
+            await hookEntry.fn.call(this, userId, selector, options, this)
           } else {
-            hook.hook.call(this, userId, selector, options, this)
+            hookEntry.fn.call(this, userId, selector, options, this)
           }
         }
 

@@ -90,7 +90,7 @@ function createHookController (hooksArray, initialTarget, timing, method) {
       }
 
       const newTarget = {
-        hook,
+        fn: hook,
         options: CollectionHooks.initOptions(options, timing, method)
       }
 
@@ -134,7 +134,7 @@ function setupHookRegistrationMethods (collection) {
       collection[HOOKS_PROPERTY][method][timing] = []
       collection[timing][method] = function (hook, options) {
         const target = {
-          hook,
+          fn: hook,
           options: CollectionHooks.initOptions(options, timing, method)
         }
 

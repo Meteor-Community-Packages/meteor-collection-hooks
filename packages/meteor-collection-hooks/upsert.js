@@ -27,7 +27,7 @@ CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, 
 
     // copy originals for convenience for the 'after' pointcut
     if (!isEmpty(hookGroup.update.after)) {
-      if (hookGroup.update.after.some(o => o.options.fetchPrevious !== false) &&
+      if (hookGroup.update.after.some(hookEntry => hookEntry.options.fetchPrevious !== false) &&
         CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
         prev.mutator = EJSON.clone(mutator)
         prev.options = EJSON.clone(options)
@@ -40,8 +40,8 @@ CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, 
     }
 
     // before
-    for (const fn of hookGroup.upsert.before) {
-      const r = await fn.hook.call(ctx, userId, selector, mutator, options)
+    for (const hookEntry of hookGroup.upsert.before) {
+      const r = await hookEntry.fn.call(ctx, userId, selector, mutator, options)
       if (r === false) abort = true
     }
 
@@ -53,9 +53,9 @@ CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, 
       const fields = CollectionHooks.getFields(mutator)
       const docs = await CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options).fetchAsync()
 
-      for (const o of hookGroup.update.after) {
+      for (const hookEntry of hookGroup.update.after) {
         for (const doc of docs) {
-          await o.hook.call({
+          await hookEntry.fn.call({
             transform: getTransform(doc),
             previous: prev.docs && prev.docs[doc._id],
             affected,
@@ -75,8 +75,8 @@ CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, 
       const doc = docs[0]
       const lctx = { transform: getTransform(doc), _id, err, ...ctx }
 
-      for (const o of hookGroup.insert.after) {
-        await o.hook.call(lctx, userId, doc)
+      for (const hookEntry of hookGroup.insert.after) {
+        await hookEntry.fn.call(lctx, userId, doc)
       }
     }
   }

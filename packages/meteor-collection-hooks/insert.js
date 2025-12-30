@@ -17,8 +17,8 @@ CollectionHooks.defineWrapper('insert', async function (userId, originalMethod, 
   // before
   if (!suppressHooks) {
     try {
-      for (const o of hooks.before) {
-        const r = await o.hook.call({ transform: getTransform(doc), ...ctx }, userId, doc)
+      for (const hookEntry of hooks.before) {
+        const r = await hookEntry.fn.call({ transform: getTransform(doc), ...ctx }, userId, doc)
         if (r === false) {
           abort = true
           break
@@ -53,8 +53,8 @@ CollectionHooks.defineWrapper('insert', async function (userId, originalMethod, 
     if (!suppressHooks) {
       const lctx = { transform: getTransform(doc), _id: id, err, ...ctx }
 
-      for (const o of hooks.after) {
-        await o.hook.call(lctx, userId, doc)
+      for (const hookEntry of hooks.after) {
+        await hookEntry.fn.call(lctx, userId, doc)
       }
     }
     return id

@@ -34,7 +34,7 @@ CollectionHooks.defineWrapper(
         if (shouldFetchForAfter) {
           shouldFetchForPrevious =
             Object.values(hooks.after).some(
-              (o) => o.options.fetchPrevious !== false
+              (hookEntry) => hookEntry.options.fetchPrevious !== false
             ) &&
             CollectionHooks.extendOptions(
               instance.hookOptions,
@@ -48,12 +48,12 @@ CollectionHooks.defineWrapper(
         if (shouldFetchForPrevious || shouldFetchForBefore) {
           const afterHookFetchFields = shouldFetchForPrevious
             ? Object.values(hooks.after).map(
-              (o) => (o.options || {}).fetchFields || {}
+              (hookEntry) => (hookEntry.options || {}).fetchFields || {}
             )
             : []
           const beforeHookFetchFields = shouldFetchForBefore
             ? Object.values(hooks.before).map(
-              (o) => (o.options || {}).fetchFields || {}
+              (hookEntry) => (hookEntry.options || {}).fetchFields || {}
             )
             : []
           const afterGlobal = shouldFetchForPrevious
@@ -103,9 +103,9 @@ CollectionHooks.defineWrapper(
         }
 
         // before
-        for (const o of hooks.before) {
+        for (const hookEntry of hooks.before) {
           for (const doc of docs) {
-            const r = await o.hook.call(
+            const r = await hookEntry.fn.call(
               { transform: getTransform(doc), ...ctx },
               userId,
               doc,
@@ -132,7 +132,7 @@ CollectionHooks.defineWrapper(
           fields = CollectionHooks.getFields(args[1])
           const fetchFields = {}
           const hookFetchFields = Object.values(hooks.after).map(
-            (o) => (o.options || {}).fetchFields || {}
+            (hookEntry) => (hookEntry.options || {}).fetchFields || {}
           )
           const globalFetchFields = CollectionHooks.extendOptions(
             instance.hookOptions,
@@ -161,9 +161,9 @@ CollectionHooks.defineWrapper(
           docs = await cursor.fetch()
         }
 
-        for (const o of hooks.after) {
+        for (const hookEntry of hooks.after) {
           for (const doc of docs) {
-            await o.hook.call(
+            await hookEntry.fn.call(
               {
                 transform: getTransform(doc),
                 previous: prev.docs && prev.docs[doc._id],
