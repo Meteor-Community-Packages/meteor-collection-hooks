@@ -1,5 +1,5 @@
 
-## v2.1.0-beta.5
+## v2.1.0
 
 * Replace tinytest with Mocha
 * Code architecture improvements and refactoring for better maintainability
