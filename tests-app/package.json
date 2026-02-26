@@ -12,7 +12,7 @@
         "meteor-node-stubs": "^1.2.26"
     },
     "devDependencies": {
-      "puppeteer": "^19.11.1",
+      "puppeteer": "^24.37.5",
       "expect": "^26.6.2"
     }
   }
