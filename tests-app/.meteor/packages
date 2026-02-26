@@ -1,0 +1,24 @@
+# Testing packages
+meteortesting:mocha
+# Core packages
+meteor-base@1.5.2
+mobile-experience@1.1.2
+mongo@2.0.0
+blaze-html-templates
+reactive-var@1.0.13
+tracker@1.3.4
+standard-minifier-css@1.9.3
+standard-minifier-js@3.0.0
+es5-shim@4.8.0
+ecmascript@0.16.9
+typescript@5.4.3
+shell-server@0.5.1
+hot-code-push@1.0.4
+dev-error-overlay@0.1.2
+accounts-password
+# Package under test
+matb33:collection-hooks
+# For insecure operations in tests
+insecure@1.0.7
+autopublish@1.0.7
+jquery

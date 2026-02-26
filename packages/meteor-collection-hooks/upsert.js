@@ -1,0 +1,112 @@
+import { EJSON } from 'meteor/ejson'
+import { CollectionHooks } from './collection-hooks'
+import { isEmpty } from './utils'
+
+CollectionHooks.defineWrapper('upsert', async function (userId, originalMethod, instance, hookGroup, getTransform, args, suppressHooks) {
+  args[0] = CollectionHooks.normalizeSelector(instance._getFindSelector(args))
+
+  const ctx = { context: this, originalMethod, args }
+  let [selector, mutator, options, callback] = args
+  if (typeof options === 'function') {
+    callback = options
+    options = {}
+  }
+
+  const hasCallback = typeof callback === 'function'
+  let docs
+  let docIds
+  let abort
+  const prev = {}
+
+  if (!suppressHooks) {
+    if (!isEmpty(hookGroup.upsert.before) || !isEmpty(hookGroup.update.after)) {
+      const cursor = await CollectionHooks.getDocs.call(this, instance, selector, options)
+      docs = await cursor.fetch()
+      docIds = docs.map(doc => doc._id)
+    }
+
+    // copy originals for convenience for the 'after' pointcut
+    if (!isEmpty(hookGroup.update.after)) {
+      if (hookGroup.update.after.some(hookEntry => hookEntry.options.fetchPrevious !== false) &&
+        CollectionHooks.extendOptions(instance.hookOptions, {}, 'after', 'update').fetchPrevious !== false) {
+        prev.mutator = EJSON.clone(mutator)
+        prev.options = EJSON.clone(options)
+
+        prev.docs = {}
+        docs.forEach((doc) => {
+          prev.docs[doc._id] = EJSON.clone(doc)
+        })
+      }
+    }
+
+    // before
+    for (const hookEntry of hookGroup.upsert.before) {
+      const r = await hookEntry.fn.call(ctx, userId, selector, mutator, options)
+      if (r === false) abort = true
+    }
+
+    if (abort) return { numberAffected: 0 }
+  }
+
+  const afterUpdate = async (affected, err) => {
+    if (!suppressHooks && !isEmpty(hookGroup.update.after)) {
+      const fields = CollectionHooks.getFields(mutator)
+      const docs = await CollectionHooks.getDocs.call(this, instance, { _id: { $in: docIds } }, options).fetchAsync()
+
+      for (const hookEntry of hookGroup.update.after) {
+        for (const doc of docs) {
+          await hookEntry.fn.call({
+            transform: getTransform(doc),
+            previous: prev.docs && prev.docs[doc._id],
+            affected,
+            err,
+            ...ctx
+          }, userId, doc, fields, prev.mutator, prev.options)
+        }
+      }
+    }
+  }
+
+  const afterInsert = async (_id, err) => {
+    if (!suppressHooks && !isEmpty(hookGroup.insert.after)) {
+      // getDocs signature: (collection, selector, options, fetchFields)
+      // Pass empty options {} to trigger limit:1 behavior (see getDocs implementation)
+      const docs = await CollectionHooks.getDocs.call(this, instance, { _id }, {}, {}).fetchAsync()
+      const doc = docs[0]
+      const lctx = { transform: getTransform(doc), _id, err, ...ctx }
+
+      for (const hookEntry of hookGroup.insert.after) {
+        await hookEntry.fn.call(lctx, userId, doc)
+      }
+    }
+  }
+
+  if (hasCallback) {
+    const wrappedCallback = async function (err, ret) {
+      const { insertedId, numberAffected } = (ret ?? {})
+      if (err || insertedId) {
+        // Send any errors to afterInsert
+        await afterInsert(insertedId, err)
+      } else {
+        await afterUpdate(numberAffected, err) // Note that err can never reach here
+      }
+
+      return CollectionHooks.hookedOp(function () {
+        return callback.call(this, err, ret)
+      })
+    }
+
+    return CollectionHooks.directOp(() => originalMethod.call(this, selector, mutator, options, wrappedCallback))
+  } else {
+    const ret = await CollectionHooks.directOp(() => originalMethod.call(this, selector, mutator, options, callback))
+    const { insertedId, numberAffected } = (ret ?? {})
+
+    if (insertedId) {
+      await afterInsert(insertedId)
+    } else {
+      await afterUpdate(numberAffected)
+    }
+
+    return ret
+  }
+})

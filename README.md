@@ -5,7 +5,7 @@
 ![CodeQL Analysis](https://github.com/Meteor-Community-Packages/meteor-collection-hooks/workflows/CodeQL/badge.svg)
 
 
-Extends Mongo.Collection with `before`/`after` hooks for `insert`, `update`, `remove`, `find`, and `findOne`.
+Extends Mongo.Collection with `before`/`after` hooks for `insert`, `update`, `remove`, `upsert`, `find`, and `findOne`. **Meteor 2.16+ & 3.x compatible with async hook support.**
 
 Works across client, server or a mix. Also works when a client initiates a collection method and the server runs the hook, all while respecting the collection validators (allow/deny).
 
@@ -17,6 +17,67 @@ Installation:
 
 ```
 meteor add matb33:collection-hooks
+```
+
+## Meteor 3 Compatibility & Async Hooks
+
+**Meteor Version Support:** 2.16+ through 3.1+
+
+**Important Behavioral Changes in Meteor 3:**
+
+### Async Hooks Support
+As of v2.0.0, most hooks support async functions:
+
+```javascript
+// ✅ Async hooks work for these operations
+collection.before.insert(async function(userId, doc) {
+  await validateDoc(doc);
+});
+
+collection.after.update(async function(userId, doc, fieldNames, modifier, options) {
+  await notifyExternalService(doc);
+});
+```
+
+### Find Hooks Limitations
+Due to Meteor 3's synchronous `find()` method, find hooks have specific limitations:
+
+```javascript
+// ✅ WORKS: Sync before.find hooks
+collection.before.find(function(userId, selector, options) {
+  selector.deletedAt = { $exists: false }; // Modify selector
+});
+
+// ❌ THROWS ERROR: Async before.find hooks  
+collection.before.find(async function(userId, selector, options) {
+  // This will throw: "Cannot use async function as before.find hook"
+});
+
+// ✅ WORKS: after.find hooks (sync and async)
+collection.after.find(async function(userId, selector, options, cursor) {
+  await logFindOperation(selector);
+});
+```
+
+### Hook Trigger Conditions
+
+**findOne Hooks:**
+```javascript
+await collection.findOneAsync({})  // ✅ Triggers hooks
+collection.findOne({})             // ❌ No hooks triggered
+```
+
+**find Hooks:**  
+```javascript
+// ✅ These trigger find hooks:
+const cursor = collection.find({});
+await cursor.fetchAsync();    // ✅ Hooks fire
+await cursor.countAsync();    // ✅ Hooks fire
+await cursor.forEachAsync();  // ✅ Hooks fire
+
+// ❌ These DON'T trigger find hooks:
+collection.find({}).fetch();  // ❌ No hooks
+collection.find({}).count();  // ❌ No hooks
 ```
 
 --------------------------------------------------------------------------------
@@ -185,62 +246,98 @@ test.after.remove(function (userId, doc) {
 
 ### .before.find(userId, selector, options)
 
-Fired before a find query.
+Fired before a find query. **Meteor 3 Limitation: Cannot be async.**
 
 Allows you to adjust selector/options on-the-fly.
 
 ```javascript
 test.before.find(function (userId, selector, options) {
-  // ...
+  // ✅ Sync operations only
+  selector.deletedAt = { $exists: false };
+});
+
+// ❌ This will throw an error:
+test.before.find(async function (userId, selector, options) {
+  // Error: "Cannot use async function as before.find hook"
 });
 ```
 
 __Important:__ 
-- The function used as `before.find` hook cannot be async
-- This hook does not get called for `after.update` hooks (see https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297).
+- The function used as `before.find` hook **cannot be async** (throws error)
+- This hook does not get called for `after.update` hooks (see https://github.com/Meteor-Community-Packages/meteor-collection-hooks/pull/297)
+- Only triggers when using cursor async methods (`fetchAsync()`, `countAsync()`, etc.)
 
 --------------------------------------------------------------------------------
 
 ### .after.find(userId, selector, options, cursor)
 
-Fired after a find query.
+Fired after a find query when using cursor async methods.
 
-Allows you to act on a given find query. The cursor resulting from
-the query is provided as the last argument for convenience.
+Allows you to act on a given find query. Both sync and async functions are supported.
 
 ```javascript
+// ✅ Sync after.find
 test.after.find(function (userId, selector, options, cursor) {
-  // ...
+  logOperation(selector);
 });
+
+// ✅ Async after.find  
+test.after.find(async function (userId, selector, options, cursor) {
+  await logToExternalService(selector);
+});
+```
+
+**Triggers only on cursor async methods:**
+```javascript
+const cursor = collection.find({});
+await cursor.fetchAsync();    // ✅ Triggers after.find
+await cursor.countAsync();    // ✅ Triggers after.find
+cursor.fetch();               // ❌ No hooks triggered
 ```
 
 --------------------------------------------------------------------------------
 
 ### .before.findOne(userId, selector, options)
 
-Fired before a findOne query.
-
-Allows you to adjust selector/options on-the-fly.
+Fired before a findOne query. **Supports async functions.**
 
 ```javascript
+// ✅ Sync before.findOne
 test.before.findOne(function (userId, selector, options) {
-  // ...
+  selector.status = 'active';
 });
+
+// ✅ Async before.findOne
+test.before.findOne(async function (userId, selector, options) {
+  await enrichSelector(selector);
+  // Return false to abort the operation
+  return false;
+});
+```
+
+**Only triggers on async methods:**
+```javascript
+await collection.findOneAsync({})  // ✅ Triggers hooks
+collection.findOne({})             // ❌ No hooks triggered
 ```
 
 --------------------------------------------------------------------------------
 
 ### .after.findOne(userId, selector, options, doc)
 
-Fired after a findOne query.
-
-Allows you to act on a given findOne query. The document resulting
-from the query is provided as the last argument for convenience.
+Fired after a findOne query. **Supports async functions.**
 
 ```javascript
-test.after.findOne(function (userId, selector, options, doc) {
-  // ...
+// ✅ Async after.findOne
+test.after.findOne(async function (userId, selector, options, doc) {
+  await processDocument(doc);
 });
+```
+
+**Only triggers on async methods:**
+```javascript
+await collection.findOneAsync({})  // ✅ Triggers hooks
+collection.findOne({})             // ❌ No hooks triggered
 ```
 
 --------------------------------------------------------------------------------
@@ -321,7 +418,7 @@ still continue to run even if the first hook returns `false`.
 - ~~If you wish to make `userId` available to a `find` query in a `publish`
 function, try the technique detailed in this [comment](https://github.com/matb33/meteor-collection-hooks/issues/7#issuecomment-24021616)~~ `userId` is available to `find` and `findOne` queries that were invoked within a `publish` function.
 
-- All hook callbacks have `this._super` available to them (the underlying
+- All hook callbacks have `this.originalMethod` available to them (the underlying
 method) as well as `this.context`, the equivalent of `this` to the underlying
 method. Additionally, `this.args` contain the original arguments passed to the
 method and can be modified by reference (for example, modifying a selector in a
@@ -352,6 +449,12 @@ server.*
 `find`/`findOne` hooks can fire for those methods.
 
 - `find` hooks are also fired when fetching documents for `update`, `upsert` and `remove` hooks.
+
+- **Meteor 3 Behavior:** Find hooks only trigger on async cursor methods (`fetchAsync()`, `countAsync()`, etc.). Sync methods (`fetch()`, `count()`) do not trigger hooks.
+
+- **findOne Behavior:** findOne hooks only trigger on `findOneAsync()`. The sync `findOne()` method does not trigger hooks in Meteor 3.
+
+- `before.find` hooks cannot be async and will throw an error if an async function is provided.
 
 - If using the `direct` version to bypass a hook, any mongo operations done within nested 
 callbacks of the `direct` operation will also by default run as `direct`. You can use the following
